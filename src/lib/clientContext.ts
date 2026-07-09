@@ -71,7 +71,7 @@ export async function getPseudoMac(): Promise<string> {
       const renderer = ext ? (gl as any).getParameter(ext.UNMASKED_RENDERER_WEBGL) : '';
       webglInfo = `${vendor}|${renderer}`;
     }
-  } catch {}
+  } catch { /* WebGL context may not be available */ }
 
   const raw = [
     ua,

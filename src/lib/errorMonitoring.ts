@@ -24,7 +24,7 @@ function serializeError(err: any): SerializedError {
 function saveLastError(payload: SerializedError) {
   try {
     localStorage.setItem('last_runtime_error', JSON.stringify(payload));
-  } catch {}
+  } catch { /* localStorage may be full or disabled */ }
 }
 
 export function initErrorMonitoring() {

@@ -26,13 +26,10 @@ export default function BusinessDashboard() {
         
         // Parallel fetch for dashboard data
         const [stats, orders, devices, listings] = await Promise.all([
-            // @ts-ignore
-            supabase.marketplace.getSellerStats().catch(() => ({ activeListings: 0, totalDevices: 0, revenue: 0, soldListings: 0 })),
-            // @ts-ignore
-            supabase.marketplace.getSellerOrders().catch(() => []),
+            (supabase.marketplace as any).getSellerStats().catch(() => ({ activeListings: 0, totalDevices: 0, revenue: 0, soldListings: 0 })),
+            (supabase.marketplace as any).getSellerOrders().catch(() => []),
             supabase.devices.list().catch(() => []),
-            // @ts-ignore
-            supabase.marketplace.list({ seller_id: user.id }).catch(() => [])
+            (supabase.marketplace as any).list({ seller_id: user.id }).catch(() => [])
         ])
 
         if (stats) setStatsData(stats)

@@ -85,7 +85,7 @@ export default function MyDevices() {
         const data = await res.json()
         const opts = Array.isArray(data) ? data : []
         setCategories(opts)
-      } catch {}
+      } catch { /* fetch may fail silently */ }
     }
     fetchCategories()
     // eslint-disable-next-line react-hooks/exhaustive-deps

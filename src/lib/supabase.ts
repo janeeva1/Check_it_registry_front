@@ -755,6 +755,96 @@ class ApiClient {
     searchUsers: async (query: string) => this.request(`/user-portal/search-users?q=${encodeURIComponent(query)}`),
   };
 
+  // Revenue & Fees
+  revenue = {
+    getFee: (feeKey: string) => this.request(`/revenue-admin/fees/${feeKey}`),
+    listFees: () => this.request('/revenue-admin/fees'),
+    setFee: (feeKey: string, data: { fee_type: string; amount: number; currency?: string; description?: string }) =>
+      this.request(`/revenue-admin/fees/${feeKey}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }),
+    getProvider: () => this.request('/revenue-admin/provider'),
+    setProvider: (data: { provider: string; config?: any }) =>
+      this.request('/revenue-admin/provider', {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }),
+    transactions: (params?: { page?: number; limit?: number; type?: string; status?: string }) => {
+      const query = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+      return this.request(`/revenue-admin/transactions${query}`);
+    },
+    summary: (params?: { start_date?: string; end_date?: string }) => {
+      const query = params ? `?${new URLSearchParams(params).toString()}` : '';
+      return this.request(`/revenue-admin/summary${query}`);
+    },
+    createInvoice: (data: { fee_type: string; amount: number; currency?: string; description?: string }) =>
+      this.request('/revenue-admin/create-invoice', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+  };
+
+  // Security & MFA
+  security = {
+    mfaInitiate: (data: { action_type: string; context?: any }) =>
+      this.request('/security/mfa/initiate', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    mfaVerify: (data: { session_id: string; otp: string; second_otp?: string }) =>
+      this.request('/security/mfa/verify', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    reauthenticate: (data: { password: string }) =>
+      this.request('/security/reauthenticate', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    verifyNIN: (data: { nin: string; provider?: string; bypass_payment?: boolean }) =>
+      this.request('/security/verify-nin', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    verifyCAC: (data: { rc_number: string; company_name?: string; provider?: string; bypass_payment?: boolean }) =>
+      this.request('/security/verify-cac', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    riskCheck: () => this.request('/security/risk-check'),
+    getVerificationStatus: () => this.request('/security/verification-status'),
+  };
+
+  // Fraud detection (admin)
+  fraud = {
+    alerts: (params?: { page?: number; limit?: number; status?: string }) => {
+      const query = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+      return this.request(`/revenue-admin/fraud-alerts${query}`);
+    },
+    getAlert: (id: string) => this.request(`/revenue-admin/fraud-alerts/${id}`),
+    updateAlert: (id: string, data: { status: string; notes?: string }) =>
+      this.request(`/revenue-admin/fraud-alerts/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }),
+    stats: () => this.request('/revenue-admin/fraud-alerts/stats'),
+  };
+
+  // Business Customer Onboarding
+  business = {
+    onboard: (data: { customer_name: string; customer_email?: string; customer_phone?: string; device_brand?: string; device_model?: string; device_imei?: string; pay_by_pass?: string }) =>
+      this.request('/business/onboard', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    onboardings: (params?: { page?: number; limit?: number }) => {
+      const query = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+      return this.request(`/business/onboardings${query}`);
+    },
+    onboardingStats: () => this.request('/business/onboardings/stats'),
+  };
+
   // Device Checks
   deviceChecks = {
     history: async (params: { device_id?: string; identifier?: string; limit?: number }) => {

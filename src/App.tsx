@@ -1,85 +1,93 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { lazy, Suspense } from 'react'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
-import LandingContentManager from './pages/admin/LandingContentManager'
-import DeviceCheck from './pages/DeviceCheck'
-import Login from './pages/Login'
-import Register from './pages/Register'
-import LandingPage from './pages/LandingPage'
-import Dashboard from './pages/Dashboard'
-import DeviceRegistration from './pages/DeviceRegistration'
-import MyDevices from './pages/MyDevices'
-import DeviceDetails from './pages/DeviceDetails'
-import Notifications from './pages/Notifications'
-import MarketplaceInbox from './pages/MarketplaceInbox'
-import MarketplaceThread from './pages/MarketplaceThread'
-import MarketplaceBrowse from './pages/MarketplaceBrowse'
-import MarketplaceListing from './pages/MarketplaceListing'
-import BusinessMyListings from './pages/BusinessMyListings'
-import CreateListing from './pages/CreateListing'
-import BusinessDashboard from './pages/BusinessDashboard'
-import BuyerOrders from './pages/BuyerOrders'
-import SellerOrders from './pages/SellerOrders'
-import BusinessPayouts from './pages/BusinessPayouts'
-import SellerPayoutSettings from './pages/SellerPayoutSettings'
-import AdminDeviceCategories from './pages/AdminDeviceCategories'
-import ErrorBoundary from './components/ErrorBoundary'
-import AdminDeviceManagement from './pages/AdminDeviceManagement'
-import AdminDeviceDetails from './pages/AdminDeviceDetails'
-import AdminLEAManagement from './pages/AdminLEAManagement'
-import AdminReportManagement from './pages/AdminReportManagement'
-import AdminCaseDetails from './pages/AdminCaseDetails'
-import AdminSystemSettings from './pages/AdminSystemSettings'
-import LEAAlerts from './pages/LEAAlerts'
-import LEACases from './pages/LEACases'
-import LEACaseDetails from './pages/LEACaseDetails'
-import LEACommunication from './pages/LEACommunication'
-import LEADeviceSearch from './pages/LEADeviceSearch'
-import LEADeviceDetails from './pages/LEADeviceDetails'
-import LEARecovery from './pages/LEARecovery'
-import LEASettings from './pages/LEASettings'
-import PaymentAddMethod from './pages/PaymentAddMethod'
-import PaymentMethodSelection from './pages/PaymentMethodSelection'
-import PaymentConfirmation from './pages/PaymentConfirmation'
-import PaymentCallback from './pages/PaymentCallback'
-import TransactionHistory from './pages/TransactionHistory'
-import Search from './pages/Search'
-import DeviceVerificationStatus from './pages/DeviceVerificationStatus'
-import DeviceCheckReport from './pages/DeviceCheckReport'
-import ReportDeviceIncident from './pages/ReportDeviceIncident'
-import AdminDashboard from './pages/AdminDashboard'
-import AdminAlerts from './pages/AdminAlerts'
-import LEAPortal from './pages/LEAPortal'
-import ReportDetails from './pages/ReportDetails'
-import ReportsV2 from './pages/ReportsV2'
-import DeviceTransfer from './pages/DeviceTransfer'
-import FoundDevice from './pages/FoundDevice'
-import EmailVerification from './pages/EmailVerification'
-import PasswordReset from './pages/PasswordReset'
-import ForgotPassword from './pages/ForgotPassword'
-import VerifyDevice from './pages/VerifyDevice'
-import UserManagement from './pages/UserManagement'
-import Analytics from './pages/Analytics'
-import ReportMissing from './pages/ReportMissing'
-import BusinessRegister from './pages/BusinessRegister'
-import BulkDeviceRegistration from './pages/BulkDeviceRegistration'
-import AuditTrail from './pages/AuditTrail'
-import AdminTransferHistory from './pages/AdminTransferHistory'
-import LEATransferHistory from './pages/LEATransferHistory'
-import Profile from './pages/Profile'
-import PrivacyPolicy from './pages/PrivacyPolicy'
-import Settings from './pages/Settings'
-import Checkout from './pages/Checkout'
-import Cart from './pages/Cart'
 import { CartProvider } from './contexts/CartContext'
-import './App.css'
 import { ToastProvider } from './components/Toast'
-import NotFound from './pages/NotFound'
-import AdminMarketplaceManagement from './pages/AdminMarketplaceManagement'
-import CustomCursor from './components/CustomCursor'
+import './App.css'
 import ProtectedRoute from './components/ProtectedRoute'
+import CustomCursor from './components/CustomCursor'
+import ErrorBoundary from './components/ErrorBoundary'
+import PageLoading from './components/PageLoading'
 
-interface AppProps {}
+const LandingPage = lazy(() => import('./pages/LandingPage'))
+const Login = lazy(() => import('./pages/Login'))
+const Register = lazy(() => import('./pages/Register'))
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const DeviceRegistration = lazy(() => import('./pages/DeviceRegistration'))
+const MyDevices = lazy(() => import('./pages/MyDevices'))
+const DeviceDetails = lazy(() => import('./pages/DeviceDetails'))
+const Notifications = lazy(() => import('./pages/Notifications'))
+const MarketplaceInbox = lazy(() => import('./pages/MarketplaceInbox'))
+const MarketplaceThread = lazy(() => import('./pages/MarketplaceThread'))
+const MarketplaceBrowse = lazy(() => import('./pages/MarketplaceBrowse'))
+const MarketplaceListing = lazy(() => import('./pages/MarketplaceListing'))
+const BusinessMyListings = lazy(() => import('./pages/BusinessMyListings'))
+const CreateListing = lazy(() => import('./pages/CreateListing'))
+const BusinessDashboard = lazy(() => import('./pages/BusinessDashboard'))
+const BuyerOrders = lazy(() => import('./pages/BuyerOrders'))
+const SellerOrders = lazy(() => import('./pages/SellerOrders'))
+const BusinessPayouts = lazy(() => import('./pages/BusinessPayouts'))
+const SellerPayoutSettings = lazy(() => import('./pages/SellerPayoutSettings'))
+const AdminDeviceCategories = lazy(() => import('./pages/AdminDeviceCategories'))
+const AdminDeviceManagement = lazy(() => import('./pages/AdminDeviceManagement'))
+const AdminDeviceDetails = lazy(() => import('./pages/AdminDeviceDetails'))
+const AdminLEAManagement = lazy(() => import('./pages/AdminLEAManagement'))
+const AdminReportManagement = lazy(() => import('./pages/AdminReportManagement'))
+const AdminCaseDetails = lazy(() => import('./pages/AdminCaseDetails'))
+const AdminSystemSettings = lazy(() => import('./pages/AdminSystemSettings'))
+const LEAAlerts = lazy(() => import('./pages/LEAAlerts'))
+const LEACases = lazy(() => import('./pages/LEACases'))
+const LEACaseDetails = lazy(() => import('./pages/LEACaseDetails'))
+const LEACommunication = lazy(() => import('./pages/LEACommunication'))
+const LEADeviceSearch = lazy(() => import('./pages/LEADeviceSearch'))
+const LEADeviceDetails = lazy(() => import('./pages/LEADeviceDetails'))
+const LEARecovery = lazy(() => import('./pages/LEARecovery'))
+const LEASettings = lazy(() => import('./pages/LEASettings'))
+const PaymentAddMethod = lazy(() => import('./pages/PaymentAddMethod'))
+const PaymentMethodSelection = lazy(() => import('./pages/PaymentMethodSelection'))
+const PaymentConfirmation = lazy(() => import('./pages/PaymentConfirmation'))
+const PaymentCallback = lazy(() => import('./pages/PaymentCallback'))
+const TransactionHistory = lazy(() => import('./pages/TransactionHistory'))
+const Search = lazy(() => import('./pages/Search'))
+const DeviceVerificationStatus = lazy(() => import('./pages/DeviceVerificationStatus'))
+const DeviceCheckReport = lazy(() => import('./pages/DeviceCheckReport'))
+const ReportDeviceIncident = lazy(() => import('./pages/ReportDeviceIncident'))
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'))
+const AdminAlerts = lazy(() => import('./pages/AdminAlerts'))
+const LEAPortal = lazy(() => import('./pages/LEAPortal'))
+const ReportDetails = lazy(() => import('./pages/ReportDetails'))
+const ReportsV2 = lazy(() => import('./pages/ReportsV2'))
+const DeviceTransfer = lazy(() => import('./pages/DeviceTransfer'))
+const FoundDevice = lazy(() => import('./pages/FoundDevice'))
+const EmailVerification = lazy(() => import('./pages/EmailVerification'))
+const PasswordReset = lazy(() => import('./pages/PasswordReset'))
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
+const VerifyDevice = lazy(() => import('./pages/VerifyDevice'))
+const UserManagement = lazy(() => import('./pages/UserManagement'))
+const Analytics = lazy(() => import('./pages/Analytics'))
+const ReportMissing = lazy(() => import('./pages/ReportMissing'))
+const BusinessRegister = lazy(() => import('./pages/BusinessRegister'))
+const BulkDeviceRegistration = lazy(() => import('./pages/BulkDeviceRegistration'))
+const AuditTrail = lazy(() => import('./pages/AuditTrail'))
+const AdminTransferHistory = lazy(() => import('./pages/AdminTransferHistory'))
+const LEATransferHistory = lazy(() => import('./pages/LEATransferHistory'))
+const Profile = lazy(() => import('./pages/Profile'))
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
+const Settings = lazy(() => import('./pages/Settings'))
+const Checkout = lazy(() => import('./pages/Checkout'))
+const Cart = lazy(() => import('./pages/Cart'))
+const NotFound = lazy(() => import('./pages/NotFound'))
+const AdminMarketplaceManagement = lazy(() => import('./pages/AdminMarketplaceManagement'))
+const LandingContentManager = lazy(() => import('./pages/admin/LandingContentManager'))
+const DeviceCheck = lazy(() => import('./pages/DeviceCheck'))
+const IdentityVerification = lazy(() => import('./pages/IdentityVerification'))
+const BusinessVerification = lazy(() => import('./pages/BusinessVerification'))
+const BusinessOnboarding = lazy(() => import('./pages/BusinessOnboarding'))
+const BusinessOnboardings = lazy(() => import('./pages/BusinessOnboardings'))
+const DeviceRecovery = lazy(() => import('./pages/DeviceRecovery'))
+const RevenueSettings = lazy(() => import('./pages/admin/RevenueSettings'))
+const FraudAlerts = lazy(() => import('./pages/admin/FraudAlerts'))
 
 function AppRoutes() {
   const { user, loading } = useAuth()
@@ -99,6 +107,7 @@ function AppRoutes() {
 
   return (
     <BrowserRouter>
+      <Suspense fallback={<PageLoading />}>
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
@@ -168,21 +177,28 @@ function AppRoutes() {
         <Route path="/business/payouts" element={<ProtectedRoute allowedRoles={['business','admin']}><BusinessPayouts /></ProtectedRoute>} />
         <Route path="/business/payout-settings" element={<ProtectedRoute allowedRoles={['business','admin']}><SellerPayoutSettings /></ProtectedRoute>} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
-
+        <Route path="/identity-verification" element={user ? <IdentityVerification /> : <Navigate to="/login" />} />
+        <Route path="/business-verification" element={user ? <BusinessVerification /> : <Navigate to="/login" />} />
+        <Route path="/business/onboard" element={<ProtectedRoute allowedRoles={['business','admin']}><BusinessOnboarding /></ProtectedRoute>} />
+        <Route path="/business/onboardings" element={<ProtectedRoute allowedRoles={['business','admin']}><BusinessOnboardings /></ProtectedRoute>} />
+        <Route path="/device-recovery" element={user ? <DeviceRecovery /> : <Navigate to="/login" />} />
 
         <Route path="/admin/device-categories" element={<ProtectedRoute allowedRoles={['admin']}><AdminDeviceCategories /></ProtectedRoute>} />
         <Route path="/admin/landing-content" element={<ProtectedRoute allowedRoles={['admin']}><ErrorBoundary><LandingContentManager /></ErrorBoundary></ProtectedRoute>} />
         <Route path="/admin/marketplace" element={<ProtectedRoute allowedRoles={['admin']}><ErrorBoundary><AdminMarketplaceManagement /></ErrorBoundary></ProtectedRoute>} />
+        <Route path="/admin/revenue" element={<ProtectedRoute allowedRoles={['admin']}><ErrorBoundary><RevenueSettings /></ErrorBoundary></ProtectedRoute>} />
+        <Route path="/admin/fraud-alerts" element={<ProtectedRoute allowedRoles={['admin']}><ErrorBoundary><FraudAlerts /></ErrorBoundary></ProtectedRoute>} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={user ? <Checkout /> : <Navigate to="/login" />} />
         {/* Catch-all route: send all unknown links to NotFound with back to dashboard */}
         <Route path="*" element={<NotFound />} />
       </Routes>
+      </Suspense>
     </BrowserRouter>
   )
 }
 
-function App({}: AppProps = {}) {
+function App() {
   return (
     <ThemeProvider>
       <AuthProvider>

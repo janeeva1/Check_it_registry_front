@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Smartphone, ArrowLeft, Edit2, Trash2, CheckCircle, AlertTriangle, Clock, Shield, Copy, ExternalLink, History, Loader2, Plus } from 'lucide-react'
+import { Smartphone, ArrowLeft, Edit2, Trash2, CheckCircle, AlertTriangle, Clock, Shield, Copy, ExternalLink, History, Loader2, Plus, LogOut } from 'lucide-react'
 import { Layout } from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast, ToastContainer } from '../components/Toast'
@@ -74,6 +74,20 @@ export default function DeviceDetails() {
       await fetch(`${import.meta.env.VITE_API_URL || '/api'}/devices/${device.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
       showSuccess('Device removed')
       navigate('/my-devices')
+    } catch (err: any) { showError(err.message) }
+  }
+
+  const handleRelease = async () => {
+    if (!device) return
+    if (!window.confirm(`Release "${device.brand} ${device.model}" from your account?\n\nThe device will be available for a new owner to register. This action cannot be undone.`)) return
+    try {
+      const token = localStorage.getItem('auth_token')
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || '/api'}/device-management/${device.id}/release`, {
+        method: 'POST', headers: { Authorization: `Bearer ${token}` }
+      })
+      if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed to release device') }
+      showSuccess('Device released successfully')
+      setTimeout(() => navigate('/my-devices'), 1500)
     } catch (err: any) { showError(err.message) }
   }
 
@@ -209,6 +223,7 @@ export default function DeviceDetails() {
                   <Link to={`/device-transfer?device=${device.id}`} className="btn-outline-primary d-flex align-items-center gap-2"><Smartphone size={16} /> Transfer Ownership</Link>
                   <Link to={`/verify-device?device=${device.id}`} className="btn-outline-primary d-flex align-items-center gap-2"><CheckCircle size={16} /> Verify Ownership</Link>
                   <Link to={`/report-incident?device=${device.id}`} className="btn-outline-primary d-flex align-items-center gap-2" style={{ color: 'var(--danger-500)' }}><AlertTriangle size={16} /> Report Incident</Link>
+                  <button onClick={handleRelease} className="btn-outline-primary d-flex align-items-center gap-2" style={{ color: 'var(--warning-500)' }}><LogOut size={16} /> Release Device</button>
                 </div>
               </div>
 

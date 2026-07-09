@@ -103,7 +103,7 @@ export default function LandingPage() {
     const setCached = (data: any) => {
       try {
         localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data }));
-      } catch {}
+      } catch { /* localStorage quota may be exceeded */ }
     };
 
     const cached = getCached();

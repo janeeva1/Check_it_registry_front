@@ -25,6 +25,7 @@ import { locationService } from '../services/LocationService'
 import { deviceFingerprintService } from '../services/DeviceFingerprintService'
 import { useToast, ToastContainer } from '../components/Toast'
 import { Layout } from '../components/Layout'
+import { PaymentGate } from '../components/PaymentGate'
 import { MobileDeviceCheck } from '../components/mobile/MobileDeviceCheck'
 import { mobileIntegrationService } from '../services/MobileIntegrationService'
 
@@ -41,6 +42,8 @@ export default function DeviceCheck() {
   const navigate = useNavigate()
   const [showRiskAck, setShowRiskAck] = useState(false)
   const [riskAckChecked, setRiskAckChecked] = useState(false)
+  const [showPayment, setShowPayment] = useState(false)
+  const [paymentBypass, setPaymentBypass] = useState<string | null>(null)
 
   useEffect(() => {
     // Check if device is mobile
@@ -108,7 +111,7 @@ export default function DeviceCheck() {
         mac: securityMetadata.macAddress
       }
 
-      const payload = {
+      const payload: any = {
         deviceIdentifier: imei.trim() || serial.trim(),
         checkerLocation: locationData,
         deviceFingerprint: {
@@ -118,8 +121,9 @@ export default function DeviceCheck() {
         networkInfo: enrichedNetworkInfo,
         checkReason: 'purchase_check'
       }
+      if (paymentBypass) payload.paymentBypass = paymentBypass
 
-      const checkResult = await supabase.publicCheckEnhanced(payload)
+      const checkResult = await supabase.publicCheckEnhanced(payload) 
       setEnhancedData(checkResult)
 
       // Map enhanced result to existing UI model
@@ -150,11 +154,15 @@ export default function DeviceCheck() {
       }
     } catch (err) {
       console.error('Check error:', err)
-      const errorMessage = (err && typeof err === 'object' && (err as any).message)
+      const msg = (err && typeof err === 'object' && (err as any).message)
         ? String((err as any).message)
         : (err instanceof Error ? err.message : 'Failed to check device')
-      setError(errorMessage)
-      showError('Check Failed', errorMessage)
+      if (msg.toLowerCase().includes('payment') || msg.toLowerCase().includes('fee')) {
+        setShowPayment(true)
+      } else {
+        setError(msg)
+        showError('Check Failed', msg)
+      }
     } finally {
       setLoading(false)
     }
@@ -782,6 +790,14 @@ export default function DeviceCheck() {
 
         <ToastContainer toasts={toasts} onRemove={removeToast} />
       </div>
+      <PaymentGate
+        isOpen={showPayment}
+        onClose={() => setShowPayment(false)}
+        feeType="device_check_fee"
+        feeLabel="Device Check"
+        description="Fee for performing a device status check"
+        onSuccess={(token) => { setPaymentBypass(token); setShowPayment(false); }}
+      />
     </Layout>
   )
 }

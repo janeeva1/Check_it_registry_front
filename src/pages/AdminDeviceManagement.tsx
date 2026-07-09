@@ -91,7 +91,7 @@ export default function AdminDeviceManagement() {
         if (!res.ok) return
         const data = await res.json()
         setCategories(Array.isArray(data) ? data : [])
-      } catch { }
+      } catch { /* fetch may fail silently */ }
     }
     fetchCategories()
   }, [])

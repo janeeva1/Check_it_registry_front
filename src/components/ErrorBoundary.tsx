@@ -27,7 +27,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
         time: new Date().toISOString()
       }
       localStorage.setItem('last_ui_error', JSON.stringify(payload))
-    } catch {}
+    } catch { /* localStorage may be unavailable */ }
   }
 
   render() {

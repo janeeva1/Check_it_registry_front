@@ -59,9 +59,13 @@ export default function MarketplaceListing() {
   const [similarListings, setSimilarListings] = useState<any[]>([])
   const [reportReason, setReportReason] = useState('')
   const [zoomed, setZoomed] = useState(false)
+  const [commissionPercent, setCommissionPercent] = useState<number | null>(null)
 
   useEffect(() => {
     fetchListing()
+    supabase.revenue.getFee('marketplace_commission_percent')
+      .then((data: any) => setCommissionPercent(data?.amount ?? 5))
+      .catch(() => setCommissionPercent(5))
   }, [id])
 
   useEffect(() => {
@@ -359,6 +363,13 @@ export default function MarketplaceListing() {
                     </div>
                   </div>
                 </div>
+
+                {commissionPercent !== null && (
+                  <div style={{ marginBottom: 16, padding: '10px 14px', background: 'var(--bg-tertiary)', borderRadius: 8, fontSize: 12, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Shield size={14} style={{ color: 'var(--primary)' }} />
+                    <span>Marketplace commission applies on sale. <strong style={{ color: 'var(--text-primary)' }}>{commissionPercent}%</strong> platform fee deducted at transaction completion.</span>
+                  </div>
+                )}
 
                 {/* Action Buttons */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

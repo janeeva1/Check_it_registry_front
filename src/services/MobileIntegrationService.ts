@@ -49,9 +49,12 @@ class MobileIntegrationService {
     })();
 
     const osVersion = (() => {
-      if (/Android\s([\d.]+)/i.test(ua)) return `Android ${(ua.match(/Android\s([\d.]+)/i) || [])[1]}` || 'Android';
-      if (/iPhone OS\s([\d_]+)/i.test(ua)) return `iOS ${(ua.match(/iPhone OS\s([\d_]+)/i) || [])[1]?.replace(/_/g, '.')}` || 'iOS';
-      if (/iPad.*OS\s([\d_]+)/i.test(ua)) return `iPadOS ${(ua.match(/iPad.*OS\s([\d_]+)/i) || [])[1]?.replace(/_/g, '.')}` || 'iPadOS';
+      const androidMatch = ua.match(/Android\s([\d.]+)/i);
+      if (androidMatch) return `Android ${androidMatch[1]}`;
+      const iosMatch = ua.match(/iPhone OS\s([\d_]+)/i);
+      if (iosMatch) return `iOS ${iosMatch[1].replace(/_/g, '.')}`;
+      const ipadMatch = ua.match(/iPad.*OS\s([\d_]+)/i);
+      if (ipadMatch) return `iPadOS ${ipadMatch[1].replace(/_/g, '.')}`;
       return platform || 'Unknown';
     })();
 

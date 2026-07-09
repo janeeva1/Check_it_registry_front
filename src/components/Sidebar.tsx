@@ -76,6 +76,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, user }) => {
         { path: "/report-incident", label: "Report Incident", icon: AlertOctagon },
         { path: "/reports", label: "My Reports", icon: FileText },
         { path: "/notifications", label: "Notifications", icon: Bell },
+        { path: "/device-recovery", label: "Device Recovery", icon: Shield },
         { path: "/orders", label: "My Orders", icon: Receipt },
         { path: "/search", label: "Search", icon: Search },
         { path: "/profile", label: "Profile", icon: Users },
@@ -103,6 +104,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, user }) => {
         { path: "/bulk-register", label: "Bulk Register", icon: Upload },
         { path: "/transfer", label: "Transfers", icon: ArrowLeftRight },
         { path: "/business/payouts", label: "Payouts", icon: CreditCard },
+        { path: "/business/onboard", label: "Onboard Customer", icon: Users },
+        { path: "/business/onboardings", label: "Onboardings", icon: FileText },
       ],
     };
 
