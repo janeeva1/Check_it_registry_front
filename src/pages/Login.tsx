@@ -93,7 +93,12 @@ export default function Login() {
         }),
       })
 
-      const data = await response.json()
+      let data: any
+      try {
+        data = await response.json()
+      } catch {
+        throw new Error('Server returned an invalid response. Please try again later.')
+      }
 
       if (!response.ok) {
         throw new Error(data.error || 'Login failed')
@@ -114,7 +119,11 @@ export default function Login() {
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Login failed. Please try again.'
-      setError(errorMessage)
+      if (errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')) {
+        setError('Unable to connect to server. Please check your connection and try again.')
+      } else {
+        setError(errorMessage)
+      }
       showError('Login Failed', errorMessage)
     } finally {
       setLoading(false)
@@ -138,7 +147,12 @@ export default function Login() {
         }),
       })
 
-      const data = await response.json()
+      let data: any
+      try {
+        data = await response.json()
+      } catch {
+        throw new Error('Server returned an invalid response. Please try again later.')
+      }
 
       if (!response.ok) {
         throw new Error(data.error || 'Verification failed')
@@ -168,7 +182,12 @@ export default function Login() {
         }),
       })
 
-      const data = await response.json()
+      let data: any
+      try {
+        data = await response.json()
+      } catch {
+        throw new Error('Server returned an invalid response.')
+      }
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to resend code')

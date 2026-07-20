@@ -79,17 +79,12 @@ class ApiClient {
       // Handle empty responses
       const text = await response.text();
       if (!text) {
-        console.log("API Success: Empty response");
         return {};
       }
 
       try {
-        const data = JSON.parse(text);
-        console.log("API Success:", data);
-        return data;
-      } catch (jsonError) {
-        console.error("JSON Parse Error:", jsonError);
-        console.log("Response text:", text);
+        return JSON.parse(text);
+      } catch {
         throw new Error("Invalid JSON response from server");
       }
     } catch (fetchError) {

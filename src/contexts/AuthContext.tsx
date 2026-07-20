@@ -60,8 +60,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         });
         
         if (response.ok) {
-          const data = await response.json();
-          setUser(data.user);
+          try {
+            const data = await response.json();
+            setUser(data.user);
+          } catch {
+            console.warn('Auth check: server returned non-JSON response');
+          }
         } else if (response.status === 401 || response.status === 403) {
           // Token is invalid/expired, clear storage
           localStorage.removeItem('auth_token');
