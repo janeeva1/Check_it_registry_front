@@ -74,6 +74,34 @@
   --danger-500: #f43f5e;
   --accent-500: #6366f1;
   --accent-400: #818cf8;
+
+  /* Tailwind oklch design token defaults (overridden by landing pages) */
+  --color-background: var(--bg-primary, #ffffff);
+  --color-foreground: var(--text-primary, #0f172a);
+  --color-card: var(--bg-primary, #ffffff);
+  --color-card-foreground: var(--text-primary, #0f172a);
+  --color-popover: var(--bg-primary, #ffffff);
+  --color-popover-foreground: var(--text-primary, #0f172a);
+  --color-primary: var(--primary-600, #16a34a);
+  --color-primary-foreground: #ffffff;
+  --color-primary-glow: var(--primary-400, #4ade80);
+  --color-secondary: var(--bg-secondary, #f8fafc);
+  --color-secondary-foreground: var(--text-primary, #0f172a);
+  --color-muted: var(--bg-tertiary, #f1f5f9);
+  --color-muted-foreground: var(--text-tertiary, #94a3b8);
+  --color-accent: var(--accent-500, #6366f1);
+  --color-accent-foreground: #ffffff;
+  --color-surface: var(--bg-secondary, #f8fafc);
+  --color-surface-elevated: var(--bg-primary, #ffffff);
+  --color-destructive: var(--danger-500, #f43f5e);
+  --color-destructive-foreground: #ffffff;
+  --color-border: var(--border-color, #e2e8f0);
+  --color-input: var(--border-color, #e2e8f0);
+  --color-ring: var(--primary-600, #16a34a);
+  --gradient-hero: none;
+  --gradient-primary: linear-gradient(135deg, var(--primary-600, #16a34a), var(--primary-400, #4ade80));
+  --shadow-glow: none;
+  --shadow-card: none;
 }
 
 .text-accent {

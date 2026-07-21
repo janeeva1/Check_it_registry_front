@@ -1,0 +1,78 @@
+/*
+ * Landing V2 (Minimal/Editorial) — oklch light design tokens.
+ * Tailwind v3 generates utilities from tailwind.config.js using CSS variables.
+ * This file sets those variables to oklch values within .landing-v2 scope.
+ */
+
+.landing-v2 {
+  --color-background: oklch(0.97 0.008 85);
+  --color-foreground: oklch(0.18 0.015 65);
+  --color-card: oklch(0.99 0.005 85);
+  --color-card-foreground: oklch(0.18 0.015 65);
+  --color-popover: oklch(0.99 0.005 85);
+  --color-popover-foreground: oklch(0.18 0.015 65);
+  --color-primary: oklch(0.22 0.02 65);
+  --color-primary-foreground: oklch(0.97 0.008 85);
+  --color-primary-glow: oklch(0.32 0.03 65);
+  --color-secondary: oklch(0.93 0.012 85);
+  --color-secondary-foreground: oklch(0.22 0.02 65);
+  --color-muted: oklch(0.93 0.012 85);
+  --color-muted-foreground: oklch(0.45 0.015 65);
+  --color-accent: oklch(0.62 0.13 55);
+  --color-accent-foreground: oklch(0.99 0.005 85);
+  --color-surface: oklch(0.95 0.01 85);
+  --color-surface-elevated: oklch(0.99 0.005 85);
+  --color-destructive: oklch(0.577 0.245 27.325);
+  --color-destructive-foreground: oklch(0.984 0.003 247.858);
+  --color-border: oklch(0.88 0.012 85);
+  --color-input: oklch(0.88 0.012 85);
+  --color-ring: oklch(0.62 0.13 55);
+
+  --gradient-hero: radial-gradient(ellipse 60% 40% at 50% 0%, oklch(0.62 0.13 55 / 0.08), transparent 70%), linear-gradient(180deg, oklch(0.97 0.008 85), oklch(0.95 0.01 85));
+  --gradient-primary: linear-gradient(135deg, oklch(0.62 0.13 55), oklch(0.55 0.14 45));
+  --shadow-glow: 0 20px 60px -20px oklch(0.22 0.02 65 / 0.15);
+  --shadow-card: 0 1px 2px oklch(0.2 0.02 65 / 0.04), 0 8px 24px -12px oklch(0.2 0.02 65 / 0.08);
+
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+}
+
+/* Switcher styling */
+.landing-v2 .lv-switcher {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1040;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: oklch(0.99 0.005 85 / 0.9);
+  backdrop-filter: blur(16px);
+  border: 1px solid oklch(0.88 0.012 85 / 0.6);
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow: 0 25px 50px -12px oklch(0.2 0.02 65 / 0.15);
+}
+.landing-v2 .lv-switcher span.label {
+  font-size: 11px;
+  color: oklch(0.45 0.015 65);
+  padding: 0 10px;
+  white-space: nowrap;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.landing-v2 .lv-switcher a {
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+  color: oklch(0.45 0.015 65);
+}
+.landing-v2 .lv-switcher a.active {
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+}

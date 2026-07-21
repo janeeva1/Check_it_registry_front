@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Shield,
@@ -40,6 +40,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 export default function LandingPage() {
   const { user, logout } = useAuth();
+  const location = useLocation();
   const [stats, setStats] = useState({
     users: 0,
     devices: 0,
@@ -188,6 +189,35 @@ export default function LandingPage() {
     <>
       {/* Navbar rendered outside the landing-page div to prevent overflow clipping */}
       <Navbar user={user} onLogout={logout} />
+
+      {/* Landing page version switcher */}
+      <div style={{
+        position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
+        zIndex: 1040, display: 'flex', alignItems: 'center', gap: 4,
+        background: 'var(--glass-bg)', backdropFilter: 'blur(16px)',
+        border: '1px solid var(--glass-border)', borderRadius: 12,
+        padding: '6px', boxShadow: 'var(--glass-shadow)'
+      }}>
+        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', padding: '0 10px', whiteSpace: 'nowrap', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>View:</span>
+        {[
+          { path: '/', label: 'Classic' },
+          { path: '/landing/v1', label: 'Modern' },
+          { path: '/landing/v2', label: 'Minimal' },
+        ].map((v) => (
+          <Link
+            key={v.path}
+            to={v.path}
+            style={{
+              padding: '6px 16px', borderRadius: 8, fontSize: 'var(--text-sm)', fontWeight: 600,
+              textDecoration: 'none', transition: 'all 0.2s',
+              background: location.pathname === v.path ? 'var(--primary-600)' : 'transparent',
+              color: location.pathname === v.path ? 'white' : 'var(--text-secondary)',
+            }}
+          >
+            {v.label}
+          </Link>
+        ))}
+      </div>
       <div className="landing-page" style={{ minHeight: '100vh', background: 'transparent', position: 'relative' }}>
         <TechParticles />
 

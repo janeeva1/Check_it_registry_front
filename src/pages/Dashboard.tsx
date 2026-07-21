@@ -100,30 +100,38 @@ export default function Dashboard() {
       const [devicesRes, reportsRes] = await Promise.all([
         fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/device-management`, {
           headers: { 'Authorization': `Bearer ${token}` }
-        }),
+        }).catch(() => null),
         fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/report-management`, {
           headers: { 'Authorization': `Bearer ${token}` }
-        })
+        }).catch(() => null)
       ])
 
-      if (!devicesRes.ok) {
-        throw new Error('Failed to fetch devices')
+      if (devicesRes && devicesRes.ok) {
+        try {
+          const devicesData = await devicesRes.json()
+          setDevices(Array.isArray(devicesData) ? devicesData : [])
+        } catch {
+          setDevices([])
+        }
+      } else {
+        setDevices([])
       }
 
-      const devicesData = await devicesRes.json()
-      setDevices(devicesData || [])
-
-      if (reportsRes.ok) {
-        const reportsData = await reportsRes.json()
-        setReports(reportsData || [])
+      if (reportsRes && reportsRes.ok) {
+        try {
+          const reportsData = await reportsRes.json()
+          setReports(Array.isArray(reportsData) ? reportsData : [])
+        } catch {
+          setReports([])
+        }
       } else {
         setReports([])
       }
 
       setRecentActivity([])
 
-      if (devicesData?.length === 0) {
-        showWarning('Welcome!', 'Start by registering your first device to protect it from theft.')
+      if (!devicesRes || !devicesRes.ok) {
+        setError('Unable to load dashboard data. Please check your connection and try again.')
       }
     } catch (err) {
       console.error('Error loading data:', err)

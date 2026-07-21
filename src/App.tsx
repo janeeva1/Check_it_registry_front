@@ -4,6 +4,7 @@ import { ThemeProvider } from './contexts/ThemeContext'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { CartProvider } from './contexts/CartContext'
 import { ToastProvider } from './components/Toast'
+import './tailwind.css'
 import './App.css'
 import ProtectedRoute from './components/ProtectedRoute'
 import CustomCursor from './components/CustomCursor'
@@ -11,6 +12,8 @@ import ErrorBoundary from './components/ErrorBoundary'
 import PageLoading from './components/PageLoading'
 
 const LandingPage = lazy(() => import('./pages/LandingPage'))
+const LandingV1 = lazy(() => import('./pages/LandingV1'))
+const LandingV2 = lazy(() => import('./pages/LandingV2'))
 const Login = lazy(() => import('./pages/Login'))
 const Register = lazy(() => import('./pages/Register'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
@@ -106,10 +109,11 @@ function AppRoutes() {
   }
 
   return (
-    <BrowserRouter>
       <Suspense fallback={<PageLoading />}>
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/landing/v1" element={<LandingV1 />} />
+        <Route path="/landing/v2" element={<LandingV2 />} />
         <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
         <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <Register />} />
         <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
@@ -122,7 +126,7 @@ function AppRoutes() {
         <Route path="/business" element={<ProtectedRoute allowedRoles={['business','admin']}><BusinessDashboard /></ProtectedRoute>} />
         <Route path="/business/my-listings" element={<ProtectedRoute allowedRoles={['business','admin']}><BusinessMyListings /></ProtectedRoute>} />
         <Route path="/marketplace/create-listing" element={user ? <CreateListing /> : <Navigate to="/login" />} />
-        <Route path="/device-check" element={<ErrorBoundary><DeviceCheck /></ErrorBoundary>} />
+        <Route path="/device-check" element={user ? <ErrorBoundary><DeviceCheck /></ErrorBoundary> : <Navigate to="/login" />} />
         <Route path="/verification-status" element={user ? <DeviceVerificationStatus /> : <Navigate to="/login" />} />
         <Route path="/device-check-report" element={user ? <DeviceCheckReport /> : <Navigate to="/login" />} />
         <Route path="/register-device" element={user ? <DeviceRegistration /> : <Navigate to="/login" />} />
@@ -151,7 +155,7 @@ function AppRoutes() {
         <Route path="/lea/settings" element={<ProtectedRoute allowedRoles={['lea','admin']}><LEASettings /></ProtectedRoute>} />
         <Route path="/lea/transfers" element={<ProtectedRoute allowedRoles={['lea','admin']}><LEATransferHistory /></ProtectedRoute>} />
         <Route path="/transfer" element={user ? <DeviceTransfer /> : <Navigate to="/login" />} />
-        <Route path="/found-device" element={<FoundDevice />} />
+        <Route path="/found-device" element={user ? <FoundDevice /> : <Navigate to="/login" />} />
         <Route path="/verify-email" element={<EmailVerification />} />
         <Route path="/verify-device" element={<VerifyDevice />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -194,21 +198,24 @@ function AppRoutes() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       </Suspense>
-    </BrowserRouter>
   )
 }
 
 function App() {
   return (
     <ThemeProvider>
+      <BrowserRouter>
       <AuthProvider>
         <CartProvider>
           <ToastProvider>
-            <CustomCursor />
-            <AppRoutes />
+            <ErrorBoundary>
+              <CustomCursor />
+              <AppRoutes />
+            </ErrorBoundary>
           </ToastProvider>
         </CartProvider>
       </AuthProvider>
+      </BrowserRouter>
     </ThemeProvider>
   )
 }
