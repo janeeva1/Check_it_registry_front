@@ -1,6 +1,7 @@
 import { ReactNode, useState, useEffect } from 'react'
 import Navbar from './Navbar'
 import Sidebar from './Sidebar'
+import Footer from './Footer'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useToast } from './Toast'
 import { useAuth } from '../contexts/AuthContext'
@@ -76,6 +77,7 @@ export function Layout({ children, requireAuth = false, allowedRoles }: LayoutPr
         <main className="p-3 p-md-4 p-lg-5" style={{ minHeight: 'calc(100vh - 60px)' }}>
           {children}
         </main>
+        <Footer />
       </div>
     </div>
   )

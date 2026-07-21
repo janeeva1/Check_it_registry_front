@@ -435,16 +435,21 @@ export default function Register() {
                       </div>
 
                       {/* Terms */}
-                      <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', marginBottom: 4 }}>
-                        <input type="checkbox" checked={acceptTerms} onChange={(e) => setAcceptTerms(e.target.checked)}
-                          style={{ width: 16, height: 16, accentColor: 'var(--primary-500)', marginTop: 2, cursor: 'pointer' }} />
-                        <span style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                          I agree to the{' '}
-                          <Link to="/" style={{ color: 'var(--primary-600)', textDecoration: 'none', fontWeight: 500 }}>Terms of Service</Link>
-                          {' '}and{' '}
-                          <Link to="/" style={{ color: 'var(--primary-600)', textDecoration: 'none', fontWeight: 500 }}>Privacy Policy</Link>
-                        </span>
-                      </label>
+                      <div style={{ background: 'var(--bg-tertiary)', borderRadius: 10, padding: 16, marginBottom: 4 }}>
+                        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
+                          <input type="checkbox" checked={acceptTerms} onChange={(e) => setAcceptTerms(e.target.checked)}
+                            style={{ width: 16, height: 16, accentColor: 'var(--primary-500)', marginTop: 2, cursor: 'pointer', flexShrink: 0 }} />
+                          <span style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                            I have read and agree to the{' '}
+                            <Link to="/terms" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-600)', textDecoration: 'none', fontWeight: 600 }}>Terms of Service</Link>
+                            {', '}
+                            <Link to="/privacy" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-600)', textDecoration: 'none', fontWeight: 600 }}>Privacy Policy</Link>
+                            {', and '}
+                            <Link to="/cookies" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-600)', textDecoration: 'none', fontWeight: 600 }}>Cookie Policy</Link>
+                            . I understand that Check It is a device registry and notification platform and does NOT guarantee device recovery.
+                          </span>
+                        </label>
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -471,7 +476,7 @@ export default function Register() {
                     </motion.button>
                   )}
                   <button type="submit" disabled={loading || (step === 3 && !acceptTerms)}
-                    className="btn-gradient-primary" style={{ flex: 1, height: 48, fontSize: 15, minWidth: step === 1 || step === 2 ? undefined : 0 }}>
+                    className="btn-gradient-primary" style={{ flex: 1, height: 48, fontSize: 15, minWidth: step === 1 || step === 2 ? undefined : 0, opacity: step === 3 && !acceptTerms ? 0.5 : 1 }}>
                     {loading ? (
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                         <div style={{ width: 18, height: 18, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.6s linear infinite' }} />

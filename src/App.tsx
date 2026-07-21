@@ -77,6 +77,8 @@ const AdminTransferHistory = lazy(() => import('./pages/AdminTransferHistory'))
 const LEATransferHistory = lazy(() => import('./pages/LEATransferHistory'))
 const Profile = lazy(() => import('./pages/Profile'))
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
+const TermsOfService = lazy(() => import('./pages/TermsOfService'))
+const CookiePolicy = lazy(() => import('./pages/CookiePolicy'))
 const Settings = lazy(() => import('./pages/Settings'))
 const Checkout = lazy(() => import('./pages/Checkout'))
 const Cart = lazy(() => import('./pages/Cart'))
@@ -181,6 +183,8 @@ function AppRoutes() {
         <Route path="/business/payouts" element={<ProtectedRoute allowedRoles={['business','admin']}><BusinessPayouts /></ProtectedRoute>} />
         <Route path="/business/payout-settings" element={<ProtectedRoute allowedRoles={['business','admin']}><SellerPayoutSettings /></ProtectedRoute>} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfService />} />
+        <Route path="/cookies" element={<CookiePolicy />} />
         <Route path="/identity-verification" element={user ? <IdentityVerification /> : <Navigate to="/login" />} />
         <Route path="/business-verification" element={user ? <BusinessVerification /> : <Navigate to="/login" />} />
         <Route path="/business/onboard" element={<ProtectedRoute allowedRoles={['business','admin']}><BusinessOnboarding /></ProtectedRoute>} />
