@@ -4,7 +4,7 @@ import { Upload, FileSpreadsheet, Download, Trash2, CheckCircle, AlertTriangle, 
 import { Layout } from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast, ToastContainer } from '../components/Toast'
-import { supabase } from '../lib/supabase'
+import { apiClient } from '../lib/apiClient'
 
 type PreviewRow = { brand: string; model: string; imei: string; serial: string; category: string; color: string; storage: string }
 
@@ -53,7 +53,7 @@ export default function BulkDeviceRegistration() {
       let success = 0; let failed = 0; const errors: string[] = []
       for (let i = 0; i < rows.length; i++) {
         try {
-          await supabase.devices.create({ ...rows[i], userId: user?.id })
+          await apiClient.devices.create({ ...rows[i], userId: user?.id })
           success++
         } catch (err: any) {
           failed++

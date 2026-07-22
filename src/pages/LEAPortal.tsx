@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { apiClient } from '../lib/apiClient'
 import { Layout } from '../components/Layout'
 import { useToast, ToastContainer } from '../components/Toast'
 import { Loading } from '../components/Loading'
@@ -62,8 +62,8 @@ export default function LEAPortal() {
     setLoading(true)
     try {
       const [statsResult, casesResult] = await Promise.allSettled([
-        supabase.leaPortal.stats(),
-        supabase.leaPortal.cases({ status: caseFilter === 'all' ? undefined : caseFilter })
+        apiClient.leaPortal.stats(),
+        apiClient.leaPortal.cases({ status: caseFilter === 'all' ? undefined : caseFilter })
       ])
 
       if (statsResult.status === 'fulfilled') {
@@ -101,7 +101,7 @@ export default function LEAPortal() {
     try {
       setUpdatingCase(caseId)
       
-      await supabase.leaPortal.updateCaseStatus(caseId, { status })
+      await apiClient.leaPortal.updateCaseStatus(caseId, { status })
       
       showSuccess('Case Updated', `Case status updated to ${status}`)
       await loadLEAData()
@@ -118,7 +118,7 @@ export default function LEAPortal() {
     try {
       setUpdatingCase(caseId)
       
-      await supabase.leaPortal.addCaseNotes(caseId, { notes })
+      await apiClient.leaPortal.addCaseNotes(caseId, { notes })
       
       showSuccess('Notes Added', 'Case notes have been added successfully')
       await loadLEAData()
@@ -165,7 +165,7 @@ export default function LEAPortal() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data } = await supabase.auth.getSession()
+        const { data } = await apiClient.auth.getSession()
         const role = data.session?.user?.role
 
         if (!data.session) {

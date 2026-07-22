@@ -20,7 +20,7 @@ import {
   MapPin
 } from 'lucide-react'
 import { CheckResult } from '../types/database'
-import { supabase } from '../lib/supabase'
+import { apiClient } from '../lib/apiClient'
 import { locationService } from '../services/LocationService'
 import { deviceFingerprintService } from '../services/DeviceFingerprintService'
 import { useToast, ToastContainer } from '../components/Toast'
@@ -123,7 +123,7 @@ export default function DeviceCheck() {
       }
       if (paymentBypass) payload.paymentBypass = paymentBypass
 
-      const checkResult = await supabase.publicCheckEnhanced(payload) 
+      const checkResult = await apiClient.publicCheckEnhanced(payload) 
       setEnhancedData(checkResult)
 
       // Map enhanced result to existing UI model

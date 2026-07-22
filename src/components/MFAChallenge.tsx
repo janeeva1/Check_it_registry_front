@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Shield, X, Loader2, AlertCircle, CheckCircle, Smartphone, Mail } from 'lucide-react'
-import { supabase } from '../lib/supabase'
+import { apiClient } from '../lib/apiClient'
 
 interface MFAChallengeProps {
   isOpen: boolean
@@ -47,7 +47,7 @@ export function MFAChallenge({ isOpen, onClose, actionType, actionLabel, onSucce
     setLoading(true)
     setError(null)
     try {
-      const res = await supabase.security.mfaInitiate({ action_type: actionType })
+      const res = await apiClient.security.mfaInitiate({ action_type: actionType })
       setSessionId(res.session_id)
       setDeliveryMethod(res.delivery_method || 'email')
       setStep('verify')
@@ -82,7 +82,7 @@ export function MFAChallenge({ isOpen, onClose, actionType, actionLabel, onSucce
     setLoading(true)
     setError(null)
     try {
-      const res = await supabase.security.mfaVerify({
+      const res = await apiClient.security.mfaVerify({
         session_id: sessionId,
         otp: code,
         second_otp: nextStep ? undefined : undefined,
@@ -115,7 +115,7 @@ export function MFAChallenge({ isOpen, onClose, actionType, actionLabel, onSucce
     setLoading(true)
     setError(null)
     try {
-      const res = await supabase.security.mfaVerify({
+      const res = await apiClient.security.mfaVerify({
         session_id: sessionId,
         otp: otp.join(''),
         second_otp: code,

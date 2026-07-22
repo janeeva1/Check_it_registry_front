@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { apiClient } from '../lib/apiClient'
 import { Layout } from '../components/Layout'
 import { useToast } from '../components/Toast'
 import { useCart } from '../contexts/CartContext'
@@ -61,22 +61,11 @@ export default function MarketplaceListing() {
   const [zoomed, setZoomed] = useState(false)
   const [commissionPercent, setCommissionPercent] = useState<number | null>(null)
 
-  useEffect(() => {
-    fetchListing()
-    supabase.revenue.getFee('marketplace_commission_percent')
-      .then((data: any) => setCommissionPercent(data?.amount ?? 5))
-      .catch(() => setCommissionPercent(5))
-  }, [id])
-
-  useEffect(() => {
-    if (listing) fetchSimilar()
-  }, [listing])
-
-  const fetchListing = async () => {
+  const fetchListing = useCallback(async () => {
     if (!id) return
     try {
       setLoading(true)
-      const data = await supabase.marketplace.get(id)
+      const data = await apiClient.marketplace.get(id)
       if (data) {
         const mapped: Listing = {
           id: data.id,
@@ -122,11 +111,18 @@ export default function MarketplaceListing() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [id, showError])
+
+  useEffect(() => {
+    fetchListing()
+    apiClient.revenue.getFee('marketplace_commission_percent')
+      .then((data: any) => setCommissionPercent(data?.amount ?? 5))
+      .catch(() => setCommissionPercent(5))
+  }, [id, fetchListing])
 
   const fetchSimilar = async () => {
     try {
-      const data = await supabase.marketplace.list({ limit: 4 })
+      const data = await apiClient.marketplace.list({ limit: 4 })
       const mapped = (data || []).slice(0, 4).map((l: any) => ({
         id: l.id,
         title: l.title,

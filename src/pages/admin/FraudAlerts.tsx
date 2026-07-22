@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Layout } from '../../components/Layout'
 import { useToast, ToastContainer } from '../../components/Toast'
-import { supabase } from '../../lib/supabase'
+import { apiClient } from '../../lib/apiClient'
 import { ShieldAlert, AlertTriangle, Eye, MapPin, RefreshCw, Loader2, CheckCircle, XCircle, Clock } from 'lucide-react'
 
 interface FraudAlert {
@@ -59,8 +59,8 @@ export default function FraudAlerts() {
     setLoading(true)
     try {
       const [alertData, statsData] = await Promise.all([
-        supabase.fraud.alerts({ page: 1, limit: 50 }),
-        supabase.fraud.stats(),
+        apiClient.fraud.alerts({ page: 1, limit: 50 }),
+        apiClient.fraud.stats(),
       ])
       setAlerts(Array.isArray(alertData) ? alertData : alertData.alerts || [])
       setStats(statsData)
@@ -74,7 +74,7 @@ export default function FraudAlerts() {
   const updateStatus = async (id: string, status: string) => {
     setUpdating(id)
     try {
-      await supabase.fraud.updateAlert(id, { status })
+      await apiClient.fraud.updateAlert(id, { status })
       setAlerts(prev => prev.map(a => a.id === id ? { ...a, status } : a))
       setSelectedAlert(prev => prev?.id === id ? { ...prev, status } : prev)
       showSuccess(`Alert ${status}`)

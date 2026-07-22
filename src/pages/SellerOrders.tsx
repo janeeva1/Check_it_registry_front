@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { Layout } from '../components/Layout'
 import { useToast, ToastContainer } from '../components/Toast'
 import { motion } from 'framer-motion'
@@ -6,7 +6,7 @@ import {
   Receipt, Filter, Smartphone, Search, RefreshCw, Truck,
   CheckCircle, DollarSign, Clock, Package, User, AlertCircle
 } from 'lucide-react'
-import { supabase } from '../lib/supabase'
+import { apiClient } from '../lib/apiClient'
 
 type SellerOrder = {
   id: string
@@ -27,14 +27,10 @@ export default function SellerOrders() {
   const [loading, setLoading] = useState(true)
   const { toasts, removeToast, showSuccess, showError } = useToast()
 
-  useEffect(() => {
-    fetchOrders()
-  }, [])
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       setLoading(true)
-      const data = await supabase.marketplace.getSellerOrders()
+      const data = await apiClient.marketplace.getSellerOrders()
       const mapped = data.map((o: any) => ({
         id: o.id,
         product: `${o.brand} ${o.model}`,
@@ -51,7 +47,11 @@ export default function SellerOrders() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [showError])
+
+  useEffect(() => {
+    fetchOrders()
+  }, [fetchOrders])
 
   const filtered = useMemo(
     () =>
@@ -71,7 +71,7 @@ export default function SellerOrders() {
   const updateStatus = async (id: string, newStatus: string) => {
     try {
       if (!window.confirm(`Mark this order as "${newStatus}"?`)) return
-      await supabase.marketplace.update(id, { status: newStatus })
+      await apiClient.marketplace.update(id, { status: newStatus })
       showSuccess(`Order updated to ${newStatus}`)
       fetchOrders()
     } catch (err: any) {

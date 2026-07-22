@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Layout } from '../components/Layout'
-import { supabase } from '../lib/supabase'
+import { apiClient } from '../lib/apiClient'
 import { Search, Filter, Ban, CheckCircle, Star, StarOff, Tag, X, RefreshCw } from 'lucide-react'
 import { useToast } from '../components/Toast'
 
@@ -27,7 +27,7 @@ export default function AdminMarketplaceManagement() {
   const fetchListings = async () => {
     try {
       setLoading(true)
-      const data = await (supabase as any).marketplace.adminGetAll({ status: statusFilter, search: search || undefined })
+      const data = await (apiClient as any).marketplace.adminGetAll({ status: statusFilter, search: search || undefined })
       if (Array.isArray(data)) setListings(data)
     } catch (err) {
       showError('Error', 'Failed to fetch listings')
@@ -36,7 +36,7 @@ export default function AdminMarketplaceManagement() {
 
   const handleStatusUpdate = async (id: string, newStatus: string) => {
     try {
-      await (supabase as any).marketplace.adminUpdateStatus(id, newStatus)
+      await (apiClient as any).marketplace.adminUpdateStatus(id, newStatus)
       showSuccess(`Listing marked as ${newStatus}`)
       fetchListings()
     } catch (err: any) { showError('Failed', err.message) }
@@ -44,7 +44,7 @@ export default function AdminMarketplaceManagement() {
 
   const handleToggleFeatured = async (id: string, current: boolean) => {
     try {
-      await (supabase as any).marketplace.adminToggleFeatured(id, !current)
+      await (apiClient as any).marketplace.adminToggleFeatured(id, !current)
       showSuccess(`Listing ${!current ? 'featured' : 'unfeatured'}`)
       fetchListings()
     } catch (err: any) { showError('Failed', err.message) }

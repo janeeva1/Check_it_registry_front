@@ -5,7 +5,7 @@ import { Layout } from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast, ToastContainer } from '../components/Toast'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { apiClient } from '../lib/apiClient'
 
 type Device = { id: string; brand: string; model: string; imei: string; serial: string; status: string }
 type Transfer = {
@@ -43,7 +43,7 @@ export default function DeviceTransfer() {
   const fetchDevices = async () => {
     try {
       setLoadingDevices(true)
-      const data = await supabase.devices.list()
+      const data = await apiClient.devices.list()
       setDevices((data?.data || data || []).filter((d: any) => d.status === 'verified'))
     } catch { setDevices([]) } finally { setLoadingDevices(false) }
   }
@@ -51,7 +51,7 @@ export default function DeviceTransfer() {
   const fetchTransfers = async () => {
     try {
       setLoadingTransfers(true)
-      const data = await supabase.deviceTransfer.myTransfers({ type: 'all' })
+      const data = await apiClient.deviceTransfer.myTransfers({ type: 'all' })
       setTransfers(data?.transfers || [])
     } catch { setTransfers([]) } finally { setLoadingTransfers(false) }
   }
@@ -64,7 +64,7 @@ export default function DeviceTransfer() {
     if (!recipientEmail) { showError('Enter recipient email'); return }
     try {
       setSubmitting(true)
-      const data = await supabase.deviceTransfer.initiate({
+      const data = await apiClient.deviceTransfer.initiate({
         deviceId: selectedDevice,
         buyerEmail: recipientEmail,
         transferReason: 'Device sale',
@@ -84,7 +84,7 @@ export default function DeviceTransfer() {
     if (otp.length !== 6) { showError('Enter the 6-digit OTP'); return }
     try {
       setSubmitting(true)
-      await supabase.deviceTransfer.verifyOtp({ transferId, otpCode: otp })
+      await apiClient.deviceTransfer.verifyOtp({ transferId, otpCode: otp })
       showSuccess('Transfer verified and activated!')
       setVerifyingTransfer(null)
       setOtpInput(['', '', '', '', '', ''])
@@ -95,7 +95,7 @@ export default function DeviceTransfer() {
 
   const cancelTransfer = async (id: string) => {
     try {
-      await supabase.deviceTransfer.cancel(id)
+      await apiClient.deviceTransfer.cancel(id)
       showSuccess('Transfer cancelled')
       fetchTransfers()
     } catch { showError('Failed to cancel') }

@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Layout } from '../components/Layout'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, MoreVertical, Send, BadgeCheck, Smartphone, ChevronRight, CheckCheck } from 'lucide-react'
-import { supabase } from '../lib/supabase'
+import { apiClient } from '../lib/apiClient'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../components/Toast'
 import { motion } from 'framer-motion'
@@ -30,20 +30,31 @@ export default function MarketplaceThread() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    if (!id || !user) return
-    fetchData()
-    const interval = setInterval(fetchMessages, 5000)
-    return () => clearInterval(interval)
-  }, [id, user])
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollIntoView({ behavior: 'smooth' })
+  const fetchMessages = useCallback(async () => {
+    if (!id) return
+    try {
+      const data = await apiClient.marketplace.getMessages(id!)
+      if (Array.isArray(data)) {
+        setMessages(data)
+      }
+    } catch (err) {
+      console.error(err)
     }
-  }, [messages])
+  }, [id])
 
-  const fetchData = async () => {
+  const fetchListing = useCallback(async () => {
+    try {
+      setListingLoading(true)
+      const data = await apiClient.marketplace.get(id!)
+      setListing(data)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setListingLoading(false)
+    }
+  }, [id])
+
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true)
       await Promise.all([fetchListing(), fetchMessages()])
@@ -53,37 +64,26 @@ export default function MarketplaceThread() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [fetchListing, fetchMessages, showError])
 
-  const fetchListing = async () => {
-    try {
-      setListingLoading(true)
-      const data = await supabase.marketplace.get(id!)
-      setListing(data)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setListingLoading(false)
-    }
-  }
+  useEffect(() => {
+    if (!id || !user) return
+    fetchData()
+    const interval = setInterval(fetchMessages, 5000)
+    return () => clearInterval(interval)
+  }, [id, user, fetchData, fetchMessages])
 
-  const fetchMessages = async () => {
-    if (!id) return
-    try {
-      const data = await supabase.marketplace.getMessages(id!)
-      if (Array.isArray(data)) {
-        setMessages(data)
-      }
-    } catch (err) {
-      console.error(err)
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollIntoView({ behavior: 'smooth' })
     }
-  }
+  }, [messages])
 
   const handleSend = async () => {
     if (!input.trim() || sending) return
     try {
       setSending(true)
-      await supabase.marketplace.sendMessage(id!, input)
+      await apiClient.marketplace.sendMessage(id!, input)
       setInput('')
       await fetchMessages()
     } catch (err: any) {

@@ -33,7 +33,7 @@ import {
   Heart,
   Quote
 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { apiClient } from '../lib/apiClient';
 import Navbar from '../components/Navbar';
 import TechParticles from '../components/TechParticles';
 import { useAuth } from '../contexts/AuthContext';
@@ -134,7 +134,7 @@ export default function LandingPage() {
 
     const fetchStats = async () => {
       try {
-        const data = await (supabase as any).publicStats();
+        const data = await (apiClient as any).publicStats();
         setStats(data);
       } catch (error) {
         console.error('Failed to load stats', error);

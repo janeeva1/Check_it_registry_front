@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Layout } from '../components/Layout'
-import { supabase } from '../lib/supabase'
+import { apiClient } from '../lib/apiClient'
 import { useNavigate } from 'react-router-dom'
 
 export default function BusinessDashboard() {
@@ -26,10 +26,10 @@ export default function BusinessDashboard() {
         
         // Parallel fetch for dashboard data
         const [stats, orders, devices, listings] = await Promise.all([
-            (supabase.marketplace as any).getSellerStats().catch(() => ({ activeListings: 0, totalDevices: 0, revenue: 0, soldListings: 0 })),
-            (supabase.marketplace as any).getSellerOrders().catch(() => []),
-            supabase.devices.list().catch(() => []),
-            (supabase.marketplace as any).list({ seller_id: user.id }).catch(() => [])
+            (apiClient.marketplace as any).getSellerStats().catch(() => ({ activeListings: 0, totalDevices: 0, revenue: 0, soldListings: 0 })),
+            (apiClient.marketplace as any).getSellerOrders().catch(() => []),
+            apiClient.devices.list().catch(() => []),
+            (apiClient.marketplace as any).list({ seller_id: user.id }).catch(() => [])
         ])
 
         if (stats) setStatsData(stats)

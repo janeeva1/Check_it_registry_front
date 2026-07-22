@@ -6,7 +6,7 @@ import {
   Plus, Package, Eye, EyeOff, Trash2, BadgeCheck,
   Search, RefreshCw, Smartphone, AlertCircle, DollarSign
 } from 'lucide-react'
-import { supabase } from '../lib/supabase'
+import { apiClient } from '../lib/apiClient'
 import { useToast, ToastContainer } from '../components/Toast'
 
 type SellerListing = {
@@ -39,7 +39,7 @@ export default function BusinessMyListings() {
   const fetchListings = async () => {
     try {
       setLoading(true)
-      const data = await supabase.marketplace.list({ seller_id: user.id })
+      const data = await apiClient.marketplace.list({ seller_id: user.id })
       const mapped = data.map((l: any) => ({
         id: l.id,
         title: l.title,
@@ -62,7 +62,7 @@ export default function BusinessMyListings() {
 
   const handleStatusChange = async (id: string, newStatus: string) => {
     try {
-      await supabase.marketplace.update(id, { status: newStatus })
+      await apiClient.marketplace.update(id, { status: newStatus })
       showSuccess(`Listing ${newStatus === 'active' ? 'resumed' : 'paused'} successfully`)
       fetchListings()
     } catch (err: any) {
@@ -73,7 +73,7 @@ export default function BusinessMyListings() {
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this listing?')) return
     try {
-      await supabase.marketplace.delete(id)
+      await apiClient.marketplace.delete(id)
       showSuccess('Listing deleted successfully')
       fetchListings()
     } catch (err: any) {

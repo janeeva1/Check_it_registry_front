@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useToast, ToastContainer } from '../components/Toast'
 import { PaymentGate } from '../components/PaymentGate'
 import { MFAChallenge } from '../components/MFAChallenge'
-import { supabase } from '../lib/supabase'
+import { apiClient } from '../lib/apiClient'
 import { useNavigate } from 'react-router-dom'
 
 type IncidentType = 'stolen' | 'lost' | 'misplaced' | 'fraud' | 'other'
@@ -37,7 +37,7 @@ export default function ReportDeviceIncident() {
     ;(async () => {
       setCheckingNin(true)
       try {
-        const data = await supabase.security.getVerificationStatus()
+        const data = await apiClient.security.getVerificationStatus()
         setNinVerified(data?.nin_verified === true)
       } catch { setNinVerified(false) }
       finally { setCheckingNin(false) }

@@ -6,7 +6,7 @@ import {
   CreditCard, DollarSign, Wallet, Filter, Search, RefreshCw,
   Banknote, ArrowUpRight, CheckCircle, Clock, AlertCircle, Plus, Landmark
 } from 'lucide-react'
-import { supabase } from '../lib/supabase'
+import { apiClient } from '../lib/apiClient'
 
 type Payout = {
   id: string
@@ -35,7 +35,7 @@ export default function BusinessPayouts() {
   const fetchData = async () => {
     try {
       setLoading(true)
-      const bal = await supabase.payments.getBalance()
+      const bal = await apiClient.payments.getBalance()
       if (bal && typeof bal.balance === 'number') setBalance(bal.balance)
       if (bal && typeof bal.pending === 'number') setPendingBalance(bal.pending)
 

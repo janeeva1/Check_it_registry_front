@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Layout } from '../components/Layout'
 import { useToast, ToastContainer } from '../components/Toast'
 import { PaymentGate } from '../components/PaymentGate'
-import { supabase } from '../lib/supabase'
+import { apiClient } from '../lib/apiClient'
 import { Shield, CheckCircle, AlertCircle, Loader2, Building2, FileText } from 'lucide-react'
 
 const containerVariants = {
@@ -36,7 +36,7 @@ export default function BusinessVerification() {
     }
     setLoading(true)
     try {
-      const res = await supabase.security.verifyCAC({
+      const res = await apiClient.security.verifyCAC({
         rc_number: rcNumber.trim(),
         company_name: companyName.trim() || undefined,
         bypass_payment: !!bypassToken,

@@ -23,7 +23,7 @@ import {
 } from 'lucide-react'
 import { Layout } from '../../components/Layout'
 import { useToast, ToastContainer } from '../../components/Toast'
-import { supabase } from '../../lib/supabase'
+import { apiClient } from '../../lib/apiClient'
 import { useAuth } from '../../contexts/AuthContext'
 
 interface Order {
@@ -91,8 +91,8 @@ export default function BusinessDashboard() {
         fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/marketplace/seller/stats`, {
           headers: { Authorization: `Bearer ${token}` }
         }).then(r => r.json().catch(() => ({}))).catch(() => ({})),
-        supabase.marketplace?.getSellerOrders?.().catch(() => []) as Promise<any[]> || Promise.resolve([]),
-        supabase.marketplace?.list?.({ seller_id: user?.id }).catch(() => []) as Promise<any[]> || Promise.resolve([])
+        apiClient.marketplace?.getSellerOrders?.().catch(() => []) as Promise<any[]> || Promise.resolve([]),
+        apiClient.marketplace?.list?.({ seller_id: user?.id }).catch(() => []) as Promise<any[]> || Promise.resolve([])
       ])
 
       setStatsData({

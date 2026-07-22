@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { 
   User, 
   Mail, 
@@ -25,7 +25,7 @@ import { useToast, ToastContainer } from '../components/Toast'
 import { useAuth } from '../contexts/AuthContext'
 import { motion, AnimatePresence } from 'framer-motion'
 import KYCVerificationModal from '../components/KYCVerificationModal'
-import { supabase } from '../lib/supabase'
+import { apiClient } from '../lib/apiClient'
 
 // Interface matching the backend response
 interface UserProfile {
@@ -77,11 +77,7 @@ export default function Profile() {
   const API_BASE = (import.meta.env.VITE_API_BASE_URL as string) || ''
   const API_URL = API_BASE ? `${API_BASE}/api` : (import.meta.env.VITE_API_URL || '/api')
 
-  useEffect(() => {
-    loadProfile()
-  }, [authUser]) 
-
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
     try {
       setLoading(true)
       const token = localStorage.getItem('auth_token');
@@ -131,7 +127,11 @@ export default function Profile() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [authUser, API_URL, showError])
+
+  useEffect(() => {
+    loadProfile()
+  }, [authUser, loadProfile]) 
 
   const handleSave = async () => {
     try {
@@ -173,7 +173,7 @@ export default function Profile() {
   const handleImageUpload = async (file: File) => {
     try {
       setUploadingImage(true)
-      const result = await supabase.profile.uploadImage(file)
+      const result = await apiClient.profile.uploadImage(file)
       if (result?.image_url) {
         setProfile(prev => prev ? { ...prev, profile_image_url: result.image_url } : null)
         showSuccess('Profile photo updated')

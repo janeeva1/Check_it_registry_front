@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Loader2, Shield, X, CreditCard } from 'lucide-react'
-import { supabase } from '../lib/supabase'
+import { apiClient } from '../lib/apiClient'
 import { useAuth } from '../contexts/AuthContext'
 
 interface PaymentGateProps {
@@ -26,7 +26,7 @@ export function PaymentGate({ isOpen, onClose, feeType, feeLabel, description, o
       setFetchingFee(true)
       setError(null)
       try {
-        const data = await supabase.revenue.getFee(feeType)
+        const data = await apiClient.revenue.getFee(feeType)
         setFee({ amount: data.amount, currency: data.currency || 'NGN' })
       } catch {
         setError('Unable to load fee information')
@@ -40,7 +40,7 @@ export function PaymentGate({ isOpen, onClose, feeType, feeLabel, description, o
     setLoading(true)
     setError(null)
     try {
-      const invoice = await supabase.revenue.createInvoice({
+      const invoice = await apiClient.revenue.createInvoice({
         fee_type: feeType,
         amount: fee?.amount || 0,
         currency: fee?.currency || 'NGN',

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Layout } from '../components/Layout'
 import { useToast, ToastContainer } from '../components/Toast'
-import { supabase } from '../lib/supabase'
+import { apiClient } from '../lib/apiClient'
 import { Users, Loader2, CheckCircle, XCircle, Clock, ArrowLeft, Search } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
@@ -21,8 +21,8 @@ export default function BusinessOnboardings() {
     setLoading(true)
     try {
       const [listData, statsData] = await Promise.all([
-        supabase.business.onboardings({ page, limit: 20 }),
-        supabase.business.onboardingStats(),
+        apiClient.business.onboardings({ page, limit: 20 }),
+        apiClient.business.onboardingStats(),
       ])
       setOnboardings(listData?.data || [])
       setTotalPages(listData?.pagination?.totalPages || 1)

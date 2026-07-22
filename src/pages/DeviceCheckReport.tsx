@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import { Layout } from '../components/Layout'
 import { useToast, ToastContainer } from '../components/Toast'
-import { supabase } from '../lib/supabase'
+import { apiClient } from '../lib/apiClient'
 
 type CheckRecord = {
   check?: {
@@ -123,7 +123,7 @@ export default function DeviceCheckReport() {
         if (!checkId) { setRecord(null); return }
         const token = localStorage.getItem('auth_token')
         const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
-        const res = await supabase.deviceChecks.get(checkId)
+        const res = await apiClient.deviceChecks.get(checkId)
         const data = (res as any)?.data || res
         setRecord(data)
       } catch (e) {

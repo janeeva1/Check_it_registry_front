@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Layout } from '../components/Layout'
 import { useToast, ToastContainer } from '../components/Toast'
 import { PaymentGate } from '../components/PaymentGate'
-import { supabase } from '../lib/supabase'
+import { apiClient } from '../lib/apiClient'
 import { useAuth } from '../contexts/AuthContext'
 import { Shield, CheckCircle, AlertCircle, Loader2, IdCard, Eye, EyeOff } from 'lucide-react'
 
@@ -35,7 +35,7 @@ export default function IdentityVerification() {
   useEffect(() => {
     ;(async () => {
       try {
-        const data = await supabase.security.getVerificationStatus()
+        const data = await apiClient.security.getVerificationStatus()
         setStatus(data)
       } catch { /* not verified yet */ }
       setCheckingStatus(false)
@@ -55,7 +55,7 @@ export default function IdentityVerification() {
     }
     setLoading(true)
     try {
-      const res = await supabase.security.verifyNIN({
+      const res = await apiClient.security.verifyNIN({
         nin: cleaned,
         bypass_payment: !!bypassToken,
       })

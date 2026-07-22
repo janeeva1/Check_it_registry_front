@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Layout } from '../components/Layout'
 import { useToast, ToastContainer } from '../components/Toast'
 import { PaymentGate } from '../components/PaymentGate'
-import { supabase } from '../lib/supabase'
+import { apiClient } from '../lib/apiClient'
 import { Users, Loader2, CheckCircle, ArrowLeft, Smartphone, Mail, Phone, Percent } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
@@ -18,10 +18,10 @@ export default function BusinessOnboarding() {
   const [loadingFee, setLoadingFee] = useState(true)
 
   useEffect(() => {
-    supabase.revenue.getFee('business_onboarding_fee').then((d: any) => {
+    apiClient.revenue.getFee('business_onboarding_fee').then((d: any) => {
       setFeeInfo(prev => ({ amount: d?.amount ?? 5000, commissionPercent: prev?.commissionPercent ?? 30 }))
     }).catch(() => setFeeInfo({ amount: 5000, commissionPercent: 30 }))
-    supabase.revenue.getFee('business_onboarding_commission_percent').then((d: any) => {
+    apiClient.revenue.getFee('business_onboarding_commission_percent').then((d: any) => {
       setFeeInfo(prev => ({ amount: prev?.amount ?? 5000, commissionPercent: d?.amount ?? 30 }))
     }).catch(() => {})
     setLoadingFee(false)
@@ -37,7 +37,7 @@ export default function BusinessOnboarding() {
     try {
       const payload: any = { ...form }
       if (bypassToken) payload.pay_by_pass = bypassToken
-      const res = await supabase.business.onboard(payload)
+      const res = await apiClient.business.onboard(payload)
       if (res?.requiresPayment) {
         setFeeInfo({ amount: res.amount, commissionPercent: res.commissionPercent })
         setShowPayment(true)

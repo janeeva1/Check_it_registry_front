@@ -4,7 +4,7 @@ import { Smartphone, Monitor, Headphones, Gamepad, Watch, Camera, Tv, Speaker, P
 import { Layout } from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast, ToastContainer } from '../components/Toast'
-import { supabase } from '../lib/supabase'
+import { apiClient } from '../lib/apiClient'
 
 const DEVICE_CATEGORIES = [
   { value: 'smartphone', label: 'Smartphone', icon: Smartphone },
@@ -57,7 +57,7 @@ export default function DeviceRegistration() {
         purchaseDate: form.purchaseDate || null,
         userId: user?.id,
       }
-      await supabase.devices.create(payload)
+      await apiClient.devices.create(payload)
       showSuccess('Device registered successfully')
       setForm(initialState); setStep(1)
     } catch (err: any) {

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Layout } from '../../components/Layout'
 import { useToast, ToastContainer } from '../../components/Toast'
-import { supabase } from '../../lib/supabase'
+import { apiClient } from '../../lib/apiClient'
 import { DollarSign, Save, RefreshCw, TrendingUp, CreditCard, Building2, Smartphone, Search, Shield, IdCard, Percent, Edit3, X, Check, Users } from 'lucide-react'
 
 interface FeeConfig {
@@ -52,10 +52,10 @@ export default function RevenueSettings() {
     setLoading(true)
     try {
       const [feeData, provData, summData, txData] = await Promise.all([
-        supabase.revenue.listFees(),
-        supabase.revenue.getProvider(),
-        supabase.revenue.summary(),
-        supabase.revenue.transactions({ page: 1, limit: 10 }),
+        apiClient.revenue.listFees(),
+        apiClient.revenue.getProvider(),
+        apiClient.revenue.summary(),
+        apiClient.revenue.transactions({ page: 1, limit: 10 }),
       ])
       const feeMap: Record<string, FeeConfig> = {}
       ;(Array.isArray(feeData) ? feeData : feeData.fees || []).forEach((f: FeeConfig) => { feeMap[f.setting_key] = f })
@@ -82,7 +82,7 @@ export default function RevenueSettings() {
       const amount = isPercent ? parseFloat(editValue) : parseFloat(editValue)
       if (isNaN(amount) || amount < 0) throw new Error('Invalid amount')
       if (isPercent && amount > 100) throw new Error('Commission cannot exceed 100%')
-      await supabase.revenue.setFee(key, {
+      await apiClient.revenue.setFee(key, {
         fee_type: key.replace('_fee', '').replace('_percent', ''),
         amount,
         currency: isPercent ? undefined : 'NGN',
@@ -100,7 +100,7 @@ export default function RevenueSettings() {
 
   const handleProviderChange = async (provider: string) => {
     try {
-      await supabase.revenue.setProvider({ provider })
+      await apiClient.revenue.setProvider({ provider })
       setCurrentProvider(provider)
       showSuccess('Verification provider updated')
     } catch (e: any) {
@@ -112,7 +112,7 @@ export default function RevenueSettings() {
     setTxLoading(true)
     try {
       const next = txPage + 1
-      const data = await supabase.revenue.transactions({ page: next, limit: 10 })
+      const data = await apiClient.revenue.transactions({ page: next, limit: 10 })
       const txList = Array.isArray(data) ? data : data.transactions || []
       setTransactions(prev => [...prev, ...txList])
       setTxPage(next)

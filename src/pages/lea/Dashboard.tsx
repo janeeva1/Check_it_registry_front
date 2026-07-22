@@ -23,7 +23,7 @@ import {
 } from 'lucide-react'
 import { Layout } from '../../components/Layout'
 import { useToast, ToastContainer } from '../../components/Toast'
-import { supabase } from '../../lib/supabase'
+import { apiClient } from '../../lib/apiClient'
 
 interface LEAStats {
   total_cases: number
@@ -116,8 +116,8 @@ export default function LEADashboard() {
     setLoading(true)
     try {
       const [statsResult, casesResult] = await Promise.allSettled([
-        supabase.leaPortal.stats(),
-        supabase.leaPortal.cases({ status: undefined })
+        apiClient.leaPortal.stats(),
+        apiClient.leaPortal.cases({ status: undefined })
       ])
 
       if (statsResult.status === 'fulfilled') {

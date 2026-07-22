@@ -850,4 +850,4 @@ class ApiClient {
   };
 }
 
-export const supabase = new ApiClient();
+export const apiClient = new ApiClient();

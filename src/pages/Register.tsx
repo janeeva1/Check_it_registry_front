@@ -7,7 +7,7 @@ import {
   Building, ArrowRight, ArrowLeft, Github, Chrome,
   Smartphone, Search, RefreshCw
 } from 'lucide-react'
-import { supabase } from '../lib/supabase'
+import { apiClient } from '../lib/apiClient'
 import { useToast } from '../components/Toast'
 
 const floatingShapes = [
@@ -112,7 +112,7 @@ export default function Register() {
     setError('')
 
     try {
-      const { data, error: signUpError } = await supabase.auth.signUp({
+      const { data, error: signUpError } = await apiClient.auth.signUp({
         name: formData.name.trim(),
         email: formData.email.trim().toLowerCase(),
         password: formData.password,

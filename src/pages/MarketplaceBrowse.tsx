@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { apiClient } from '../lib/apiClient'
 import { Layout } from '../components/Layout'
 import { useToast } from '../components/Toast'
 import { useCart } from '../contexts/CartContext'
@@ -81,7 +81,7 @@ export default function MarketplaceBrowse() {
       try {
         setLoading(true)
         setError(null)
-        const data = await supabase.marketplace.list({
+        const data = await apiClient.marketplace.list({
           search: search || undefined,
           category: category === 'All' ? undefined : category.toLowerCase(),
           condition: condition === 'all' ? undefined : condition,
