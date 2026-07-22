@@ -22,9 +22,9 @@ export default function Footer() {
           {/* Brand */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Shield size={18} style={{ color: 'var(--primary-600)' }} />
-            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>Check It</span>
+            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>Prove Ownership</span>
             <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>
-              &copy; {currentYear} Check It. All rights reserved.
+              &copy; {currentYear} Prove Ownership. All rights reserved.
             </span>
           </div>
 
@@ -99,7 +99,7 @@ export default function Footer() {
           lineHeight: 1.6,
           textAlign: 'center',
         }}>
-          Check It is a device registry and notification platform. We do not physically recover, track, or locate devices. Use of this platform does not guarantee device recovery.{' '}
+          Prove Ownership is a device registry and notification platform. We do not physically recover, track, or locate devices. Use of this platform does not guarantee device recovery.{' '}
           <Link to="/terms" style={{ color: 'var(--text-tertiary)', textDecoration: 'underline' }}>See Terms of Service</Link> for full disclaimers.
         </div>
       </div>

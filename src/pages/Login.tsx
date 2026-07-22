@@ -244,9 +244,9 @@ export default function Login() {
           <motion.div initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }} style={{ marginBottom: 48 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
               <div style={{ width: 48, height: 48, borderRadius: 12, background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src="/logo1.png" alt="Check It Logo" style={{ height: '28px', objectFit: 'contain' }} />
+                <img src="/logo1.png" alt="Prove Ownership Logo" style={{ height: '28px', objectFit: 'contain' }} />
               </div>
-              <span style={{ fontSize: 24, fontWeight: 700, color: 'white', letterSpacing: '-0.03em' }}>Check It</span>
+              <span style={{ fontSize: 24, fontWeight: 700, color: 'white', letterSpacing: '-0.03em' }}>Prove Ownership</span>
             </div>
             <h1 style={{ fontSize: 42, fontWeight: 800, color: 'white', lineHeight: 1.15, marginBottom: 16, letterSpacing: '-0.03em' }}>
               Protect What<br />Matters Most
@@ -281,8 +281,8 @@ export default function Login() {
             Back to home
           </Link>
           <div className="d-lg-none" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <img src="/logo1.png" alt="Check It Logo" style={{ height: '24px', objectFit: 'contain' }} />
-            <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>Check It</span>
+            <img src="/logo1.png" alt="Prove Ownership Logo" style={{ height: '24px', objectFit: 'contain' }} />
+            <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>Prove Ownership</span>
           </div>
         </motion.div>
 

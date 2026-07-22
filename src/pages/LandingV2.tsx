@@ -168,7 +168,7 @@ export default function LandingV2() {
           </h1>
 
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-            Check It is the independent registry banks, law-enforcement agencies and marketplaces
+            Prove Ownership is the independent registry banks, law-enforcement agencies and marketplaces
             rely on to establish the rightful owner of a phone, laptop or high-value asset — in seconds,
             with cryptographic finality.
           </p>
@@ -485,7 +485,7 @@ export default function LandingV2() {
           </div>
           <div className="mt-14 flex flex-col gap-4 border-t border-border/60 pt-6 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
             <div style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace" }}>
-              © {new Date().getFullYear()} Check It Registry Ltd.
+              © {new Date().getFullYear()} Prove Ownership Ltd.
             </div>
           </div>
         </div>

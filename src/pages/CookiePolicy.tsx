@@ -215,7 +215,7 @@ export default function CookiePolicy() {
                 Effective Date: {lastUpdated} | Last Updated: {lastUpdated}
               </p>
               <p style={{ color: 'var(--text-tertiary)', fontSize: 13, marginTop: 8, maxWidth: 600, margin: '8px auto 0' }}>
-                This policy explains how Check It uses cookies and similar technologies when you visit our platform.
+                This policy explains how Prove Ownership uses cookies and similar technologies when you visit our platform.
               </p>
             </div>
 
@@ -248,7 +248,7 @@ export default function CookiePolicy() {
             {/* Footer Links */}
             <div style={{ marginTop: 48, padding: '24px 0', borderTop: '1px solid var(--border-color)', textAlign: 'center' }}>
               <p style={{ fontSize: 13, color: 'var(--text-tertiary)', marginBottom: 12 }}>
-                By using Check It, you agree to our Terms of Service, Privacy Policy, and Cookie Policy.
+                By using Prove Ownership, you agree to our Terms of Service, Privacy Policy, and Cookie Policy.
               </p>
               <div style={{ display: 'flex', gap: 20, justifyContent: 'center', flexWrap: 'wrap' }}>
                 <Link to="/terms" style={{ color: 'var(--primary-600)', fontSize: 13, fontWeight: 500, textDecoration: 'none' }}>Terms of Service</Link>

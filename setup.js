@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
-// Setup script for Check It Device Registry - MySQL Version
+// Setup script for Prove Ownership Device Registry - MySQL Version
 import fs from 'fs';
 import { execSync } from 'child_process';
 
-console.log('🚀 Setting up Check It Device Registry - MySQL Version\n');
+console.log('🚀 Setting up Prove Ownership Device Registry - MySQL Version\n');
 
 // Check if Node.js version is compatible
 const nodeVersion = process.version;

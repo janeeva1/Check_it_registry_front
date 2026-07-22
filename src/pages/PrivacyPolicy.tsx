@@ -9,7 +9,7 @@ const sections = [
   {
     icon: FileText,
     title: '1. Introduction & Scope',
-    content: `This Privacy Policy describes how Check It — Smart Device Registry & Recovery System ("Check It," "we," "us," or "our") collects, uses, stores, shares, and protects your personal information when you use our website, mobile application, APIs, and related services (collectively, the "Platform").
+    content: `This Privacy Policy describes how Prove Ownership — Smart Device Registry & Recovery System ("Prove Ownership," "we," "us," or "our") collects, uses, stores, shares, and protects your personal information when you use our website, mobile application, APIs, and related services (collectively, the "Platform").
 
 By using the Platform, you consent to the practices described in this Privacy Policy. If you do not agree, please do not use the Platform.
 
@@ -231,7 +231,7 @@ You may withdraw consent at any time where consent is the basis for processing. 
     title: '12. Contact Us',
     content: `For questions, concerns, or requests regarding this Privacy Policy or your personal data:
 
-Data Controller: Check It — Smart Device Registry & Recovery System
+Data Controller: Prove Ownership — Smart Device Registry & Recovery System
 Email: privacy@proveownership.com
 Legal: legal@proveownership.com
 Support: support@proveownership.com
@@ -302,7 +302,7 @@ export default function PrivacyPolicy() {
             {/* Footer Links */}
             <div style={{ marginTop: 48, padding: '24px 0', borderTop: '1px solid var(--border-color)', textAlign: 'center' }}>
               <p style={{ fontSize: 13, color: 'var(--text-tertiary)', marginBottom: 12 }}>
-                By using Check It, you agree to our Terms of Service, Privacy Policy, and Cookie Policy.
+                By using Prove Ownership, you agree to our Terms of Service, Privacy Policy, and Cookie Policy.
               </p>
               <div style={{ display: 'flex', gap: 20, justifyContent: 'center', flexWrap: 'wrap' }}>
                 <Link to="/terms" style={{ color: 'var(--primary-600)', fontSize: 13, fontWeight: 500, textDecoration: 'none' }}>Terms of Service</Link>

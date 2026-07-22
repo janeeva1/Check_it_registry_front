@@ -125,7 +125,7 @@ export default function Register() {
       }
 
       if (data?.user) {
-        showSuccess('Registration Successful', 'Welcome to Check It! You can now start protecting your devices.')
+        showSuccess('Registration Successful', 'Welcome to Prove Ownership! You can now start protecting your devices.')
         setTimeout(() => {
           navigate('/dashboard')
         }, 1500)
@@ -208,9 +208,9 @@ export default function Register() {
           <motion.div initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }} style={{ marginBottom: 48 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
               <div style={{ width: 48, height: 48, borderRadius: 12, background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src="/logo1.png" alt="Check It Logo" style={{ height: '28px', objectFit: 'contain' }} />
+                <img src="/logo1.png" alt="Prove Ownership Logo" style={{ height: '28px', objectFit: 'contain' }} />
               </div>
-              <span style={{ fontSize: 24, fontWeight: 700, color: 'white', letterSpacing: '-0.03em' }}>Check It</span>
+              <span style={{ fontSize: 24, fontWeight: 700, color: 'white', letterSpacing: '-0.03em' }}>Prove Ownership</span>
             </div>
             <h1 style={{ fontSize: 42, fontWeight: 800, color: 'white', lineHeight: 1.15, marginBottom: 16, letterSpacing: '-0.03em' }}>
               Join the<br />Protection Network
@@ -244,7 +244,7 @@ export default function Register() {
           </Link>
           <div className="d-lg-none" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Shield size={18} color="var(--primary-500)" />
-            <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>Check It</span>
+            <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>Prove Ownership</span>
           </div>
         </motion.div>
 
@@ -446,7 +446,7 @@ export default function Register() {
                             <Link to="/privacy" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-600)', textDecoration: 'none', fontWeight: 600 }}>Privacy Policy</Link>
                             {', and '}
                             <Link to="/cookies" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-600)', textDecoration: 'none', fontWeight: 600 }}>Cookie Policy</Link>
-                            . I understand that Check It is a device registry and notification platform and does NOT guarantee device recovery.
+                            . I understand that Prove Ownership is a device registry and notification platform and does NOT guarantee device recovery.
                           </span>
                         </label>
                       </div>

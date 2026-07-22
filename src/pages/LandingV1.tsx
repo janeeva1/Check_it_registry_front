@@ -65,7 +65,7 @@ export default function LandingV1() {
             <div className="grid place-items-center h-9 w-9 rounded-xl bg-[image:var(--gradient-primary)] shadow-[var(--shadow-glow)]">
               <Shield className="h-5 w-5 text-primary-foreground" strokeWidth={2.5} />
             </div>
-            <span className="font-bold text-lg tracking-tight">Check It</span>
+            <span className="font-bold text-lg tracking-tight">Prove Ownership</span>
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
             <a href="#features" className="hover:text-foreground transition">Features</a>
@@ -194,7 +194,7 @@ export default function LandingV1() {
       <section id="features" className="py-20 md:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="max-w-2xl">
-            <span className="text-xs font-semibold uppercase tracking-wider text-primary">Why Check It</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-primary">Why Prove Ownership</span>
             <h2 className="mt-3 text-3xl md:text-5xl font-black tracking-tight">Security made brilliantly simple.</h2>
             <p className="mt-4 text-muted-foreground">We've stripped away the jargon. Protecting your belongings is now as easy as taking a photo.</p>
           </div>
@@ -220,7 +220,7 @@ export default function LandingV1() {
             <div className="relative rounded-3xl border border-border shadow-[var(--shadow-card)] w-full h-[500px] flex items-center justify-center" style={{ background: "linear-gradient(180deg, #1a1a2e, #16213e)" }}>
               <div className="text-center text-muted-foreground">
                 <Shield className="h-16 w-16 mx-auto mb-4 text-primary opacity-60" />
-                <p className="text-sm">Check It App</p>
+                <p className="text-sm">Prove Ownership App</p>
                 <p className="text-xs opacity-60 mt-1">Coming soon to iOS & Android</p>
               </div>
             </div>
@@ -323,7 +323,7 @@ export default function LandingV1() {
           <div className="relative overflow-hidden rounded-3xl border border-primary/30 p-10 md:p-16 text-center" style={{ background: "var(--gradient-hero)" }}>
             <div className="relative">
               <h2 className="text-3xl md:text-5xl font-black tracking-tight">Ready to protect what matters?</h2>
-              <p className="mt-4 text-muted-foreground max-w-xl mx-auto">Join thousands who already trust Check It to keep their phones and laptops safe. It's free to start.</p>
+              <p className="mt-4 text-muted-foreground max-w-xl mx-auto">Join thousands who already trust Prove Ownership to keep their phones and laptops safe. It's free to start.</p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
                 <Link to="/register" className="inline-flex items-center gap-2 rounded-full bg-[image:var(--gradient-primary)] px-7 py-4 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-glow)]">
                   Create Free Account <ArrowRight className="h-4 w-4" />
@@ -345,7 +345,7 @@ export default function LandingV1() {
               <div className="grid place-items-center h-9 w-9 rounded-xl bg-[image:var(--gradient-primary)]">
                 <Shield className="h-5 w-5 text-primary-foreground" strokeWidth={2.5} />
               </div>
-              <span className="font-bold text-lg">Check It</span>
+              <span className="font-bold text-lg">Prove Ownership</span>
             </div>
             <p className="mt-4 text-sm text-muted-foreground max-w-xs">Empowering ownership, preventing theft, and enabling recovery through technology.</p>
           </div>
@@ -364,7 +364,7 @@ export default function LandingV1() {
         </div>
         <div className="border-t border-border/60">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
-            <p>© {new Date().getFullYear()} Check It Registry. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} Prove Ownership. All rights reserved.</p>
             <div className="flex gap-5">
               <a href="#" className="hover:text-foreground">Terms</a>
               <a href="#" className="hover:text-foreground">Privacy</a>
@@ -381,6 +381,9 @@ export default function LandingV1() {
           { path: "/", label: "Classic" },
           { path: "/landing/v1", label: "Modern" },
           { path: "/landing/v2", label: "Minimal" },
+          { path: "/landing/v3", label: "Premium" },
+          { path: "/landing/v4", label: "Enterprise" },
+          { path: "/landing/v5", label: "Stories" },
         ].map((v) => (
           <Link
             key={v.path}

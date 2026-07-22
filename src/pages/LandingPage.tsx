@@ -203,6 +203,9 @@ export default function LandingPage() {
           { path: '/', label: 'Classic' },
           { path: '/landing/v1', label: 'Modern' },
           { path: '/landing/v2', label: 'Minimal' },
+          { path: '/landing/v3', label: 'Premium' },
+          { path: '/landing/v4', label: 'Enterprise' },
+          { path: '/landing/v5', label: 'Stories' },
         ].map((v) => (
           <Link
             key={v.path}
@@ -581,7 +584,7 @@ export default function LandingPage() {
               background: 'rgba(22,163,74,0.08)',
               color: 'var(--primary-600)',
               border: '1px solid rgba(22,163,74,0.15)'
-            }}>Why Choose Check It</span>
+            }}>Why Choose Prove Ownership</span>
             <h2 className="fw-bold mb-3" style={{ fontSize: 'clamp(1.75rem, 4vw, 2.75rem)', color: 'var(--text-primary)' }}>
               Security Made Simple
             </h2>
@@ -737,7 +740,7 @@ export default function LandingPage() {
               Trusted by Users Nationwide
             </h2>
             <p className="mx-auto" style={{ maxWidth: '600px', color: 'var(--text-secondary)', fontSize: 'var(--text-lg)' }}>
-              See what our community is saying about their experience with Check It Registry.
+              See what our community is saying about their experience with Prove Ownership.
             </p>
           </motion.div>
 
@@ -830,7 +833,7 @@ export default function LandingPage() {
                 Ready to Protect What Matters?
               </h2>
               <p className="mb-5 mx-auto opacity-90" style={{ maxWidth: '600px', fontSize: 'clamp(1rem, 2vw, 1.2rem)' }}>
-                Don't wait until it's too late. Join thousands of people who already trust Check It to keep their phones and laptops safe.
+                Don't wait until it's too late. Join thousands of people who already trust Prove Ownership to keep their phones and laptops safe.
               </p>
 
               {!user && (
@@ -866,8 +869,8 @@ export default function LandingPage() {
           <div className="row g-4 pb-4">
             <div className="col-lg-4">
               <div className="d-flex align-items-center gap-2 mb-3">
-                <img src="/logo1.png" alt="Check It Logo" style={{ height: 32, objectFit: 'contain' }} />
-                <span className="fw-bold" style={{ color: 'var(--text-primary)', fontSize: 'var(--text-lg)' }}>Check It</span>
+                <img src="/logo1.png" alt="Prove Ownership Logo" style={{ height: 32, objectFit: 'contain' }} />
+                <span className="fw-bold" style={{ color: 'var(--text-primary)', fontSize: 'var(--text-lg)' }}>Prove Ownership</span>
               </div>
               <p style={{ color: 'var(--text-tertiary)', lineHeight: 'var(--leading-relaxed)' }}>
                 Empowering ownership, preventing theft, and enabling recovery through technology.
@@ -916,7 +919,7 @@ export default function LandingPage() {
           </div>
           <div className="pt-4 mt-4 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3" style={{ borderTop: '1px solid var(--border-color)' }}>
             <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>
-              &copy; {new Date().getFullYear()} Check It Registry. All rights reserved.
+              &copy; {new Date().getFullYear()} Prove Ownership. All rights reserved.
             </span>
             <div className="d-flex gap-3">
               <a href="#terms" className="text-decoration-none" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>Terms</a>

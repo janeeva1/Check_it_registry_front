@@ -14,6 +14,9 @@ import PageLoading from './components/PageLoading'
 const LandingPage = lazy(() => import('./pages/LandingPage'))
 const LandingV1 = lazy(() => import('./pages/LandingV1'))
 const LandingV2 = lazy(() => import('./pages/LandingV2'))
+const LandingV3 = lazy(() => import('./pages/LandingV3'))
+const LandingV4 = lazy(() => import('./pages/LandingV4'))
+const LandingV5 = lazy(() => import('./pages/LandingV5'))
 const Login = lazy(() => import('./pages/Login'))
 const Register = lazy(() => import('./pages/Register'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
@@ -116,6 +119,9 @@ function AppRoutes() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/landing/v1" element={<LandingV1 />} />
         <Route path="/landing/v2" element={<LandingV2 />} />
+        <Route path="/landing/v3" element={<LandingV3 />} />
+        <Route path="/landing/v4" element={<LandingV4 />} />
+        <Route path="/landing/v5" element={<LandingV5 />} />
         <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
         <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <Register />} />
         <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />

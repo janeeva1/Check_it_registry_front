@@ -117,8 +117,8 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onMenuClick, sidebarOpe
             </button>
           )}
           <Link to="/" className="d-flex align-items-center gap-2 text-decoration-none" onClick={() => setIsMobileMenuOpen(false)}>
-            <img src="/logo1.png" alt="Check It" style={{ height: '28px', objectFit: 'contain' }} />
-            <span className="fw-bold d-none d-sm-inline" style={{ color: 'var(--text-primary)', fontSize: 'var(--text-lg)' }}>Check It</span>
+            <img src="/logo1.png" alt="Prove Ownership" style={{ height: '28px', objectFit: 'contain' }} />
+            <span className="fw-bold d-none d-sm-inline" style={{ color: 'var(--text-primary)', fontSize: 'var(--text-lg)' }}>Prove Ownership</span>
           </Link>
         </div>
 

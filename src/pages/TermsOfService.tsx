@@ -9,14 +9,14 @@ const sections = [
   {
     icon: FileText,
     title: '1. Acceptance of Terms',
-    content: `By accessing, browsing, or using the Check It Smart Device Registry & Recovery System ("the Platform," "the Service," "Check It," "we," "us," or "our"), including any web browser, mobile application, or API interface, you ("User," "you," or "your") acknowledge that you have read, understood, and agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, you must immediately cease all use of the Platform.
+    content: `By accessing, browsing, or using the Prove Ownership Smart Device Registry & Recovery System ("the Platform," "the Service," "Prove Ownership," "we," "us," or "our"), including any web browser, mobile application, or API interface, you ("User," "you," or "your") acknowledge that you have read, understood, and agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, you must immediately cease all use of the Platform.
 
-These Terms constitute a legally binding agreement between you and Check It. We reserve the right to modify these Terms at any time. Continued use of the Platform following any modifications constitutes acceptance of the revised Terms. It is your responsibility to review these Terms periodically.`
+These Terms constitute a legally binding agreement between you and Prove Ownership. We reserve the right to modify these Terms at any time. Continued use of the Platform following any modifications constitutes acceptance of the revised Terms. It is your responsibility to review these Terms periodically.`
   },
   {
     icon: UserCheck,
     title: '2. Description of Service',
-    content: `Check It is a device registry and recovery notification platform that enables users to:
+    content: `Prove Ownership is a device registry and recovery notification platform that enables users to:
 
 (a) Register and maintain a digital record of device ownership (phones, computers, vehicles, electronics, and other valuables);
 
@@ -34,20 +34,20 @@ These Terms constitute a legally binding agreement between you and Check It. We 
 
 (h) Verify identity through our KYC (Know Your Customer) system.
 
-IMPORTANT: Check It is a notification and registry platform. We do NOT physically recover, track, or locate devices. We do NOT guarantee the recovery of any lost or stolen device. Our service facilitates information sharing and notifications only.`
+IMPORTANT: Prove Ownership is a notification and registry platform. We do NOT physically recover, track, or locate devices. We do NOT guarantee the recovery of any lost or stolen device. Our service facilitates information sharing and notifications only.`
   },
   {
     icon: AlertTriangle,
     title: '3. Important Disclaimers — Limitation of Liability',
-    content: `3.1 NO GUARANTEE OF RECOVERY. Check It is a device registration and notification service. We do NOT guarantee that any registered device will be recovered if lost or stolen. We do NOT provide physical tracking, GPS location, or any form of active device recovery. Any recovery that occurs is incidental and not a promised outcome of our service.
+    content: `3.1 NO GUARANTEE OF RECOVERY. Prove Ownership is a device registration and notification service. We do NOT guarantee that any registered device will be recovered if lost or stolen. We do NOT provide physical tracking, GPS location, or any form of active device recovery. Any recovery that occurs is incidental and not a promised outcome of our service.
 
-3.2 NOT A LAW ENFORCEMENT AGENCY. Check It is a private technology platform. We are not a law enforcement agency, government body, or authorized investigative authority. We do NOT have the power to compel the return of any device. Any coordination with law enforcement is at the discretion of the relevant authorities.
+3.2 NOT A LAW ENFORCEMENT AGENCY. Prove Ownership is a private technology platform. We are not a law enforcement agency, government body, or authorized investigative authority. We do NOT have the power to compel the return of any device. Any coordination with law enforcement is at the discretion of the relevant authorities.
 
 3.3 NO RESPONSIBILITY FOR THIRD-PARTY ACTIONS. We are not responsible for the actions, omissions, or conduct of any third party, including but not limited to: law enforcement agencies, other users, marketplace participants, payment processors, or any other parties involved in device recovery or marketplace transactions.
 
 3.4 INFORMATION PURPOSES ONLY. All device status information, reports, and notifications provided through the Platform are for informational purposes only. We do not warrant the accuracy, completeness, or timeliness of any information provided through the Service.
 
-3.5 NO CONSEQUENTIAL DAMAGES. IN NO EVENT SHALL CHECK IT, ITS DIRECTORS, OFFICERS, EMPLOYEES, AGENTS, OR AFFILIATES BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING BUT NOT LIMITED TO LOSS OF PROFITS, DATA, USE, GOODWILL, OR OTHER INTANGIBLE LOSSES, RESULTING FROM:
+3.5 NO CONSEQUENTIAL DAMAGES. IN NO EVENT SHALL Prove Ownership, ITS DIRECTORS, OFFICERS, EMPLOYEES, AGENTS, OR AFFILIATES BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING BUT NOT LIMITED TO LOSS OF PROFITS, DATA, USE, GOODWILL, OR OTHER INTANGIBLE LOSSES, RESULTING FROM:
    (a) YOUR ACCESS TO, USE OF, OR INABILITY TO USE THE PLATFORM;
    (b) ANY CONDUCT OR CONTENT OF ANY THIRD PARTY ON THE PLATFORM;
    (c) ANY CONTENT OBTAINED FROM THE PLATFORM;
@@ -56,7 +56,7 @@ IMPORTANT: Check It is a notification and registry platform. We do NOT physicall
    (f) ANY FAILED ATTEMPT AT DEVICE RECOVERY;
    (g) ANY TRANSACTION CONDUCTED THROUGH THE PLATFORM.
 
-3.6 MAXIMUM LIABILITY. IN NO EVENT SHALL OUR AGGREGATE LIABILITY EXCEED THE AMOUNT YOU HAVE PAID TO CHECK IT IN THE TWELVE (12) MONTHS IMMEDIATELY PRECEDING THE EVENT GIVING RISE TO THE CLAIM, OR ONE HUNDRED UNITED STATES DOLLARS ($100.00), WHICHEVER IS GREATER.
+3.6 MAXIMUM LIABILITY. IN NO EVENT SHALL OUR AGGREGATE LIABILITY EXCEED THE AMOUNT YOU HAVE PAID TO Prove Ownership IN THE TWELVE (12) MONTHS IMMEDIATELY PRECEDING THE EVENT GIVING RISE TO THE CLAIM, OR ONE HUNDRED UNITED STATES DOLLARS ($100.00), WHICHEVER IS GREATER.
 
 3.7 FORCE MAJEURE. We shall not be liable for any failure or delay in performing our obligations where such failure or delay results from any cause beyond our reasonable control, including but not limited to acts of God, natural disasters, war, terrorism, riots, embargoes, acts of civil or military authorities, fire, floods, accidents, pandemic, strikes, or shortages of transportation, facilities, fuel, energy, labor, or materials.`
   },
@@ -90,7 +90,7 @@ IMPORTANT: Check It is a notification and registry platform. We do NOT physicall
    (c) The device is not stolen, counterfeit, or obtained through fraud;
    (d) All information provided about the device is accurate and truthful.
 
-5.2 REGISTRATION DOES NOT CONSTITUTE LEGAL OWNERSHIP. Device registration on Check It does NOT constitute legal proof of ownership. It is a digital record maintained for notification and verification purposes. Registration does not confer any legal title, lien, or proprietary interest in the device.
+5.2 REGISTRATION DOES NOT CONSTITUTE LEGAL OWNERSHIP. Device registration on Prove Ownership does NOT constitute legal proof of ownership. It is a digital record maintained for notification and verification purposes. Registration does not confer any legal title, lien, or proprietary interest in the device.
 
 5.3 VERIFICATION STATUS. A "verified" device status indicates that an administrator has reviewed the registration submission. Verification is NOT a guarantee of ownership, authenticity, or legal status. We do not independently verify ownership claims.
 
@@ -109,7 +109,7 @@ IMPORTANT: Check It is a notification and registry platform. We do NOT physicall
    (c) The information in the report is true and accurate;
    (d) You understand that filing a false report may constitute a criminal offense.
 
-6.2 NOTIFICATION SERVICE ONLY. Check It serves as a notification platform. When you file a report:
+6.2 NOTIFICATION SERVICE ONLY. Prove Ownership serves as a notification platform. When you file a report:
    (a) The report is added to our database and made visible through our check system;
    (b) Relevant notifications may be sent to other users, administrators, and law enforcement agencies;
    (c) We do NOT physically search for, track, or recover the device;
@@ -140,7 +140,7 @@ IMPORTANT: Check It is a notification and registry platform. We do NOT physicall
 
 7.5 FRAUD PREVENTION. We collect device fingerprint data, IP addresses, and location information during device checks for fraud prevention purposes. Excessive or suspicious checking patterns may result in temporary or permanent restriction of access.
 
-7.6 BUYER RESPONSIBILITY. You are solely responsible for conducting due diligence before purchasing any device. Check It results are supplementary to, not a replacement for, independent verification.`
+7.6 BUYER RESPONSIBILITY. You are solely responsible for conducting due diligence before purchasing any device. Prove Ownership results are supplementary to, not a replacement for, independent verification.`
   },
   {
     icon: CreditCard,
@@ -164,7 +164,7 @@ IMPORTANT: Check It is a notification and registry platform. We do NOT physicall
    (d) Buyers may file disputes within the dispute window;
    (e) Admin may intervene to resolve disputes (release to seller or refund to buyer).
 
-8.4 REFUND POLICY. All fees paid to Check It are non-refundable except:
+8.4 REFUND POLICY. All fees paid to Prove Ownership are non-refundable except:
    (a) Escrow refunds when a dispute is resolved in buyer's favor;
    (b) Recovery service refunds: 50% refund if recovery is unsuccessful;
    (c) Duplicate charges (verified by our records).
@@ -176,7 +176,7 @@ IMPORTANT: Check It is a notification and registry platform. We do NOT physicall
   {
     icon: Scale,
     title: '9. Marketplace Terms',
-    content: `9.1 BUYER AND SELLER RESPONSIBILITIES. The marketplace facilitates peer-to-peer transactions. Check It is NOT a party to any sale agreement between buyer and seller. We do NOT:
+    content: `9.1 BUYER AND SELLER RESPONSIBILITIES. The marketplace facilitates peer-to-peer transactions. Prove Ownership is NOT a party to any sale agreement between buyer and seller. We do NOT:
    (a) Guarantee the quality, safety, or legality of items listed;
    (b) Guarantee that buyers or sellers will complete a transaction;
    (c) Guarantee that listed items are as described;
@@ -240,7 +240,7 @@ Violation of these prohibitions may result in immediate account termination, for
   {
     icon: Database,
     title: '12. Intellectual Property',
-    content: `12.1 OUR RIGHTS. The Platform, including its design, code, graphics, logos, trademarks, and documentation, is owned by Check It and protected by copyright, trademark, and other intellectual property laws. You are granted a limited, non-exclusive, non-transferable license to use the Platform for its intended purpose.
+    content: `12.1 OUR RIGHTS. The Platform, including its design, code, graphics, logos, trademarks, and documentation, is owned by Prove Ownership and protected by copyright, trademark, and other intellectual property laws. You are granted a limited, non-exclusive, non-transferable license to use the Platform for its intended purpose.
 
 12.2 YOUR CONTENT. By submitting content to the Platform (device information, images, reports, messages), you grant us a worldwide, non-exclusive, royalty-free, sublicensable license to use, reproduce, modify, and display such content for the purpose of operating and improving the Platform.
 
@@ -264,7 +264,7 @@ Violation of these prohibitions may result in immediate account termination, for
   {
     icon: Scale,
     title: '14. Indemnification',
-    content: `You agree to indemnify, defend, and hold harmless Check It, its directors, officers, employees, agents, and affiliates from and against any and all claims, damages, obligations, losses, liabilities, costs, and expenses (including but not limited to attorney's fees) arising from:
+    content: `You agree to indemnify, defend, and hold harmless Prove Ownership, its directors, officers, employees, agents, and affiliates from and against any and all claims, damages, obligations, losses, liabilities, costs, and expenses (including but not limited to attorney's fees) arising from:
 
 (a) Your use of the Platform;
 (b) Your violation of these Terms;
@@ -311,7 +311,7 @@ This indemnification obligation survives the termination of your account and the
     title: '17. Contact Information',
     content: `For questions, concerns, or notices regarding these Terms of Service, please contact us at:
 
-Check It — Smart Device Registry & Recovery System
+Prove Ownership — Smart Device Registry & Recovery System
 Email: legal@proveownership.com
 Support: support@proveownership.com
 Website: https://dev.proveownership.com
@@ -344,7 +344,7 @@ export default function TermsOfService() {
                 Effective Date: {lastUpdated} | Last Updated: {lastUpdated}
               </p>
               <p style={{ color: 'var(--text-tertiary)', fontSize: 13, marginTop: 8, maxWidth: 600, margin: '8px auto 0' }}>
-                Please read these Terms carefully before using the Check It Platform. By using our services, you agree to be bound by these Terms.
+                Please read these Terms carefully before using the Prove Ownership Platform. By using our services, you agree to be bound by these Terms.
               </p>
             </div>
 
@@ -355,7 +355,7 @@ export default function TermsOfService() {
                 <div>
                   <p style={{ fontSize: 14, fontWeight: 700, color: '#92400e', marginBottom: 4 }}>Important Disclaimer</p>
                   <p style={{ fontSize: 13, color: '#92400e', lineHeight: 1.7, margin: 0 }}>
-                    Check It is a device registry and notification platform. We do NOT physically recover, track, or locate devices. We do NOT guarantee the recovery of any lost or stolen device. Our service facilitates information sharing and notifications only. Use of this Platform does not constitute a guarantee of device recovery.
+                    Prove Ownership is a device registry and notification platform. We do NOT physically recover, track, or locate devices. We do NOT guarantee the recovery of any lost or stolen device. Our service facilitates information sharing and notifications only. Use of this Platform does not constitute a guarantee of device recovery.
                   </p>
                 </div>
               </div>
@@ -390,7 +390,7 @@ export default function TermsOfService() {
             {/* Footer Links */}
             <div style={{ marginTop: 48, padding: '24px 0', borderTop: '1px solid var(--border-color)', textAlign: 'center' }}>
               <p style={{ fontSize: 13, color: 'var(--text-tertiary)', marginBottom: 12 }}>
-                By using Check It, you agree to our Terms of Service, Privacy Policy, and Cookie Policy.
+                By using Prove Ownership, you agree to our Terms of Service, Privacy Policy, and Cookie Policy.
               </p>
               <div style={{ display: 'flex', gap: 20, justifyContent: 'center', flexWrap: 'wrap' }}>
                 <Link to="/terms" style={{ color: 'var(--primary-600)', fontSize: 13, fontWeight: 500, textDecoration: 'none' }}>Terms of Service</Link>

@@ -131,7 +131,7 @@ export default function ForgotPassword() {
               <div style={{ width: 48, height: 48, borderRadius: 12, background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Shield size={28} color="white" />
               </div>
-              <span style={{ fontSize: 24, fontWeight: 700, color: 'white', letterSpacing: '-0.03em' }}>Check It</span>
+              <span style={{ fontSize: 24, fontWeight: 700, color: 'white', letterSpacing: '-0.03em' }}>Prove Ownership</span>
             </div>
             <h1 style={{ fontSize: 42, fontWeight: 800, color: 'white', lineHeight: 1.15, marginBottom: 16, letterSpacing: '-0.03em' }}>
               Forgot Your<br />Password?
@@ -165,7 +165,7 @@ export default function ForgotPassword() {
           </Link>
           <div className="d-lg-none" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Shield size={18} color="var(--primary-500)" />
-            <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>Check It</span>
+            <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>Prove Ownership</span>
           </div>
         </motion.div>
 

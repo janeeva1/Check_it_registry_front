@@ -251,7 +251,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, user }) => {
             <div className="sidebar-logo-container flex-grow-1 d-flex justify-content-center">
               <img
                 src={theme === "dark" ? "/logo12.png" : "/logo1.png"}
-                alt="Check It Device Registry"
+                alt="Prove Ownership Device Registry"
                 className="sidebar-logo"
                 style={{
                   maxWidth: "100%",
@@ -385,7 +385,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, user }) => {
               className="mb-1"
               style={{ color: "var(--text-secondary)", fontSize: "12px" }}
             >
-              © {new Date().getFullYear()} Check It Registry
+              © {new Date().getFullYear()} Prove Ownership
             </p>
 
             <p

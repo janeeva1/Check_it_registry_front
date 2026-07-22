@@ -346,7 +346,7 @@ LEFT JOIN law_enforcement_agencies lea ON r.assigned_lea_id = lea.id;
 INSERT INTO users (name, email, password_hash, role, verified_at) 
 VALUES (
     'System Administrator', 
-    'admin@checkit.local', 
+    'admin@proveownership.com', 
     '$2b$10$rQZ8kHWKQYQKQYQKQYQKQOeKQYQKQYQKQYQKQYQKQYQKQYQKQYQKQY', -- admin123
     'admin', 
     NOW()

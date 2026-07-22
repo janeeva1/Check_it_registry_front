@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "Check It - Device Registry API",
-    "description": "Complete API collection for Check It Device Registry & Recovery System",
+    "name": "Prove Ownership - Device Registry API",
+    "description": "Complete API collection for Prove Ownership Device Registry & Recovery System",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "version": "1.0.0"
   },

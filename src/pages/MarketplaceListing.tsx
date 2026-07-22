@@ -479,7 +479,7 @@ export default function MarketplaceListing() {
                     'Inspect the device in person before paying',
                     'Meet in a public, safe location',
                     'Use secure payment methods',
-                    'Verify the device IMEI on CheckIt',
+                    'Verify the device IMEI on ProveOwnership',
                   ].map((tip, i) => (
                     <div key={i} style={{ display: 'flex', gap: 10, fontSize: 14, color: 'var(--text-secondary)' }}>
                       <Shield size={16} style={{ color: 'var(--primary-500)', flexShrink: 0, marginTop: 2 }} />
