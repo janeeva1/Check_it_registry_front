@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeftRight, Smartphone, Mail, Key, CheckCircle, Clock, ArrowLeft, Loader2, Copy, Shield, AlertTriangle, Info, X, RefreshCw, Send, User, Search } from 'lucide-react'
+import { ArrowLeftRight, Smartphone, Mail, Key, CheckCircle, ArrowLeft, Loader2, Info, X, Send, User } from 'lucide-react'
 import { Layout } from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast, ToastContainer } from '../components/Toast'
@@ -22,7 +22,7 @@ export default function DeviceTransfer() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { toasts, removeToast, showSuccess, showError, showWarning, showInfo } = useToast()
+  const { toasts, removeToast, showSuccess, showError, showWarning: _showWarning, showInfo } = useToast()
 
   const [tab, setTab] = useState<Tab>('initiate')
   const [devices, setDevices] = useState<Device[]>([])
@@ -230,7 +230,7 @@ export default function DeviceTransfer() {
             ) : (
               <div className="row g-3">
                 <AnimatePresence>
-                  {sentTransfers.map((t, i) => (
+                  {sentTransfers.map((t, _i) => (
                     <motion.div key={t.id} className="col-12" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} layout>
                       <div className="modern-card p-3">
                         <div className="row g-3 align-items-center">
@@ -268,7 +268,7 @@ export default function DeviceTransfer() {
             ) : (
               <div className="row g-3">
                 <AnimatePresence>
-                  {receivedTransfers.map((t, i) => (
+                  {receivedTransfers.map((t, _i) => (
                     <motion.div key={t.id} className="col-12" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} layout>
                       <div className="modern-card p-3">
                         <div className="row g-3 align-items-center">

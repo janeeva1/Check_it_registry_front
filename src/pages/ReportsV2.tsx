@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { AlertTriangle, Search, Eye, ChevronDown, Loader2, FileText, Clock, Smartphone } from 'lucide-react'
+import { AlertTriangle, Search, Eye, Loader2, FileText, Clock, Smartphone } from 'lucide-react'
 import { Layout } from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast, ToastContainer } from '../components/Toast'
@@ -30,8 +30,8 @@ const STATUS_OPTIONS = ['all', 'open', 'investigating', 'resolved', 'closed', 'd
 const TYPE_OPTIONS = ['all', 'stolen', 'lost', 'found', 'fraud', 'other']
 
 export default function ReportsV2() {
-  const { user } = useAuth()
-  const { toasts, removeToast, showError } = useToast()
+  const { user: _user } = useAuth()
+  const { toasts, removeToast, showError: _showError } = useToast()
   const [reports, setReports] = useState<Report[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -157,7 +157,7 @@ export default function ReportsV2() {
           ) : (
             <div className="row g-3">
               <AnimatePresence>
-                {filtered.map((r, i) => {
+                {filtered.map((r, _i) => {
                   const tc = typeColor(r.type)
                   const Icon = tc.icon
                   return (

@@ -62,6 +62,7 @@ export default function UserManagement() {
   const [showConfirmReset, setShowConfirmReset] = useState(false)
   const [resetUserId, setResetUserId] = useState<string | null>(null)
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { loadUserData() }, [])
 
   const loadUserData = async () => {
@@ -121,7 +122,7 @@ export default function UserManagement() {
     return matchesSearch && matchesRole && matchesStatus
   })
 
-  const handleUpdateRole = async (userId: string, newRole: string) => {
+  const _handleUpdateRole = async (userId: string, newRole: string) => {
     try {
       setActionLoading(userId)
       const token = localStorage.getItem('auth_token')
@@ -170,15 +171,15 @@ export default function UserManagement() {
       const response = await fetch(`${API_URL}/user-management/users/${userId}/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ new_password: 'welcome@checkit', send_email: true })
+        body: JSON.stringify({ new_password: 'welcome@proveownership', send_email: true })
       })
       if (response.ok) {
-        showSuccess('Password Reset', 'Default password set to "welcome@checkit"')
+        showSuccess('Password Reset', 'Default password set to "welcome@proveownership"')
       } else {
         const err = await response.json().catch(() => ({}))
         showError('Reset Failed', err.error || 'Could not reset password')
       }
-    } catch (err) {
+    } catch {
       showError('Reset Failed', 'Unexpected error occurred while resetting password')
     } finally {
       setActionLoading(null)

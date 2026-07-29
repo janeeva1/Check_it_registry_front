@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Smartphone, ArrowLeft, Edit2, Trash2, CheckCircle, AlertTriangle, Clock, Shield, Copy, ExternalLink, History, Loader2, Plus, LogOut } from 'lucide-react'
+import { Smartphone, ArrowLeft, Edit2, Trash2, CheckCircle, AlertTriangle, Clock, Shield, Copy, History, Loader2, LogOut } from 'lucide-react'
 import { Layout } from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast, ToastContainer } from '../components/Toast'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { apiClient } from '../lib/apiClient'
 
 type Device = {
   id: string
@@ -42,7 +41,7 @@ export default function DeviceDetails() {
         const token = localStorage.getItem('auth_token')
         const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/devices/${id}`, { headers: { Authorization: `Bearer ${token}` } })
         if (!res.ok) throw new Error('Device not found')
-        const data = await res.json()
+      const data = await res.json()
         setDevice(data.data || data)
       } catch { setDevice(null) }
       finally { setLoading(false) }
@@ -60,7 +59,7 @@ export default function DeviceDetails() {
         body: JSON.stringify(editForm),
       })
       if (!res.ok) throw new Error('Failed to update')
-      const data = await res.json()
+      const _data = await res.json()
       setDevice({ ...device, ...editForm })
       setEditing(false)
       showSuccess('Device updated')

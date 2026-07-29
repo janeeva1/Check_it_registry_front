@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { CheckCircle, XCircle, Loader2, ArrowLeft, ShoppingCart } from 'lucide-react'
+import { CheckCircle, XCircle, Loader2 } from 'lucide-react'
 import { Layout } from '../components/Layout'
 import { useSearchParams, Link } from 'react-router-dom'
 

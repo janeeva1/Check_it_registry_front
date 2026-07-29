@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  Shield, Mail, ArrowLeft, ArrowRight,
+  Shield, Mail, ArrowLeft,
   AlertCircle, CheckCircle, Lock, Send,
-  Smartphone, Search, RefreshCw
+  Smartphone, RefreshCw
 } from 'lucide-react'
 import { useToast } from '../components/Toast'
 
@@ -43,7 +43,7 @@ export default function ForgotPassword() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [sent, setSent] = useState(false)
-  const { toasts, removeToast, showSuccess, showError } = useToast()
+  const { toasts: _toasts, removeToast: _removeToast, showSuccess, showError } = useToast()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

@@ -7,7 +7,6 @@ import {
   RefreshCw,
   CheckCircle,
   Search,
-  Lock,
   Users,
   AlertTriangle,
   ArrowRight,
@@ -22,15 +21,10 @@ import {
   BellRing,
   Phone,
   Laptop,
-  Tablet,
+  MapPin,
   Award,
   Zap,
   ShieldCheck,
-  MapPin,
-  MessageCircle,
-  Building2,
-  GraduationCap,
-  Heart,
   Quote
 } from 'lucide-react';
 import { apiClient } from '../lib/apiClient';
@@ -77,7 +71,7 @@ export default function LandingPage() {
       if (!res.ok) throw new Error('Check failed');
       const data = await res.json();
       setSearchResult(data);
-    } catch (err) {
+    } catch {
       setSearchError('Failed to verify device. Please try again.');
     } finally {
       setSearchLoading(false);

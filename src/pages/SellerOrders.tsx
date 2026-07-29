@@ -3,8 +3,8 @@ import { Layout } from '../components/Layout'
 import { useToast, ToastContainer } from '../components/Toast'
 import { motion } from 'framer-motion'
 import {
-  Receipt, Filter, Smartphone, Search, RefreshCw, Truck,
-  CheckCircle, DollarSign, Clock, Package, User, AlertCircle
+  Receipt, Smartphone, Search, RefreshCw, Truck,
+  CheckCircle, DollarSign, Package, User
 } from 'lucide-react'
 import { apiClient } from '../lib/apiClient'
 

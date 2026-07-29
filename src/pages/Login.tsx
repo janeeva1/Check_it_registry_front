@@ -3,8 +3,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  Mail, Lock, Eye, EyeOff, LogIn, UserPlus,
-  AlertCircle, CheckCircle, Shield, Smartphone,
+  Mail, Lock, Eye, EyeOff, LogIn,
+  AlertCircle, Shield,
   Search, RefreshCw, Github, Chrome, ArrowLeft
 } from 'lucide-react'
 import { useToast } from '../components/Toast'
@@ -57,7 +57,7 @@ export default function Login() {
   const [otpError, setOtpError] = useState('')
   const navigate = useNavigate()
   const { login } = useAuth()
-  const { toasts, removeToast, showSuccess, showError } = useToast()
+  const { toasts: _toasts, removeToast: _removeToast, showSuccess, showError } = useToast()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()

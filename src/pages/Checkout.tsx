@@ -18,7 +18,7 @@ const PAYSTACK_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || ''
 export default function Checkout() {
   const { user } = useAuth()
   const { items: cartItems, clearCart, total: cartTotal } = useCart()
-  const navigate = useNavigate()
+  const _navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { toasts, removeToast, showSuccess, showError } = useToast()
   const [listing, setListing] = useState<Listing | null>(null)

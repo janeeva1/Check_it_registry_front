@@ -138,7 +138,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     } else {
       try {
         messageStr = JSON.stringify(error);
-      } catch (e) {
+      } catch {
         messageStr = 'An unexpected error occurred.';
       }
     }
@@ -172,6 +172,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 }
 
 // Toast hook for easy usage (uses global context)
+// eslint-disable-next-line react-refresh/only-export-components
 export function useToast() {
   const ctx = useContext(ToastContext)
   if (!ctx) throw new Error('useToast must be used within ToastProvider')

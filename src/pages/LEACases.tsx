@@ -4,7 +4,7 @@ import { Layout } from '../components/Layout'
 import { Link } from 'react-router-dom'
 import {
   FileText, Search, Calendar, MapPin, ChevronLeft, ChevronRight,
-  Filter, CaseSensitive, Clock, AlertTriangle, RefreshCw
+  Filter, CaseSensitive, AlertTriangle
 } from 'lucide-react'
 
 type CaseItem = {

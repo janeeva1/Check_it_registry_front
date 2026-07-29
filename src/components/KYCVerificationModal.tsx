@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Shield, Camera, CheckCircle, AlertCircle, Loader, User, ChevronRight, AlertTriangle } from 'lucide-react'
+import { Shield, Camera, CheckCircle, AlertCircle, Loader, User, ChevronRight, AlertTriangle } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from './Toast'
 

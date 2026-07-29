@@ -284,7 +284,7 @@ class ApiClient {
           },
           error: null,
         };
-      } catch (error) {
+      } catch {
         this.token = null;
         localStorage.removeItem("auth_token");
         return { data: { session: null }, error: null };

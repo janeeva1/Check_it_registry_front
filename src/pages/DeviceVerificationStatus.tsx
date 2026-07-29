@@ -16,7 +16,7 @@ type Verification = {
 }
 
 export default function DeviceVerificationStatus() {
-  const { toasts, removeToast, showSuccess, showError } = useToast()
+  const { toasts, removeToast, showSuccess: _showSuccess, showError: _showError } = useToast()
   const [verifications, setVerifications] = useState<Verification[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Package, Shield, CheckCircle, XCircle, AlertTriangle, Clock, Loader2, ThumbsUp, MessageCircle } from 'lucide-react'
+import { Package, Shield, CheckCircle, XCircle, AlertTriangle, Loader2, ThumbsUp } from 'lucide-react'
 import { Layout } from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast, ToastContainer } from '../components/Toast'
@@ -28,7 +28,7 @@ type Order = {
 }
 
 export default function BuyerOrders() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const { toasts, removeToast, showSuccess, showError } = useToast()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)

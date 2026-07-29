@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Layout } from '../../components/Layout'
 import { useToast, ToastContainer } from '../../components/Toast'
 import { apiClient } from '../../lib/apiClient'
-import { DollarSign, Save, RefreshCw, TrendingUp, CreditCard, Building2, Smartphone, Search, Shield, IdCard, Percent, Edit3, X, Check, Users } from 'lucide-react'
+import { DollarSign, RefreshCw, TrendingUp, CreditCard, Building2, Smartphone, Search, Shield, IdCard, Percent, Edit3, X, Check, Users } from 'lucide-react'
 
 interface FeeConfig {
   setting_key: string
@@ -46,6 +46,7 @@ export default function RevenueSettings() {
   const [txPage, setTxPage] = useState(1)
   const [txLoading, setTxLoading] = useState(false)
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { loadAll() }, [])
 
   const loadAll = async () => {
@@ -63,7 +64,7 @@ export default function RevenueSettings() {
       setCurrentProvider(provData?.provider || 'prembly')
       setSummary(summData)
       setTransactions(Array.isArray(txData) ? txData : txData.transactions || [])
-    } catch (e) {
+    } catch {
       showError('Failed to load revenue settings')
     } finally {
       setLoading(false)

@@ -11,7 +11,6 @@ interface NFCReaderProps {
 
 export const NFCReader: React.FC<NFCReaderProps> = ({
   onRead,
-  onError,
   onClose,
   isOpen
 }) => {
@@ -38,7 +37,7 @@ export const NFCReader: React.FC<NFCReaderProps> = ({
 
       setHasNFC(true);
       
-    } catch (err) {
+    } catch {
       setError('Failed to check NFC support');
       setHasNFC(false);
     }

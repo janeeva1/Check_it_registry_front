@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CreditCard, Plus, Check, Trash2, Star, Building2, Loader2, ArrowLeft } from 'lucide-react'
+import { CreditCard, Plus, Check, Trash2, Star, Loader2, ArrowLeft } from 'lucide-react'
 import { Layout } from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast, ToastContainer } from '../components/Toast'
@@ -16,7 +16,7 @@ type PaymentMethod = {
 }
 
 export default function PaymentMethodSelection() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const navigate = useNavigate()
   const { toasts, removeToast, showSuccess, showError } = useToast()
   const [methods, setMethods] = useState<PaymentMethod[]>([])
@@ -109,7 +109,7 @@ export default function PaymentMethodSelection() {
             <div className="col-lg-8">
               <div className="row g-3">
                 <AnimatePresence>
-                  {methods.map((m, i) => {
+                  {methods.map((m, _i) => {
                     const bi = brandIcon(m.cardBrand)
                     return (
                       <motion.div key={m.id} className="col-12" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -100 }} layout>

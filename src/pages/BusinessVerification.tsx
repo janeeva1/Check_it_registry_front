@@ -4,7 +4,7 @@ import { Layout } from '../components/Layout'
 import { useToast, ToastContainer } from '../components/Toast'
 import { PaymentGate } from '../components/PaymentGate'
 import { apiClient } from '../lib/apiClient'
-import { Shield, CheckCircle, AlertCircle, Loader2, Building2, FileText } from 'lucide-react'
+import { CheckCircle, Loader2, Building2, FileText } from 'lucide-react'
 
 const containerVariants = {
   hidden: { opacity: 0 },

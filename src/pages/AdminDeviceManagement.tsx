@@ -33,7 +33,6 @@ export default function AdminDeviceManagement() {
   const [devices, setDevices] = useState<AdminDevice[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [refreshing, setRefreshing] = useState(false)
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(20)
   const [pagination, setPagination] = useState<{ page: number; limit: number; total: number; pages: number } | null>(null)
@@ -78,6 +77,7 @@ export default function AdminDeviceManagement() {
     }
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { loadDevices() }, [page, limit, status, category, query, modelQuery])
 
   useEffect(() => { if (categoryKey) setCategory(categoryKey) }, [categoryKey])
@@ -94,6 +94,7 @@ export default function AdminDeviceManagement() {
       } catch { /* fetch may fail silently */ }
     }
     fetchCategories()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const loadDevices = async () => {

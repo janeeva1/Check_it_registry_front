@@ -3,8 +3,8 @@ import { Layout } from '../components/Layout'
 import { useToast, ToastContainer } from '../components/Toast'
 import { motion } from 'framer-motion'
 import {
-  CreditCard, DollarSign, Wallet, Filter, Search, RefreshCw,
-  Banknote, ArrowUpRight, CheckCircle, Clock, AlertCircle, Plus, Landmark
+  CreditCard, Wallet, Search, RefreshCw,
+  Banknote, ArrowUpRight, CheckCircle, Clock, AlertCircle, Landmark
 } from 'lucide-react'
 import { apiClient } from '../lib/apiClient'
 
@@ -30,6 +30,7 @@ export default function BusinessPayouts() {
 
   useEffect(() => {
     fetchData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const fetchData = async () => {

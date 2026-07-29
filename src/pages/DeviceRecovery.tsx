@@ -4,7 +4,7 @@ import { Layout } from '../components/Layout'
 import { useToast, ToastContainer } from '../components/Toast'
 import { PaymentGate } from '../components/PaymentGate'
 import { MFAChallenge } from '../components/MFAChallenge'
-import { Shield, Loader2, CheckCircle, AlertTriangle, Smartphone, RefreshCw, ArrowLeft } from 'lucide-react'
+import { Shield, Loader2, CheckCircle, AlertTriangle, Smartphone, ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 interface RecoverableDevice {
@@ -28,19 +28,20 @@ const itemVariants = {
 
 export default function DeviceRecovery() {
   const navigate = useNavigate()
-  const { showSuccess, showError, showWarning, toasts, removeToast } = useToast()
+  const { showSuccess, showError, showWarning: _showWarning, toasts, removeToast } = useToast()
   const [devices, setDevices] = useState<RecoverableDevice[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedDevice, setSelectedDevice] = useState<RecoverableDevice | null>(null)
   const [step, setStep] = useState<'list' | 'confirm' | 'processing' | 'success'>('list')
   const [showPayment, setShowPayment] = useState(false)
   const [showMfa, setShowMfa] = useState(false)
-  const [mfaToken, setMfaToken] = useState<string | null>(null)
+  const [_mfaToken, setMfaToken] = useState<string | null>(null)
   const [bypassToken, setBypassToken] = useState<string | null>(null)
   const [processing, setProcessing] = useState(false)
 
   useEffect(() => {
     loadRecoverableDevices()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const loadRecoverableDevices = async () => {

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Smartphone, Monitor, Headphones, Gamepad, Watch, Camera, Tv, Speaker, Package, Plus, Trash2, Shield, Loader2 } from 'lucide-react'
+import { Smartphone, Monitor, Headphones, Gamepad, Watch, Camera, Tv, Speaker, Package, Plus, Shield, Loader2 } from 'lucide-react'
 import { Layout } from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast, ToastContainer } from '../components/Toast'
@@ -50,7 +50,7 @@ export default function DeviceRegistration() {
     e.preventDefault()
     try {
       setSubmitting(true)
-      const token = localStorage.getItem('auth_token')
+      const _token = localStorage.getItem('auth_token')
       const payload = {
         ...form,
         estimatedValue: form.estimatedValue ? parseFloat(form.estimatedValue) : null,

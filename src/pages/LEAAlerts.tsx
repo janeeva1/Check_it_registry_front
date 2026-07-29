@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Layout } from '../components/Layout'
 import {
-  ShieldAlert, AlertTriangle, Bell, Filter, RefreshCw,
+  ShieldAlert, AlertTriangle, Bell, RefreshCw,
   Eye, MapPin, Globe, Monitor, Smartphone, Clock, Activity,
-  AlertCircle, ChevronDown
+  AlertCircle
 } from 'lucide-react'
 
 interface ReportedDevice {

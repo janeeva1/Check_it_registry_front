@@ -101,23 +101,6 @@ export const MobileDeviceCheck: React.FC<MobileDeviceCheckProps> = ({
     }, 30000);
   };
 
-  const getDeviceInfo = () => {
-    if (!capabilities) return null;
-
-    return {
-      platform: capabilities.platform,
-      browser: capabilities.browserName,
-      osVersion: capabilities.osVersion,
-      isMobile: capabilities.isMobile,
-      isTablet: capabilities.isTablet,
-      isStandalone: mobileIntegrationService.isStandalone(),
-      deviceMemory: mobileIntegrationService.getDeviceMemory(),
-      hardwareConcurrency: mobileIntegrationService.getHardwareConcurrency(),
-      connectionType: mobileIntegrationService.getConnectionType(),
-      isOnline: mobileIntegrationService.isOnline(),
-    };
-  };
-
   if (!capabilities) {
     return (
       <div className="flex items-center justify-center p-8">

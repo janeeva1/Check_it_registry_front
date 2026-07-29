@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { AlertTriangle, Smartphone, MapPin, FileText, Send, Loader2, CheckCircle, ArrowLeft, Info } from 'lucide-react'
+import { AlertTriangle, Info, Smartphone, MapPin, Send, Loader2, CheckCircle, ArrowLeft } from 'lucide-react'
 import { Layout } from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast, ToastContainer } from '../components/Toast'
@@ -28,10 +28,10 @@ export default function ReportDeviceIncident() {
   const [form, setForm] = useState({ deviceModel: '', imei: '', serial: '', location: '', description: '', policeReport: '', contactEmail: '' })
   const [submitting, setSubmitting] = useState(false)
   const [ninVerified, setNinVerified] = useState<boolean | null>(null)
-  const [checkingNin, setCheckingNin] = useState(false)
+  const [_checkingNin, setCheckingNin] = useState(false)
   const [showPayment, setShowPayment] = useState(false)
   const [showMfa, setShowMfa] = useState(false)
-  const [pendingReport, setPendingReport] = useState<boolean>(false)
+  const [_pendingReport, setPendingReport] = useState<boolean>(false)
 
   useEffect(() => {
     ;(async () => {
@@ -44,7 +44,7 @@ export default function ReportDeviceIncident() {
     })()
   }, [])
 
-  const handlePaySuccess = (token: string) => {
+  const handlePaySuccess = (_token: string) => {
     setShowPayment(false)
     setPendingReport(true)
     submitReport()

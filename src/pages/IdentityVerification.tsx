@@ -5,7 +5,7 @@ import { useToast, ToastContainer } from '../components/Toast'
 import { PaymentGate } from '../components/PaymentGate'
 import { apiClient } from '../lib/apiClient'
 import { useAuth } from '../contexts/AuthContext'
-import { Shield, CheckCircle, AlertCircle, Loader2, IdCard, Eye, EyeOff } from 'lucide-react'
+import { Shield, CheckCircle, Loader2, IdCard, Eye, EyeOff } from 'lucide-react'
 
 interface VerificationStatus {
   nin_verified: boolean
@@ -22,7 +22,7 @@ const itemVariants = {
 }
 
 export default function IdentityVerification() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const { showSuccess, showError, toasts, removeToast } = useToast()
   const [nin, setNin] = useState('')
   const [loading, setLoading] = useState(false)

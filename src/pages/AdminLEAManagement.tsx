@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Layout } from '../components/Layout'
-import { Shield, Search, Filter, MapPin, Users, Plus, X } from 'lucide-react'
+import { Shield, Search, Filter, MapPin, Users, Plus } from 'lucide-react'
 
 type Agency = {
   id: string; name: string; jurisdiction: string

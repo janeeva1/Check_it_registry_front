@@ -46,7 +46,7 @@ export default function LEAPortal() {
   const [cases, setCases] = useState<Case[]>([])
   const [loading, setLoading] = useState(true)
   const [authorized, setAuthorized] = useState<boolean>(false)
-  const [authChecked, setAuthChecked] = useState<boolean>(false)
+  const [_authChecked, setAuthChecked] = useState<boolean>(false)
   const [selectedCase, setSelectedCase] = useState<Case | null>(null)
   const [caseNotes, setCaseNotes] = useState('')
   const [newStatus, setNewStatus] = useState('')

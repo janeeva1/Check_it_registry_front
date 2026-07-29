@@ -11,7 +11,6 @@ interface QRScannerProps {
 
 export const QRScanner: React.FC<QRScannerProps> = ({
   onScan,
-  onError,
   onClose,
   isOpen
 }) => {
@@ -21,16 +20,18 @@ export const QRScanner: React.FC<QRScannerProps> = ({
   const scannerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const current = scannerRef.current;
     if (isOpen) {
       checkCameraAndStartScan();
     }
     
     return () => {
       // Cleanup scanner
-      if (scannerRef.current) {
-        scannerRef.current.innerHTML = '';
+      if (current) {
+        current.innerHTML = '';
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   const checkCameraAndStartScan = async () => {
@@ -46,7 +47,7 @@ export const QRScanner: React.FC<QRScannerProps> = ({
       setHasCamera(true);
       startScanning();
       
-    } catch (err) {
+    } catch {
       setError('Failed to access camera');
       setHasCamera(false);
     }
@@ -73,8 +74,8 @@ export const QRScanner: React.FC<QRScannerProps> = ({
         setError(result.error || 'Failed to scan QR code');
       }
       
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Scanning failed');
+    } catch {
+      setError('Scanning failed');
     } finally {
       setIsScanning(false);
     }

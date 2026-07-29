@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Bell, AlertTriangle, Shield, Smartphone, CheckCircle, Clock, X, CheckCheck, Loader2, Trash2, RefreshCw, Eye } from 'lucide-react'
+import { Bell, AlertTriangle, Shield, Smartphone, Clock, CheckCheck, Loader2, Trash2, RefreshCw, Eye } from 'lucide-react'
 import { Layout } from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast, ToastContainer } from '../components/Toast'
@@ -17,8 +17,8 @@ type Notification = {
 }
 
 export default function Notifications() {
-  const { user } = useAuth()
-  const { toasts, removeToast, showSuccess, showError } = useToast()
+  const { user: _user } = useAuth()
+  const { toasts, removeToast, showSuccess, showError: _showError } = useToast()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'unread'>('all')
@@ -127,7 +127,7 @@ export default function Notifications() {
         ) : (
           <div className="row g-2">
             <AnimatePresence>
-              {filtered.map((n, i) => {
+              {filtered.map((n, _i) => {
                 const ti = typeIcon(n.type)
                 const Icon = ti.icon
                 return (

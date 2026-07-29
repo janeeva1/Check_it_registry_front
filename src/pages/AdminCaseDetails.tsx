@@ -96,7 +96,7 @@ export default function AdminCaseDetails() {
         body: JSON.stringify({ status: newStatus }),
       })
       if (!res.ok) throw new Error(`Failed to update status: ${res.status}`)
-      const updatedData = await res.json()
+      const _updatedData = await res.json()
       setData(prev => prev ? { ...prev, report: { ...prev.report, status: newStatus } } : null)
     } catch (err: any) {
       console.error('Update status error:', err)

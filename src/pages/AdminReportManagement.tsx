@@ -74,7 +74,7 @@ export default function AdminReportManagement() {
       })
       if (!res.ok) throw new Error('Failed to update status')
       setReports(prev => prev.map(r => r.id === id ? { ...r, status: newStatus } : r))
-    } catch (err) {
+    } catch {
       setError('Failed to update status')
     }
   }

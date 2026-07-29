@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Layout } from '../components/Layout'
-import { RefreshCw, Search, ArrowLeftRight, Shield, Clock, X } from 'lucide-react'
+import { RefreshCw, Search, ArrowLeftRight, Clock } from 'lucide-react'
 
 interface TransferRow {
   id: string; device_id: string; brand: string; model: string
@@ -28,7 +28,7 @@ export default function AdminTransferHistory() {
   const [status, setStatus] = useState('all')
   const [search, setSearch] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const { showError } = { showError: (t: string, m?: string) => {} }
+  const { showError: _showError } = { showError: (_t: string, _m?: string) => {} }
 
   const loadData = async () => {
     try {
@@ -57,6 +57,7 @@ export default function AdminTransferHistory() {
     } finally { setLoading(false) }
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { loadData() }, [status, selectedCategory])
 
   const categories = useMemo(() => {

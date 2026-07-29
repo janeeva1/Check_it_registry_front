@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { CheckCircle, CreditCard, Download, Send, Printer, ArrowLeft, Loader2, AlertTriangle } from 'lucide-react'
+import { CheckCircle, CreditCard, Send, Printer, ArrowLeft, Loader2, AlertTriangle } from 'lucide-react'
 import { Layout } from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast, ToastContainer } from '../components/Toast'
@@ -17,10 +17,10 @@ type Transaction = {
 }
 
 export default function PaymentConfirmation() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { toasts, removeToast, showSuccess, showError } = useToast()
+  const { toasts, removeToast, showSuccess, showError: _showError } = useToast()
   const [transaction, setTransaction] = useState<Transaction | null>(null)
   const [loading, setLoading] = useState(true)
 

@@ -61,8 +61,10 @@ export default function AuditTrail() {
     if (q) setSearchTerm(q)
     if (resource) setResourceFilter(resource)
     if (dr) setDateRange(dr)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { loadAuditData() }, [dateRange])
 
   const loadAuditData = async () => {
@@ -129,7 +131,7 @@ export default function AuditTrail() {
         const uniqueUsers = new Set(logs.map(l => l.user_id)).size
         setStats({ total_events: total, events_24h: events24h, critical_events: critical, failed_actions: failed, unique_users: uniqueUsers, top_actions: [] })
       }
-    } catch (err) {
+    } catch {
       showError('Loading Error', 'Failed to load audit trail data')
     } finally {
       setLoading(false)
@@ -319,7 +321,7 @@ export default function AuditTrail() {
                 <div className="d-flex flex-column gap-3">
                   <AnimatePresence>
                     {filteredLogs.map((log, index) => {
-                      const StatusIcon = getStatusIcon(log.status)
+                      const _StatusIcon = getStatusIcon(log.status)
                       return (
                         <motion.div key={log.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.03 }}
                           className="p-4 rounded-3" style={{ borderLeft: `4px solid ${getSeverityColor(log.severity)}`, background: 'var(--bg-primary)', border: '1px solid var(--border-color)' }}>

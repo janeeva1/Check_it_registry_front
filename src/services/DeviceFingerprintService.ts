@@ -128,7 +128,7 @@ export class DeviceFingerprintService {
       // Get image data
       const imageData = canvas.toDataURL();
       return await this.simpleHash(imageData);
-    } catch (error) {
+    } catch {
       return 'canvas-error';
     }
   }
@@ -148,7 +148,7 @@ export class DeviceFingerprintService {
       const renderer = debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL as number) : 'unknown';
 
       return await this.simpleHash(`${vendor}|${renderer}`);
-    } catch (error) {
+    } catch {
       return 'webgl-error';
     }
   }
@@ -242,13 +242,13 @@ export class DeviceFingerprintService {
         const start = performance.now();
         try {
           await fetch(endpoint, { mode: 'no-cors', cache: 'no-cache' });
-        } catch (error) {
+        } catch {
           // Ignore errors, we just want timing
         }
         const end = performance.now();
         timings.push(end - start);
       }
-    } catch (error) {
+    } catch {
       // Fallback timing
       timings.push(Math.random() * 100);
     }
@@ -314,7 +314,7 @@ export class DeviceFingerprintService {
         const hashArray = Array.from(new Uint8Array(hashBuffer));
         return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
       }
-    } catch (error) {
+    } catch {
       // Fallback to simple hash
     }
 

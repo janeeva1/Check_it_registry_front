@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Shield, BookOpen, Scale, Lock, Eye, Database, Mail, ArrowLeft, Globe, UserCheck, FileText } from 'lucide-react'
+import { Shield, Scale, Lock, Eye, Database, Mail, ArrowLeft, Globe, UserCheck, FileText } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 

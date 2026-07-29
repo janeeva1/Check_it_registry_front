@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CreditCard, Search, Eye, Download, ArrowUpRight, ArrowDownLeft, Loader2, Filter, Calendar } from 'lucide-react'
+import { CreditCard, Search, Eye, Download, ArrowUpRight, ArrowDownLeft, Loader2, Filter } from 'lucide-react'
 import { Layout } from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast, ToastContainer } from '../components/Toast'
@@ -21,8 +21,8 @@ const STATUS_OPTIONS = ['all', 'completed', 'pending', 'failed']
 const TYPE_OPTIONS = ['all', 'payment', 'refund', 'fee']
 
 export default function TransactionHistory() {
-  const { user } = useAuth()
-  const { toasts, removeToast, showError } = useToast()
+  const { user: _user } = useAuth()
+  const { toasts, removeToast, showError: _showError } = useToast()
   const [txs, setTxs] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

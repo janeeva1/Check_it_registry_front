@@ -32,6 +32,7 @@ export function MFAChallenge({ isOpen, onClose, actionType, actionLabel, onSucce
       setSessionId('')
       initiate()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, actionType])
 
   useEffect(() => {

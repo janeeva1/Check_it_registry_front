@@ -17,7 +17,7 @@ type CheckResult = {
   locationAccuracy?: number
 }
 
-const GoogleMapPin: React.FC<{ lat: number; lon: number; accuracy?: number }> = ({ lat, lon, accuracy }) => {
+const GoogleMapPin: React.FC<{ lat: number; lon: number; accuracy?: number }> = ({ lat, lon, accuracy: _accuracy }) => {
   const [failed, setFailed] = useState(false)
   if (failed) {
     return (

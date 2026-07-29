@@ -44,8 +44,7 @@ export class LocationService {
     try {
       const permission = await navigator.permissions.query({ name: 'geolocation' });
       return permission.state;
-    } catch (error) {
-      // Fallback for browsers that don't support permissions API
+    } catch {
       return 'prompt';
     }
   }

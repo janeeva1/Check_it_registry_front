@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Search, Smartphone, MapPin, MessageSquare, Camera, Send, CheckCircle, Loader2, ArrowLeft } from 'lucide-react'
+import { Search, Smartphone, MapPin, MessageSquare, Send, CheckCircle, Loader2, ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'

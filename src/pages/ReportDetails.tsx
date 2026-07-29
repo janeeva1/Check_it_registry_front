@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { AlertTriangle, Smartphone, MapPin, Clock, User, FileText, ArrowLeft, Loader2, Copy, ExternalLink, Shield } from 'lucide-react'
+import { AlertTriangle, Smartphone, MapPin, Clock, User, FileText, ArrowLeft, Loader2, ExternalLink, Shield } from 'lucide-react'
 import { Layout } from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast, ToastContainer } from '../components/Toast'
@@ -21,8 +21,8 @@ type Report = {
 export default function ReportDetails() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { user } = useAuth()
-  const { toasts, removeToast, showError } = useToast()
+  const { user: _user } = useAuth()
+  const { toasts, removeToast, showError: _showError } = useToast()
   const [report, setReport] = useState<Report | null>(null)
   const [loading, setLoading] = useState(true)
 

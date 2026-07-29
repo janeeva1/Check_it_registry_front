@@ -32,6 +32,7 @@ export default function LandingContentManager() {
   const API_URL = `${API_URL_BASE}/landing-content`
   const token = localStorage.getItem('auth_token')
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchContent() }, [])
 
   const fetchContent = async () => {

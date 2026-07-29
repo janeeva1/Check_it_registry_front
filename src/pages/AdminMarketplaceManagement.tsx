@@ -22,6 +22,7 @@ export default function AdminMarketplaceManagement() {
   const [search, setSearch] = useState('')
   const { showSuccess, showError } = useToast()
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchListings() }, [statusFilter, search])
 
   const fetchListings = async () => {
@@ -29,7 +30,7 @@ export default function AdminMarketplaceManagement() {
       setLoading(true)
       const data = await (apiClient as any).marketplace.adminGetAll({ status: statusFilter, search: search || undefined })
       if (Array.isArray(data)) setListings(data)
-    } catch (err) {
+    } catch {
       showError('Error', 'Failed to fetch listings')
     } finally { setLoading(false) }
   }

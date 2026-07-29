@@ -255,7 +255,7 @@ class MobileIntegrationService {
               data: record.data,
             })) || [];
             resolve({ success: true, data: { serialNumber, records } });
-          } catch (e) {
+          } catch {
             resolve({ success: false, error: 'Failed to parse NFC data' });
           }
         };

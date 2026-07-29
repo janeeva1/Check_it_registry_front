@@ -2,9 +2,9 @@ import { useState, useMemo, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Layout } from '../components/Layout'
 import {
-  MessageSquare, Send, Paperclip, Shield, Users, Search,
-  Clock, CheckCircle, AlertTriangle, FileText, Plus,
-  ChevronRight, Building, Lock
+  MessageSquare, Send, Paperclip, Shield, Search,
+  CheckCircle, FileText, Plus,
+  Building, Lock
 } from 'lucide-react'
 
 type Thread = { id: string; agency: string; unread: number; last: string; status?: string }

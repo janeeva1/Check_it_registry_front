@@ -2,9 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Layout } from '../components/Layout'
 import {
-  ArrowLeftRight, Search, RefreshCw, Shield, Clock,
-  Calendar, User, ChevronLeft, ChevronRight, Filter,
-  Smartphone, CheckCircle, XCircle, AlertTriangle, Ban
+  ArrowLeftRight, Search, RefreshCw, Shield,
+  Calendar, User, ChevronLeft, ChevronRight,
+  Smartphone, CheckCircle, XCircle, AlertTriangle, Ban,
+  Clock
 } from 'lucide-react'
 
 interface TransferRow {
@@ -79,6 +80,7 @@ export default function LEATransferHistory() {
     } finally { setLoading(false) }
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { loadData() }, [status, page])
 
   const filtered = useMemo(() => {

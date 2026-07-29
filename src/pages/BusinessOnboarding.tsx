@@ -4,7 +4,7 @@ import { Layout } from '../components/Layout'
 import { useToast, ToastContainer } from '../components/Toast'
 import { PaymentGate } from '../components/PaymentGate'
 import { apiClient } from '../lib/apiClient'
-import { Users, Loader2, CheckCircle, ArrowLeft, Smartphone, Mail, Phone, Percent } from 'lucide-react'
+import { Users, Loader2, CheckCircle, ArrowLeft, Smartphone, Mail, Phone } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 export default function BusinessOnboarding() {

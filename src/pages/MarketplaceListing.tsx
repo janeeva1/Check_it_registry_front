@@ -8,7 +8,7 @@ import { motion } from 'framer-motion'
 import {
   ArrowLeft, BadgeCheck, MapPin, MessageSquare, Star,
   ChevronLeft, ChevronRight, Heart, Share2, Clock,
-  Shield, Flag, Smartphone, CheckCircle, ChevronDown, ShoppingCart
+  Shield, Flag, Smartphone, CheckCircle, ShoppingCart
 } from 'lucide-react'
 
 type Listing = {
@@ -48,7 +48,7 @@ const conditionConfig = {
 export default function MarketplaceListing() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { toasts, removeToast, showSuccess, showError } = useToast()
+  const { toasts: _toasts, removeToast: _removeToast, showSuccess, showError } = useToast()
   const { addItem } = useCart()
  
   const [listing, setListing] = useState<Listing | null>(null)
@@ -120,7 +120,7 @@ export default function MarketplaceListing() {
       .catch(() => setCommissionPercent(5))
   }, [id, fetchListing])
 
-  const fetchSimilar = async () => {
+  const _fetchSimilar = async () => {
     try {
       const data = await apiClient.marketplace.list({ limit: 4 })
       const mapped = (data || []).slice(0, 4).map((l: any) => ({

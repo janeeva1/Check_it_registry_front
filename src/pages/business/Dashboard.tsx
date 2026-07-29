@@ -5,21 +5,13 @@ import {
   Package,
   DollarSign,
   ShoppingCart,
-  TrendingUp,
-  TrendingDown,
   Plus,
   Upload,
   Wallet,
-  Smartphone,
   Eye,
   ChevronRight,
   Activity,
-  Clock,
-  CheckCircle,
-  AlertTriangle,
-  BarChart3,
-  RefreshCw,
-  Percent
+  BarChart3
 } from 'lucide-react'
 import { Layout } from '../../components/Layout'
 import { useToast, ToastContainer } from '../../components/Toast'
@@ -81,6 +73,7 @@ export default function BusinessDashboard() {
   const [loading, setLoading] = useState(true)
   const { toasts, removeToast, showError } = useToast()
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchDashboardData() }, [])
 
   const fetchDashboardData = async () => {

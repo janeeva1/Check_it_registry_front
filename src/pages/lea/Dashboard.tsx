@@ -7,19 +7,14 @@ import {
   AlertTriangle,
   CheckCircle2,
   FileSearch,
-  MapPin,
   Search,
   Plus,
   Activity,
-  Clock,
-  Bell,
   ChevronRight,
   RefreshCw,
-  User,
   Calendar,
   ArrowRight,
-  TrendingUp,
-  TrendingDown
+  Bell
 } from 'lucide-react'
 import { Layout } from '../../components/Layout'
 import { useToast, ToastContainer } from '../../components/Toast'
@@ -110,6 +105,7 @@ export default function LEADashboard() {
   const [loading, setLoading] = useState(true)
   const { toasts, removeToast, showError } = useToast()
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { loadLEAData() }, [])
 
   const loadLEAData = async () => {
@@ -189,7 +185,7 @@ export default function LEADashboard() {
     }
   ], [stats, alerts])
 
-  const formatLabel = (value: string) => (value || '')
+  const _formatLabel = (value: string) => (value || '')
     .replace(/_/g, ' ')
     .replace(/\b\w/g, c => c.toUpperCase())
 

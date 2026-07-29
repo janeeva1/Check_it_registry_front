@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search as SearchIcon, Smartphone, Shield, AlertTriangle, CheckCircle, Loader2, ExternalLink, Copy, MapPin, Clock } from 'lucide-react'
+import { Search as SearchIcon, Smartphone, Shield, AlertTriangle, CheckCircle, Loader2 } from 'lucide-react'
 import { Layout } from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast, ToastContainer } from '../components/Toast'
@@ -27,8 +27,8 @@ type QuickCheckResult = {
 
 export default function Search() {
   const inputRef = useRef<HTMLInputElement>(null)
-  const { user } = useAuth()
-  const { toasts, removeToast, showSuccess, showError } = useToast()
+  const { user: _user } = useAuth()
+  const { toasts, removeToast, showSuccess: _showSuccess, showError: _showError } = useToast()
   const [query, setQuery] = useState('')
   const [mode, setMode] = useState<'all' | 'devices' | 'quick'>('all')
   const [results, setResults] = useState<SearchResult[]>([])

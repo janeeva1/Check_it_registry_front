@@ -6,7 +6,7 @@ import { useCart } from '../contexts/CartContext'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Search, SlidersHorizontal, Grid3X3, List, MapPin, Clock,
-  Smartphone, BadgeCheck, Star, MessageSquare, ChevronDown,
+  Smartphone, BadgeCheck,
   ChevronLeft, ChevronRight, RefreshCw, X, Package, FilterX, ShoppingCart
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -73,7 +73,7 @@ export default function MarketplaceBrowse() {
   const [currentPage, setCurrentPage] = useState(1)
   const [filterOpen, setFilterOpen] = useState(false)
   const navigate = useNavigate()
-  const { showError, showSuccess } = useToast()
+  const { showError: _showError, showSuccess } = useToast()
   const { addItem } = useCart()
 
   useEffect(() => {

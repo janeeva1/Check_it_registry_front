@@ -42,6 +42,7 @@ export default function Analytics() {
   const [activeTab, setActiveTab] = useState<'overview' | 'trends' | 'demographics' | 'security'>('overview')
   const { showError } = useToast()
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { loadAnalyticsData() }, [timeRange])
 
   const loadAnalyticsData = async () => {
@@ -98,7 +99,7 @@ export default function Analytics() {
           average_recovery_time: 0
         }
       })
-    } catch (err) {
+    } catch {
       showError('Loading Error', 'Failed to load analytics data')
     } finally {
       setLoading(false)

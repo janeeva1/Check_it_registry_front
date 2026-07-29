@@ -5,18 +5,13 @@ import {
   Users,
   Smartphone,
   FileText,
-  AlertTriangle,
   TrendingUp,
-  Activity,
   Shield,
   Eye,
   RefreshCw,
   Download,
   Package,
   DollarSign,
-  CheckCircle,
-  Clock,
-  Search,
   ChevronRight,
   Server,
   Zap,
@@ -66,6 +61,7 @@ export default function AdminDashboard() {
   const API_BASE = (import.meta.env.VITE_API_BASE_URL as string) || ''
   const API_URL = API_BASE ? `${API_BASE}/api` : (import.meta.env.VITE_API_URL || '/api')
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { loadDashboardData() }, [])
 
   const loadDashboardData = async () => {

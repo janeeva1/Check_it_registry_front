@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { CreditCard, Plus, Shield, CheckCircle, Loader2, ArrowLeft, Building2, Calendar, Lock } from 'lucide-react'
+import { CreditCard, Plus, Shield, Loader2, ArrowLeft, Building2, Calendar, Lock } from 'lucide-react'
 import { Layout } from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast, ToastContainer } from '../components/Toast'

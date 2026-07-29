@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   Plus, Package, Eye, EyeOff, Trash2, BadgeCheck,
-  Search, RefreshCw, Smartphone, AlertCircle, DollarSign
+  Search, RefreshCw, Smartphone, DollarSign
 } from 'lucide-react'
 import { apiClient } from '../lib/apiClient'
 import { useToast, ToastContainer } from '../components/Toast'
@@ -34,6 +34,7 @@ export default function BusinessMyListings() {
 
   useEffect(() => {
     fetchListings()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const fetchListings = async () => {

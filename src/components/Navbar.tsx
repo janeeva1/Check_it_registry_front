@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Bell,
@@ -49,7 +49,6 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onMenuClick, sidebarOpe
   const [unreadCount] = useState(0);
   const { theme, toggleTheme } = useTheme();
   const { itemCount } = useCart();
-  const navigate = useNavigate();
 
   const notificationRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);

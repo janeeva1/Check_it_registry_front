@@ -18,14 +18,14 @@ export default function MarketplaceThread() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { toasts, removeToast, showError } = useToast()
+  const { toasts: _toasts, removeToast: _removeToast, showError } = useToast()
 
   const [listing, setListing] = useState<any>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
-  const [listingLoading, setListingLoading] = useState(true)
+  const [_listingLoading, setListingLoading] = useState(true)
 
   const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)

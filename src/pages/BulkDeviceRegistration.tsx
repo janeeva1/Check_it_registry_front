@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Upload, FileSpreadsheet, Download, Trash2, CheckCircle, AlertTriangle, Loader2, Info, Eye, Plus } from 'lucide-react'
 import { Layout } from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
@@ -49,7 +49,7 @@ export default function BulkDeviceRegistration() {
   const submitAll = async () => {
     try {
       setSubmitting(true)
-      const token = localStorage.getItem('auth_token')
+      const _token = localStorage.getItem('auth_token')
       let success = 0; let failed = 0; const errors: string[] = []
       for (let i = 0; i < rows.length; i++) {
         try {

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { Plus, Package, DollarSign, Info, Image as ImageIcon, X, Loader2 } from 'lucide-react'
+import { Plus, Package, Info, Image as ImageIcon, X, Loader2 } from 'lucide-react'
 import { Layout } from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast, ToastContainer } from '../components/Toast'
@@ -10,7 +9,7 @@ type MyDevice = { id: string; brand: string; model: string; imei: string; serial
 type FormData = { deviceId: string; title: string; description: string; price: string; condition: string; images: File[] }
 
 export default function CreateListing() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const { toasts, removeToast, showSuccess, showError } = useToast()
   const [devices, setDevices] = useState<MyDevice[]>([])
   const [form, setForm] = useState<FormData>({ deviceId: '', title: '', description: '', price: '', condition: 'excellent', images: [] })

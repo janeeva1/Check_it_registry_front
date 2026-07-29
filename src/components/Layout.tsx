@@ -43,6 +43,7 @@ export function Layout({ children, requireAuth = false, allowedRoles }: LayoutPr
       navigate('/login')
       return
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, requireAuth, allowedRoles])
 
   const handleLogout = () => {

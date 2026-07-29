@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
-  Shield, Search, MapPin, Clock, AlertTriangle, CheckCircle,
+  Shield, Search, MapPin, Clock, AlertTriangle,
   Info, Copy, ExternalLink, Eye, User, Smartphone, FileText,
   Activity, Monitor, Globe, Signal
 } from 'lucide-react'
@@ -39,7 +39,7 @@ export default function DeviceCheckReport() {
   const [manualCheckId, setManualCheckId] = useState('')
   const [showFonts, setShowFonts] = useState(false)
   const [showPlugins, setShowPlugins] = useState(false)
-  const { toasts, removeToast, showError } = useToast()
+  const { toasts, removeToast, showError: _showError } = useToast()
 
   const parsedFingerprint = (() => {
     const raw = record?.check?.device_fingerprint
@@ -122,7 +122,7 @@ export default function DeviceCheckReport() {
         setLoading(true); setError(null)
         if (!checkId) { setRecord(null); return }
         const token = localStorage.getItem('auth_token')
-        const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
+        const _headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
         const res = await apiClient.deviceChecks.get(checkId)
         const data = (res as any)?.data || res
         setRecord(data)

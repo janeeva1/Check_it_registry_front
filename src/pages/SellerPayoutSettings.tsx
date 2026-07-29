@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Landmark, CheckCircle, AlertTriangle, Loader2, Trash2, RefreshCw, Banknote, ArrowLeft } from 'lucide-react'
+import { Landmark, CheckCircle, AlertTriangle, Loader2, Trash2, ArrowLeft } from 'lucide-react'
 import { Layout } from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast, ToastContainer } from '../components/Toast'
@@ -10,8 +10,8 @@ type Bank = { code: string; name: string }
 type BankAccount = { id: string; bankName: string; bankCode: string; accountNumber: string; accountName: string; isVerified: boolean }
 
 export default function SellerPayoutSettings() {
-  const { user } = useAuth()
-  const navigate = useNavigate()
+  const { user: _user } = useAuth()
+  const _navigate = useNavigate()
   const { toasts, removeToast, showSuccess, showError } = useToast()
 
   const [banks, setBanks] = useState<Bank[]>([])
@@ -52,6 +52,7 @@ export default function SellerPayoutSettings() {
       finally { setLoading(false) }
     }
     load()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const resolveAccount = async () => {
@@ -75,6 +76,7 @@ export default function SellerPayoutSettings() {
     } finally { setResolving(false) }
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (accountNumber.length === 10 && selectedBank) resolveAccount() }, [accountNumber, selectedBank])
 
   const saveAccount = async () => {

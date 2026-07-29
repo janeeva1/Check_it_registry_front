@@ -9,7 +9,6 @@ import {
   Loader,
   AlertCircle,
   Eye,
-  Clock,
   Smartphone
 } from 'lucide-react';
 import { locationService, LocationData, LocationError } from '../services/LocationService';

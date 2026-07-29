@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Layout } from '../../components/Layout'
 import { useToast, ToastContainer } from '../../components/Toast'
 import { apiClient } from '../../lib/apiClient'
-import { ShieldAlert, AlertTriangle, Eye, MapPin, RefreshCw, Loader2, CheckCircle, XCircle, Clock } from 'lucide-react'
+import { ShieldAlert, AlertTriangle, Eye, RefreshCw, Loader2, CheckCircle, XCircle, Clock } from 'lucide-react'
 
 interface FraudAlert {
   id: string
@@ -53,6 +53,7 @@ export default function FraudAlerts() {
   const [selectedAlert, setSelectedAlert] = useState<FraudAlert | null>(null)
   const [updating, setUpdating] = useState<string | null>(null)
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { loadData() }, [])
 
   const loadData = async () => {

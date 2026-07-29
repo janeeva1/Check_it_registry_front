@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Layout } from '../components/Layout'
 import { useToast, ToastContainer } from '../components/Toast'
 import { apiClient } from '../lib/apiClient'
-import { Users, Loader2, CheckCircle, XCircle, Clock, ArrowLeft, Search } from 'lucide-react'
+import { Users, Loader2, CheckCircle, XCircle, Clock, ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 export default function BusinessOnboardings() {
@@ -15,6 +15,7 @@ export default function BusinessOnboardings() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { loadData() }, [page])
 
   const loadData = async () => {

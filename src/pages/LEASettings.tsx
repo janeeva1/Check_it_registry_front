@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Layout } from '../components/Layout'
 import {
-  Settings, User, Bell, Shield, Eye, EyeOff, Save,
+  Settings, User, Bell, Shield, EyeOff, Save,
   Globe, Lock, Clock, Smartphone, Mail, Phone, MapPin,
-  Building, ChevronRight, AlertTriangle, CheckCircle
+  Building, AlertTriangle, CheckCircle
 } from 'lucide-react'
 
 interface LEAProfile {

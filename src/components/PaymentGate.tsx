@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Loader2, Shield, X, CreditCard } from 'lucide-react'
 import { apiClient } from '../lib/apiClient'
-import { useAuth } from '../contexts/AuthContext'
 
 interface PaymentGateProps {
   isOpen: boolean
@@ -14,7 +13,6 @@ interface PaymentGateProps {
 }
 
 export function PaymentGate({ isOpen, onClose, feeType, feeLabel, description, onSuccess }: PaymentGateProps) {
-  const { user } = useAuth()
   const [loading, setLoading] = useState(false)
   const [fee, setFee] = useState<{ amount: number; currency: string } | null>(null)
   const [fetchingFee, setFetchingFee] = useState(true)

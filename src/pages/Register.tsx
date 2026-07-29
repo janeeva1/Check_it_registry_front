@@ -5,7 +5,7 @@ import {
   Shield, Mail, Lock, Eye, EyeOff, UserPlus,
   User, Phone, MapPin, AlertCircle, CheckCircle,
   Building, ArrowRight, ArrowLeft, Github, Chrome,
-  Smartphone, Search, RefreshCw
+  Search, RefreshCw
 } from 'lucide-react'
 import { apiClient } from '../lib/apiClient'
 import { useToast } from '../components/Toast'
@@ -54,7 +54,7 @@ export default function Register() {
   const [error, setError] = useState('')
   const [step, setStep] = useState(1)
   const navigate = useNavigate()
-  const { toasts, removeToast, showSuccess, showError } = useToast()
+  const { toasts: _toasts, removeToast: _removeToast, showSuccess, showError } = useToast()
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target

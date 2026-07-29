@@ -11,9 +11,9 @@ const landingVersions = [
   { path: '/landing/v5', label: 'Stories' },
 ];
 import {
-  ShieldCheck, Search, ArrowRight, CheckCircle2, AlertTriangle,
-  ChevronRight, Quote, Star, Smartphone, Laptop, Heart,
-  Shield, Bell, MapPin, Clock, Fingerprint, Globe
+  Search, ArrowRight, CheckCircle2, AlertTriangle,
+  ChevronRight, Quote, Star, Smartphone, Heart,
+  Shield, MapPin, Clock, Fingerprint
 } from "lucide-react";
 
 const stories = [

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Shield, Smartphone, CheckCircle, XCircle, Loader2, Copy, RefreshCw, ArrowLeft, Key, Info } from 'lucide-react'
+import { Shield, Smartphone, CheckCircle, XCircle, Loader2, ArrowLeft, Key } from 'lucide-react'
 import { Layout } from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast, ToastContainer } from '../components/Toast'
@@ -9,9 +9,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 type Step = 'token' | 'otp' | 'result'
 
 export default function VerifyDevice() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const navigate = useNavigate()
-  const [searchParams, setSearchParams] = useSearchParams()
+  const [searchParams, _setSearchParams] = useSearchParams()
   const { toasts, removeToast, showSuccess, showError } = useToast()
   const [step, setStep] = useState<Step>('token')
   const [token, setToken] = useState(searchParams.get('token') || '')
@@ -27,6 +27,7 @@ export default function VerifyDevice() {
       setStep('otp')
       handleTokenLookup(searchParams.get('token')!)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleTokenLookup = async (t: string) => {

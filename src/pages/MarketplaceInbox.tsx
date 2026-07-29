@@ -3,8 +3,8 @@ import { Layout } from '../components/Layout'
 import { useToast } from '../components/Toast'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  MessageSquare, Filter, Search, Plus, Inbox,
-  ChevronRight, BadgeCheck, Clock
+  Search, Inbox,
+  ChevronRight, Clock
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
@@ -24,10 +24,10 @@ interface InboxMessage {
 export default function MarketplaceInbox() {
   const [items, setItems] = useState<InboxMessage[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [error, _setError] = useState<string | null>(null)
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all')
   const [search, setSearch] = useState('')
-  const { toasts, removeToast, showError } = useToast()
+  const { toasts: _toasts, removeToast: _removeToast, showError: _showError } = useToast()
   const navigate = useNavigate()
 
   useEffect(() => {

@@ -29,7 +29,7 @@ export default function LEACaseDetails() {
       try {
         const res = await fetch(`/api/lea-portal/cases/${id}`)
         if (!res.ok) throw new Error(`Failed to load case: ${res.status}`)
-        const json = await res.json()
+      const json = await res.json()
         if (isMounted) {
           setData(json)
           setNewStatus(json?.report?.status || '')
@@ -56,7 +56,7 @@ export default function LEACaseDetails() {
         body: JSON.stringify({ status: newStatus })
       })
       if (!res.ok) throw new Error('Failed to update status')
-      const json = await res.json()
+      const _json = await res.json()
       // reload minimal state
       if (data) setData({ ...data, report: { ...data.report, status: newStatus } })
     } catch (err: any) {

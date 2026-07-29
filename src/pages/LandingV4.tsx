@@ -12,8 +12,8 @@ const landingVersions = [
 ];
 import {
   ShieldCheck, Search, ArrowRight, Check, Building2, Users,
-  BarChart3, Globe, Lock, Zap, Server, Shield, AlertTriangle,
-  CheckCircle2, ChevronRight, Phone, Mail, ArrowUpRight
+  BarChart3, Globe, Lock, Shield, AlertTriangle,
+  CheckCircle2, ChevronRight, Mail, ArrowUpRight
 } from "lucide-react";
 
 const enterpriseFeatures = [

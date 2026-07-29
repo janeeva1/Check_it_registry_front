@@ -3,8 +3,8 @@ import { motion } from 'framer-motion'
 import { Layout } from '../components/Layout'
 import {
   Shield, RefreshCw, Search, MapPin, Calendar, Clock,
-  CheckCircle, AlertTriangle, User, Smartphone, Filter,
-  ChevronLeft, ChevronRight, Phone, Mail, Eye
+  CheckCircle, AlertTriangle, User, Smartphone,
+  ChevronLeft, ChevronRight, Mail, Eye
 } from 'lucide-react'
 
 interface RecoveryRecord {
@@ -48,6 +48,7 @@ export default function LEARecovery() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { loadData() }, [statusFilter, page])
 
   const loadData = async () => {

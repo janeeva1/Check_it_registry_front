@@ -12,12 +12,10 @@ import {
   Calendar,
   Info,
   Camera,
-  Wifi,
   QrCode,
   ShieldAlert,
   Eye,
-  Phone,
-  MapPin
+  Phone
 } from 'lucide-react'
 import { CheckResult } from '../types/database'
 import { apiClient } from '../lib/apiClient'

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Layout } from '../components/Layout'
 import {
-  Search, Smartphone, Hash, Globe, Calendar,
+  Search, Smartphone, Hash, Calendar,
   SlidersHorizontal, Eye, Shield, AlertTriangle, Download,
   Filter, Clock, MapPin, User
 } from 'lucide-react'

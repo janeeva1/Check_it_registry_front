@@ -4,7 +4,7 @@ import { Mail, Shield, CheckCircle, Loader2, ArrowLeft, RefreshCw } from 'lucide
 import { Layout } from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast, ToastContainer } from '../components/Toast'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 export default function EmailVerification() {
   const { user } = useAuth()
@@ -65,6 +65,7 @@ export default function EmailVerification() {
     finally { setSending(false) }
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (email) sendCode() }, [])
 
   const handleVerify = async (e: React.FormEvent) => {

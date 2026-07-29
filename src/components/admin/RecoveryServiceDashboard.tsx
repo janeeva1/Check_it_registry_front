@@ -1,6 +1,5 @@
 // Recovery Service Dashboard - Admin interface for managing recovery services
 import React, { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
 import {
   DollarSign,
   Users,

@@ -13,12 +13,8 @@ import {
   Search,
   FileText,
   Eye,
-  Edit,
-  MoreVertical,
   Bell,
-  User,
   Settings,
-  QrCode,
   MapPin,
   Calendar,
   Package,
@@ -81,10 +77,11 @@ export default function Dashboard() {
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const { toasts, removeToast, showError, showWarning } = useToast()
+  const { toasts, removeToast, showError, showWarning: _showWarning } = useToast()
 
   useEffect(() => {
     loadData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const loadData = async () => {
@@ -180,7 +177,7 @@ export default function Dashboard() {
     }
   }
 
-  const getStatusIcon = (status: string) => {
+  const _getStatusIcon = (status: string) => {
     switch (status) {
       case 'verified': return { icon: CheckCircle, color: 'var(--success-500)' }
       case 'unverified': return { icon: Clock, color: 'var(--warning-500)' }
@@ -458,7 +455,7 @@ export default function Dashboard() {
                       <div className="d-flex gap-4 mb-4 flex-wrap">
                         {['verified', 'unverified', 'stolen', 'lost', 'found'].map(status => {
                           const count = devices.filter(d => d.status === status).length
-                          const pct = Math.round((count / devices.length) * 100)
+                          const _pct = Math.round((count / devices.length) * 100)
                           const colors: Record<string, string> = {
                             verified: 'var(--success-500)',
                             unverified: 'var(--warning-500)',
@@ -485,7 +482,7 @@ export default function Dashboard() {
                       <div className="d-flex align-items-end gap-1" style={{ height: 120 }}>
                         {['verified', 'unverified', 'stolen', 'lost', 'found'].map(status => {
                           const count = devices.filter(d => d.status === 'found').length
-                          const pct = devices.length > 0 ? (count / devices.length) * 100 : 0
+                          const _pct = devices.length > 0 ? (count / devices.length) * 100 : 0
                           const barPct = status === 'verified'
                             ? 80 : status === 'unverified'
                             ? 30 : status === 'stolen'
