@@ -83,6 +83,7 @@ export default function ReportMissing() {
         <div className="row justify-content-center">
           <div className="col-lg-8">
             <form onSubmit={handleSubmit}>
+              <div style={{fontSize:12,color:'var(--text-tertiary)',marginBottom:12}}><span style={{color:'red'}}>*</span> Required fields</div>
               <div className="modern-card p-4 mb-4">
                 <h5 className="mb-4">Incident Type</h5>
                 <div className="d-flex flex-wrap gap-3">
@@ -105,15 +106,15 @@ export default function ReportMissing() {
                     <input className="modern-input" placeholder="e.g. iPhone 14 Pro Max" value={form.model} onChange={e => setForm(p => ({ ...p, model: e.target.value }))} required />
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label">IMEI</label>
+                    <label className="form-label">IMEI <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                     <input className="modern-input" placeholder="15-digit IMEI" value={form.imei} onChange={e => setForm(p => ({ ...p, imei: e.target.value.replace(/\D/g, '').slice(0, 15) }))} />
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label">Serial Number</label>
+                    <label className="form-label">Serial Number <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                     <input className="modern-input" placeholder="Serial number" value={form.serial} onChange={e => setForm(p => ({ ...p, serial: e.target.value }))} />
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label">Police Report #</label>
+                    <label className="form-label">Police Report # <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                     <input className="modern-input" placeholder="If filed" value={form.policeReport} onChange={e => setForm(p => ({ ...p, policeReport: e.target.value }))} />
                   </div>
                 </div>
@@ -127,7 +128,7 @@ export default function ReportMissing() {
                     <textarea className="modern-textarea" rows={2} placeholder="Where did the incident occur?" value={form.location} onChange={e => setForm(p => ({ ...p, location: e.target.value }))} required />
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label d-flex align-items-center gap-2"><Clock size={14} /> Date & Time</label>
+                    <label className="form-label d-flex align-items-center gap-2"><Clock size={14} /> Date & Time <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                     <input type="datetime-local" className="modern-input" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} />
                   </div>
                   <div className="col-12">

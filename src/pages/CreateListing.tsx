@@ -86,6 +86,7 @@ export default function CreateListing() {
                   <Package size={20} style={{ color: 'var(--primary-600)' }} />
                   Device Information
                 </h5>
+                <div style={{fontSize:12,color:'var(--text-tertiary)',marginBottom:12}}><span style={{color:'red'}}>*</span> Required fields</div>
                 <div className="row g-3">
                   <div className="col-12">
                     <label className="form-label">Select Device *</label>
@@ -105,7 +106,7 @@ export default function CreateListing() {
                     <input className="modern-input" placeholder="e.g. iPhone 14 Pro Max - Like New" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} required />
                   </div>
                   <div className="col-12">
-                    <label className="form-label">Description</label>
+                    <label className="form-label">Description <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                     <textarea className="modern-textarea" rows={4} placeholder="Describe the device's condition, accessories, reason for selling, etc." value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} />
                   </div>
                   <div className="col-md-6">
@@ -113,7 +114,7 @@ export default function CreateListing() {
                     <input type="number" className="modern-input" placeholder="0.00" min="0" step="0.01" value={form.price} onChange={e => setForm(p => ({ ...p, price: e.target.value }))} required />
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label">Condition</label>
+                    <label className="form-label">Condition <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                     <select className="modern-select" value={form.condition} onChange={e => setForm(p => ({ ...p, condition: e.target.value }))}>
                       <option value="excellent">Excellent</option>
                       <option value="good">Good</option>

@@ -121,8 +121,9 @@ export default function PasswordReset() {
 
                 {step === 'email' && (
                   <form onSubmit={handleSendCode}>
+                    <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginBottom: 16 }}><span style={{ color: 'red' }}>*</span> Required fields</div>
                     <div className="mb-4">
-                      <label className="form-label">Email Address</label>
+                      <label className="form-label">Email Address <span style={{ color: 'red' }}>*</span></label>
                       <div className="d-flex align-items-center gap-2 modern-input" style={{ padding: '0 12px' }}>
                         <Mail size={18} style={{ color: 'var(--text-secondary)' }} />
                         <input type="email" className="flex-grow-1" style={{ border: 'none', outline: 'none', background: 'transparent', padding: '12px 0' }} placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required />
@@ -164,8 +165,9 @@ export default function PasswordReset() {
 
                 {step === 'reset' && (
                   <form onSubmit={handleReset}>
+                    <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginBottom: 16 }}><span style={{ color: 'red' }}>*</span> Required fields</div>
                     <div className="mb-3">
-                      <label className="form-label">New Password</label>
+                      <label className="form-label">New Password <span style={{ color: 'red' }}>*</span></label>
                       <div className="d-flex align-items-center gap-2 modern-input" style={{ padding: '0 12px' }}>
                         <Lock size={18} style={{ color: 'var(--text-secondary)' }} />
                         <input type={showPassword ? 'text' : 'password'} className="flex-grow-1" style={{ border: 'none', outline: 'none', background: 'transparent', padding: '12px 0' }} placeholder="Min 8 characters" value={password} onChange={e => setPassword(e.target.value)} required minLength={8} />
@@ -175,7 +177,7 @@ export default function PasswordReset() {
                       </div>
                     </div>
                     <div className="mb-4">
-                      <label className="form-label">Confirm Password</label>
+                      <label className="form-label">Confirm Password <span style={{ color: 'red' }}>*</span></label>
                       <input type="password" className="modern-input" placeholder="Repeat your password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required minLength={8} />
                     </div>
                     <button type="submit" className="btn-gradient-primary w-100 d-flex align-items-center justify-content-center gap-2 py-3" disabled={loading || !password || !confirmPassword}>

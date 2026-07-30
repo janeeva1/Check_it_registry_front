@@ -155,17 +155,18 @@ export default function LEASettings() {
                 </div>
               </div>
             </div>
+            <div style={{fontSize:12,color:'var(--text-tertiary)',marginBottom:12}}><span style={{color:'red'}}>*</span> Required fields</div>
             <div className="row g-3">
               <div className="col-md-6">
-                <label className="form-label"><Building size={14} className="me-1" />Agency Name</label>
+                <label className="form-label"><Building size={14} className="me-1" />Agency Name <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                 <input className="modern-input" value={profile.agencyName} onChange={e => setProfile({ ...profile, agencyName: e.target.value })} />
               </div>
               <div className="col-md-6">
-                <label className="form-label">Agency Code</label>
+                <label className="form-label">Agency Code <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                 <input className="modern-input" value={profile.agencyCode} onChange={e => setProfile({ ...profile, agencyCode: e.target.value })} />
               </div>
               <div className="col-md-4">
-                <label className="form-label"><Shield size={14} className="me-1" />Jurisdiction</label>
+                <label className="form-label"><Shield size={14} className="me-1" />Jurisdiction <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                 <select className="modern-select" value={profile.jurisdiction} onChange={e => setProfile({ ...profile, jurisdiction: e.target.value })}>
                   <option value="Federal">Federal</option>
                   <option value="State">State</option>
@@ -173,23 +174,23 @@ export default function LEASettings() {
                 </select>
               </div>
               <div className="col-md-4">
-                <label className="form-label"><MapPin size={14} className="me-1" />Region</label>
+                <label className="form-label"><MapPin size={14} className="me-1" />Region <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                 <input className="modern-input" value={profile.region} onChange={e => setProfile({ ...profile, region: e.target.value })} />
               </div>
               <div className="col-md-4">
-                <label className="form-label">Address</label>
+                <label className="form-label">Address <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                 <input className="modern-input" value={profile.address} onChange={e => setProfile({ ...profile, address: e.target.value })} />
               </div>
               <div className="col-md-4">
-                <label className="form-label"><User size={14} className="me-1" />Commander Name</label>
+                <label className="form-label"><User size={14} className="me-1" />Commander Name <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                 <input className="modern-input" value={profile.commanderName} onChange={e => setProfile({ ...profile, commanderName: e.target.value })} />
               </div>
               <div className="col-md-4">
-                <label className="form-label"><Mail size={14} className="me-1" />Commander Email</label>
+                <label className="form-label"><Mail size={14} className="me-1" />Commander Email <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                 <input className="modern-input" type="email" value={profile.commanderEmail} onChange={e => setProfile({ ...profile, commanderEmail: e.target.value })} />
               </div>
               <div className="col-md-4">
-                <label className="form-label"><Phone size={14} className="me-1" />Commander Phone</label>
+                <label className="form-label"><Phone size={14} className="me-1" />Commander Phone <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                 <input className="modern-input" value={profile.commanderPhone} onChange={e => setProfile({ ...profile, commanderPhone: e.target.value })} />
               </div>
             </div>

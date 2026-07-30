@@ -300,11 +300,12 @@ export default function Login() {
               </div>
 
               <form onSubmit={handleLogin}>
+                <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginBottom: 16 }}><span style={{ color: 'red' }}>*</span> Required fields</div>
                 {/* Email */}
                 <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }} style={{ marginBottom: 20 }}>
                   <label htmlFor="email" className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <Mail size={14} /> Email Address
-                  </label>
+<Mail size={14} /> Email Address <span style={{ color: 'red' }}>*</span>
+                    </label>
                   <div style={{ position: 'relative' }}>
                     <input
                       id="email"
@@ -323,8 +324,8 @@ export default function Login() {
                 {/* Password */}
                 <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }} style={{ marginBottom: 16 }}>
                   <label htmlFor="password" className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <Lock size={14} /> Password
-                  </label>
+<Lock size={14} /> Password <span style={{ color: 'red' }}>*</span>
+                    </label>
                   <div style={{ position: 'relative' }}>
                     <input
                       id="password"

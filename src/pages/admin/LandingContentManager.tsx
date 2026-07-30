@@ -204,19 +204,20 @@ export default function LandingContentManager() {
                   <button type="button" onClick={() => setIsModalOpen(false)} className="btn-ghost p-1"><X size={20} /></button>
                 </div>
                 <div className="modal-body">
+                  <div style={{fontSize:12,color:'var(--text-tertiary)',marginBottom:12}}><span style={{color:'red'}}>*</span> Required fields</div>
                   <div className="row g-3">
                     <div className="col-md-6">
-                      <label className="form-label">Name</label>
+                      <label className="form-label">Name <span style={{color:'red'}}>*</span></label>
                       <input type="text" className="modern-input" required value={editingItem.name}
                         onChange={e => setEditingItem({ ...editingItem, name: e.target.value })} />
                     </div>
                     <div className="col-md-6">
-                      <label className="form-label">Role / Title</label>
+                      <label className="form-label">Role / Title <span style={{color:'red'}}>*</span></label>
                       <input type="text" className="modern-input" required value={editingItem.role}
                         onChange={e => setEditingItem({ ...editingItem, role: e.target.value })} />
                     </div>
                     <div className="col-12">
-                      <label className="form-label">Image URL</label>
+                      <label className="form-label">Image URL <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                       <input type="url" className="modern-input" placeholder="https://..." value={editingItem.image_url || ''}
                         onChange={e => setEditingItem({ ...editingItem, image_url: e.target.value })} />
                       {editingItem.image_url && (
@@ -227,12 +228,12 @@ export default function LandingContentManager() {
                       )}
                     </div>
                     <div className="col-12">
-                      <label className="form-label">{activeTab === 'team' ? 'Bio / Description' : 'Quote / Content'}</label>
+                      <label className="form-label">{activeTab === 'team' ? 'Bio / Description' : 'Quote / Content'} <span style={{color:'red'}}>*</span></label>
                       <textarea className="modern-textarea" rows={4} required value={editingItem.content}
                         onChange={e => setEditingItem({ ...editingItem, content: e.target.value })} />
                     </div>
                     <div className="col-md-6">
-                      <label className="form-label">Display Order</label>
+                      <label className="form-label">Display Order <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                       <input type="number" className="modern-input" value={editingItem.display_order}
                         onChange={e => setEditingItem({ ...editingItem, display_order: parseInt(e.target.value) || 0 })} />
                     </div>

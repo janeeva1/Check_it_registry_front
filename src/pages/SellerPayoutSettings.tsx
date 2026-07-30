@@ -186,8 +186,10 @@ export default function SellerPayoutSettings() {
             <div className="modern-card p-4">
               <h5 className="mb-3" style={{ fontWeight: 600 }}>Add Your Bank Account</h5>
 
+              <div style={{fontSize:12,color:'var(--text-tertiary)',marginBottom:12}}><span style={{color:'red'}}>*</span> Required fields</div>
+
               <div className="mb-3">
-                <label className="d-block mb-2" style={{ fontSize: 14, fontWeight: 500 }}>Select Bank</label>
+                <label className="d-block mb-2" style={{ fontSize: 14, fontWeight: 500 }}>Select Bank <span style={{color:'red'}}>*</span></label>
                 <select className="modern-select w-100" value={selectedBank} onChange={e => setSelectedBank(e.target.value)}>
                   <option value="">-- Select Bank --</option>
                   {banks.map(b => <option key={b.code} value={b.code}>{b.name}</option>)}
@@ -195,7 +197,7 @@ export default function SellerPayoutSettings() {
               </div>
 
               <div className="mb-3">
-                <label className="d-block mb-2" style={{ fontSize: 14, fontWeight: 500 }}>Account Number</label>
+                <label className="d-block mb-2" style={{ fontSize: 14, fontWeight: 500 }}>Account Number <span style={{color:'red'}}>*</span></label>
                 <input type="text" className="modern-input w-100" maxLength={10} placeholder="0123456789"
                   value={accountNumber} onChange={e => setAccountNumber(e.target.value.replace(/\D/g, ''))} />
               </div>

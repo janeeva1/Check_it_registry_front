@@ -86,12 +86,12 @@ export default function FoundDevice() {
                   </div>
                   <div className="row g-3 mb-4">
                     <div className="col-md-6">
-                      <label className="form-label">IMEI Number</label>
-                      <input className="modern-input" placeholder="15-digit IMEI" value={imei} onChange={e => setImei(e.target.value.replace(/\D/g, '').slice(0, 15))} />
+                        <label className="form-label">IMEI Number <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
+                        <input className="modern-input" placeholder="15-digit IMEI" value={imei} onChange={e => setImei(e.target.value.replace(/\D/g, '').slice(0, 15))} />
                     </div>
                     <div className="col-md-6">
-                      <label className="form-label">Serial Number</label>
-                      <input className="modern-input" placeholder="Serial number" value={serial} onChange={e => setSerial(e.target.value)} />
+                        <label className="form-label">Serial Number <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
+                        <input className="modern-input" placeholder="Serial number" value={serial} onChange={e => setSerial(e.target.value)} />
                     </div>
                   </div>
                   <button className="btn-gradient-primary w-100 d-flex align-items-center justify-content-center gap-2 py-3" disabled={loading || (!imei && !serial)} onClick={handleLookup}>
@@ -119,6 +119,7 @@ export default function FoundDevice() {
                 </div>
 
                 <form onSubmit={handleSubmit}>
+                  <div style={{fontSize:12,color:'var(--text-tertiary)',marginBottom:12}}><span style={{color:'red'}}>*</span> Required fields</div>
                   <div className="modern-card p-4 mb-4">
                     <h5 className="mb-4 d-flex align-items-center gap-2"><MapPin size={20} style={{ color: 'var(--success-500)' }} /> Where did you find it?</h5>
                     <div className="row g-3">
@@ -127,7 +128,7 @@ export default function FoundDevice() {
                         <textarea className="modern-textarea" rows={2} placeholder="e.g. Found at Central Park, near the main entrance" value={form.location} onChange={e => setForm(p => ({ ...p, location: e.target.value }))} required />
                       </div>
                       <div className="col-12">
-                        <label className="form-label">Description</label>
+                        <label className="form-label">Description <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                         <textarea className="modern-textarea" rows={3} placeholder="Any additional details about the device condition or circumstances" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} />
                       </div>
                     </div>
@@ -146,7 +147,7 @@ export default function FoundDevice() {
                         <input type="email" className="modern-input" placeholder="your@email.com" value={form.contactEmail} onChange={e => setForm(p => ({ ...p, contactEmail: e.target.value }))} required />
                       </div>
                       <div className="col-md-6">
-                        <label className="form-label">Phone</label>
+                        <label className="form-label">Phone <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                         <input className="modern-input" placeholder="Phone number" value={form.contactPhone} onChange={e => setForm(p => ({ ...p, contactPhone: e.target.value }))} />
                       </div>
                     </div>

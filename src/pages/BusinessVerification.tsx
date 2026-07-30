@@ -103,9 +103,10 @@ export default function BusinessVerification() {
                   </p>
                 </div>
 
+                <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginBottom: 12 }}><span style={{ color: 'red' }}>*</span> Required fields</div>
                 <div className="mb-3">
                   <label className="form-label" style={{ color: 'var(--text-primary)', fontWeight: 500 }}>
-                    RC Number
+                    RC Number <span style={{ color: 'red' }}>*</span>
                   </label>
                   <input
                     type="text"
@@ -118,7 +119,7 @@ export default function BusinessVerification() {
 
                 <div className="mb-4">
                   <label className="form-label" style={{ color: 'var(--text-primary)', fontWeight: 500 }}>
-                    Company Name <span style={{ color: 'var(--text-tertiary)' }}>(optional)</span>
+                    Company Name <span style={{ color: 'var(--text-secondary)', fontSize: '0.85em' }}>(optional)</span>
                   </label>
                   <input
                     type="text"

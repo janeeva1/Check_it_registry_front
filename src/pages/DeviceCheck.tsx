@@ -331,6 +331,7 @@ export default function DeviceCheck() {
               className="modern-card p-4 p-md-5 mb-5"
             >
               <form onSubmit={handleCheck}>
+                <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginBottom: 12 }}><span style={{ color: 'red' }}>*</span> Required fields</div>
                 <div className="text-center mb-4">
                   <h2 className="h4 mb-2" style={{ color: 'var(--text-primary)' }}>Check Device Status</h2>
                   <p style={{ color: 'var(--text-secondary)' }}>Enter IMEI or serial number to verify device</p>
@@ -340,7 +341,7 @@ export default function DeviceCheck() {
                 <div className="mb-4">
                   <label htmlFor="imei" className="form-label fw-semibold d-flex align-items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                     <Smartphone size={16} />
-                    IMEI Number
+                    IMEI Number <span style={{ color: 'var(--text-secondary)', fontSize: '0.85em' }}>(optional)</span>
                   </label>
                   <div className="position-relative">
                     <input
@@ -380,7 +381,7 @@ export default function DeviceCheck() {
                 <div className="mb-4">
                   <label htmlFor="serial" className="form-label fw-semibold d-flex align-items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                     <Barcode size={16} />
-                    Serial Number
+                    Serial Number <span style={{ color: 'var(--text-secondary)', fontSize: '0.85em' }}>(optional)</span>
                   </label>
                   <div className="position-relative">
                     <input

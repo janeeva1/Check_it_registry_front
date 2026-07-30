@@ -260,10 +260,11 @@ const DeviceCheckModal: React.FC<DeviceCheckModalProps> = ({
                 exit={{ opacity: 0, x: -20 }}
               >
                 <form onSubmit={handleDeviceSubmit}>
+                  <div style={{fontSize:12,color:'var(--text-tertiary)',marginBottom:12}}><span style={{color:'red'}}>*</span> Required fields</div>
                   <div className="mb-4">
                     <label className="form-label fw-semibold">
                       <Smartphone size={16} className="me-2" />
-                      Device Identifier
+                      Device Identifier <span style={{color:'red'}}>*</span>
                     </label>
                     <input
                       type="text"

@@ -68,6 +68,7 @@ export default function PaymentAddMethod() {
           <div className="col-lg-6">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
               <form onSubmit={handleSubmit}>
+                <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginBottom: 12 }}><span style={{ color: 'red' }}>*</span> Required fields</div>
                 <div className="modern-card p-4 p-md-5 mb-4">
                   <div className="d-flex align-items-center justify-content-between mb-4 p-3 rounded-3" style={{ backgroundColor: 'var(--primary-50)' }}>
                     <div className="d-flex align-items-center gap-2">
@@ -78,7 +79,7 @@ export default function PaymentAddMethod() {
                   </div>
 
                   <div className="mb-3">
-                    <label className="form-label">Card Number</label>
+                    <label className="form-label">Card Number <span style={{ color: 'red' }}>*</span></label>
                     <div className="d-flex align-items-center gap-2 modern-input" style={{ padding: '0 12px' }}>
                       <CreditCard size={18} style={{ color: 'var(--text-secondary)' }} />
                       <input className="flex-grow-1" style={{ border: 'none', outline: 'none', background: 'transparent', padding: '12px 0', fontFamily: 'monospace' }} placeholder="1234 5678 9012 3456" value={form.cardNumber} onChange={e => setForm(p => ({ ...p, cardNumber: formatCard(e.target.value) }))} required />
@@ -86,7 +87,7 @@ export default function PaymentAddMethod() {
                   </div>
 
                   <div className="mb-3">
-                    <label className="form-label">Cardholder Name</label>
+                    <label className="form-label">Cardholder Name <span style={{ color: 'red' }}>*</span></label>
                     <div className="d-flex align-items-center gap-2 modern-input" style={{ padding: '0 12px' }}>
                       <Building2 size={18} style={{ color: 'var(--text-secondary)' }} />
                       <input className="flex-grow-1" style={{ border: 'none', outline: 'none', background: 'transparent', padding: '12px 0' }} placeholder="John Doe" value={form.cardHolder} onChange={e => setForm(p => ({ ...p, cardHolder: e.target.value }))} required />
@@ -95,14 +96,14 @@ export default function PaymentAddMethod() {
 
                   <div className="row g-3 mb-3">
                     <div className="col-md-6">
-                      <label className="form-label">Expiry Date</label>
+                      <label className="form-label">Expiry Date <span style={{ color: 'red' }}>*</span></label>
                       <div className="d-flex align-items-center gap-2 modern-input" style={{ padding: '0 12px' }}>
                         <Calendar size={18} style={{ color: 'var(--text-secondary)' }} />
                         <input className="flex-grow-1" style={{ border: 'none', outline: 'none', background: 'transparent', padding: '12px 0', fontFamily: 'monospace' }} placeholder="MM/YY" value={form.expiry} onChange={e => setForm(p => ({ ...p, expiry: formatExpiry(e.target.value) }))} required />
                       </div>
                     </div>
                     <div className="col-md-6">
-                      <label className="form-label">CVV</label>
+                      <label className="form-label">CVV <span style={{ color: 'red' }}>*</span></label>
                       <div className="d-flex align-items-center gap-2 modern-input" style={{ padding: '0 12px' }}>
                         <Lock size={18} style={{ color: 'var(--text-secondary)' }} />
                         <input type="password" className="flex-grow-1" style={{ border: 'none', outline: 'none', background: 'transparent', padding: '12px 0', fontFamily: 'monospace' }} placeholder="***" maxLength={4} value={form.cvv} onChange={e => setForm(p => ({ ...p, cvv: e.target.value.replace(/\D/g, '') }))} required />
@@ -111,7 +112,7 @@ export default function PaymentAddMethod() {
                   </div>
 
                   <div className="mb-4">
-                    <label className="form-label">Billing ZIP Code</label>
+                    <label className="form-label">Billing ZIP Code <span style={{ color: 'var(--text-secondary)', fontSize: '0.85em' }}>(optional)</span></label>
                     <input className="modern-input" placeholder="Enter ZIP" value={form.billingZip} onChange={e => setForm(p => ({ ...p, billingZip: e.target.value }))} />
                   </div>
 

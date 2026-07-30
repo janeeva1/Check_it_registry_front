@@ -146,8 +146,9 @@ export default function VerifyDevice() {
                     <h4>Enter Verification Token</h4>
                     <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>Paste the token from your email or SMS</p>
                   </div>
+                  <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginBottom: 12 }}><span style={{ color: 'red' }}>*</span> Required fields</div>
                   <div className="mb-4">
-                    <label className="form-label">Verification Token</label>
+                    <label className="form-label">Verification Token <span style={{ color: 'red' }}>*</span></label>
                     <textarea className="modern-textarea" rows={2} placeholder="Paste your verification token here..." value={token} onChange={e => setToken(e.target.value)} />
                   </div>
                   <button className="btn-gradient-primary w-100 d-flex align-items-center justify-content-center gap-2 py-3" disabled={loading || !token.trim()} onClick={() => handleTokenLookup(token)}>

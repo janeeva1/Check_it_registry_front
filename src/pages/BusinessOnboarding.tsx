@@ -118,19 +118,20 @@ export default function BusinessOnboarding() {
                     </div>
                   )}
                   <form onSubmit={handleSubmit}>
+                      <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginBottom: 12 }}><span style={{ color: 'red' }}>*</span> Required fields</div>
                     <div className="modern-card p-4 p-md-5 mb-4">
                       <h5 className="mb-4 d-flex align-items-center gap-2"><Users size={20} style={{ color: 'var(--primary-600)' }} /> Customer Details</h5>
                       <div className="row g-3">
                         <div className="col-md-6">
-                          <label className="form-label">Full Name *</label>
+                          <label className="form-label">Full Name <span style={{ color: 'red' }}>*</span></label>
                           <input className="modern-input" placeholder="Customer full name" value={form.customer_name} onChange={e => setForm(p => ({ ...p, customer_name: e.target.value }))} required />
                         </div>
                         <div className="col-md-6">
-                          <label className="form-label"><Mail size={14} /> Email</label>
+                          <label className="form-label"><Mail size={14} /> Email <span style={{ color: 'var(--text-secondary)', fontSize: '0.85em' }}>(optional)</span></label>
                           <input type="email" className="modern-input" placeholder="customer@email.com" value={form.customer_email} onChange={e => setForm(p => ({ ...p, customer_email: e.target.value }))} />
                         </div>
                         <div className="col-md-6">
-                          <label className="form-label"><Phone size={14} /> Phone</label>
+                          <label className="form-label"><Phone size={14} /> Phone <span style={{ color: 'var(--text-secondary)', fontSize: '0.85em' }}>(optional)</span></label>
                           <input className="modern-input" placeholder="+234 XXX XXX XXXX" value={form.customer_phone} onChange={e => setForm(p => ({ ...p, customer_phone: e.target.value }))} />
                         </div>
                       </div>
@@ -140,15 +141,15 @@ export default function BusinessOnboarding() {
                       <h5 className="mb-4 d-flex align-items-center gap-2"><Smartphone size={20} style={{ color: 'var(--danger-500)' }} /> Device Information</h5>
                       <div className="row g-3">
                         <div className="col-md-4">
-                          <label className="form-label">Brand</label>
+                          <label className="form-label">Brand <span style={{ color: 'var(--text-secondary)', fontSize: '0.85em' }}>(optional)</span></label>
                           <input className="modern-input" placeholder="e.g. Samsung" value={form.device_brand} onChange={e => setForm(p => ({ ...p, device_brand: e.target.value }))} />
                         </div>
                         <div className="col-md-4">
-                          <label className="form-label">Model</label>
+                          <label className="form-label">Model <span style={{ color: 'var(--text-secondary)', fontSize: '0.85em' }}>(optional)</span></label>
                           <input className="modern-input" placeholder="e.g. Galaxy S24" value={form.device_model} onChange={e => setForm(p => ({ ...p, device_model: e.target.value }))} />
                         </div>
                         <div className="col-md-4">
-                          <label className="form-label">IMEI</label>
+                          <label className="form-label">IMEI <span style={{ color: 'var(--text-secondary)', fontSize: '0.85em' }}>(optional)</span></label>
                           <input className="modern-input" placeholder="15-digit IMEI" value={form.device_imei} onChange={e => setForm(p => ({ ...p, device_imei: e.target.value.replace(/\D/g, '').slice(0, 15) }))} />
                         </div>
                       </div>

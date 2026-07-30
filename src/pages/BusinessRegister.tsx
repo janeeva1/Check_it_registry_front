@@ -45,48 +45,49 @@ export default function BusinessRegister() {
         <h2 className="fw-bold mb-3">Business Registration</h2>
         {!submitted ? (
           <form onSubmit={onSubmit} className="modern-card p-3">
+            <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginBottom: 12 }}><span style={{ color: 'red' }}>*</span> Required fields</div>
             <div className="row g-3">
               <div className="col-12 col-md-6">
-                <label className="form-label">Business Name</label>
+                <label className="form-label">Business Name <span style={{ color: 'red' }}>*</span></label>
                 <input className={`modern-input ${errors.name ? 'is-invalid' : ''}`} value={form.name} onChange={e => update('name', e.target.value)} />
                 {errors.name && <div className="invalid-feedback">{errors.name}</div>}
               </div>
               <div className="col-12 col-md-6">
-                <label className="form-label">Registration Number</label>
+                <label className="form-label">Registration Number <span style={{ color: 'red' }}>*</span></label>
                 <input className={`modern-input ${errors.registrationNumber ? 'is-invalid' : ''}`} value={form.registrationNumber} onChange={e => update('registrationNumber', e.target.value)} />
                 {errors.registrationNumber && <div className="invalid-feedback">{errors.registrationNumber}</div>}
               </div>
 
               <div className="col-12 col-md-6">
-                <label className="form-label">Email</label>
+                <label className="form-label">Email <span style={{ color: 'red' }}>*</span></label>
                 <input type="email" className={`modern-input ${errors.email ? 'is-invalid' : ''}`} value={form.email} onChange={e => update('email', e.target.value)} />
                 {errors.email && <div className="invalid-feedback">{errors.email}</div>}
               </div>
               <div className="col-12 col-md-6">
-                <label className="form-label">Phone</label>
+                <label className="form-label">Phone <span style={{ color: 'red' }}>*</span></label>
                 <input className={`modern-input ${errors.phone ? 'is-invalid' : ''}`} value={form.phone} onChange={e => update('phone', e.target.value)} />
                 {errors.phone && <div className="invalid-feedback">{errors.phone}</div>}
               </div>
 
               <div className="col-12 col-md-6">
-                <label className="form-label">Country</label>
+                <label className="form-label">Country <span style={{ color: 'red' }}>*</span></label>
                 <input className={`modern-input ${errors.country ? 'is-invalid' : ''}`} value={form.country} onChange={e => update('country', e.target.value)} />
                 {errors.country && <div className="invalid-feedback">{errors.country}</div>}
               </div>
               <div className="col-12 col-md-6">
-                <label className="form-label">City</label>
+                <label className="form-label">City <span style={{ color: 'red' }}>*</span></label>
                 <input className={`modern-input ${errors.city ? 'is-invalid' : ''}`} value={form.city} onChange={e => update('city', e.target.value)} />
                 {errors.city && <div className="invalid-feedback">{errors.city}</div>}
               </div>
 
               <div className="col-12">
-                <label className="form-label">Address</label>
+                <label className="form-label">Address <span style={{ color: 'red' }}>*</span></label>
                 <input className={`modern-input ${errors.address ? 'is-invalid' : ''}`} value={form.address} onChange={e => update('address', e.target.value)} />
                 {errors.address && <div className="invalid-feedback">{errors.address}</div>}
               </div>
 
               <div className="col-12 col-md-6">
-                <label className="form-label">Sector</label>
+                <label className="form-label">Sector <span style={{ color: 'var(--text-secondary)', fontSize: '0.85em' }}>(optional)</span></label>
                 <select className="form-select" value={form.sector} onChange={e => update('sector', e.target.value)}>
                   <option value="retail">Retail</option>
                   <option value="wholesale">Wholesale</option>

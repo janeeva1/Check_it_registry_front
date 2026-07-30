@@ -139,9 +139,10 @@ export default function IdentityVerification() {
               </p>
             </div>
 
+            <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginBottom: 12 }}><span style={{ color: 'red' }}>*</span> Required fields</div>
             <div className="mb-4">
               <label className="form-label" style={{ color: 'var(--text-primary)', fontWeight: 500 }}>
-                NIN (National Identification Number)
+                NIN (National Identification Number) <span style={{ color: 'red' }}>*</span>
               </label>
               <div className="position-relative">
                 <input

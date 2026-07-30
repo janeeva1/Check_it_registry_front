@@ -76,14 +76,15 @@ export default function AdminDeviceCategories() {
 
           <motion.div variants={itemVariants} className="modern-card p-4 mb-4">
             <h3 className="section-title"><Plus size={18} /> Add New Category</h3>
+            <div style={{fontSize:12,color:'var(--text-tertiary)',marginBottom:12}}><span style={{color:'red'}}>*</span> Required fields</div>
             <div className="row g-3 align-items-end">
               <div className="col-md-4">
-                <label className="form-label">Category Name</label>
+                <label className="form-label">Category Name <span style={{color:'red'}}>*</span></label>
                 <input className="modern-input" placeholder="e.g. Apple" value={name} onChange={e => setName(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && addCategory()} />
               </div>
               <div className="col-md-6">
-                <label className="form-label">Description (optional)</label>
+                <label className="form-label">Description <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                 <input className="modern-input" placeholder="Short description" value={description} onChange={e => setDescription(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && addCategory()} />
               </div>

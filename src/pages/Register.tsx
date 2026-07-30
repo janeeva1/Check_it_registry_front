@@ -295,13 +295,14 @@ export default function Register() {
               </div>
 
               <form onSubmit={step === 3 ? handleRegister : (e) => { e.preventDefault(); handleNextStep() }}>
+                <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginBottom: 16 }}><span style={{ color: 'red' }}>*</span> Required fields</div>
                 <AnimatePresence mode="wait">
                   {/* Step 1: Basic Information */}
                   {step === 1 && (
                     <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }}>
                       <div style={{ marginBottom: 20 }}>
                         <label htmlFor="name" className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <User size={14} /> Full Name
+                          <User size={14} /> Full Name <span style={{ color: 'red' }}>*</span>
                         </label>
                         <div style={{ position: 'relative' }}>
                           <input id="name" name="name" type="text" className="modern-input" placeholder="John Doe"
@@ -313,7 +314,7 @@ export default function Register() {
 
                       <div style={{ marginBottom: 20 }}>
                         <label htmlFor="email" className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <Mail size={14} /> Email Address
+                          <Mail size={14} /> Email Address <span style={{ color: 'red' }}>*</span>
                         </label>
                         <div style={{ position: 'relative' }}>
                           <input id="email" name="email" type="email" className="modern-input" placeholder="name@example.com"
@@ -325,7 +326,7 @@ export default function Register() {
 
                       <div style={{ marginBottom: 4 }}>
                         <label htmlFor="accountType" className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <Building size={14} /> Account Type
+                          <Building size={14} /> Account Type <span style={{ color: 'var(--text-secondary)', fontSize: '0.85em' }}>(optional)</span>
                         </label>
                         <select id="accountType" name="accountType" className="modern-select"
                           value={formData.accountType} onChange={handleInputChange} style={{ paddingLeft: 44 }}>
@@ -342,7 +343,7 @@ export default function Register() {
                     <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }}>
                       <div style={{ marginBottom: 20 }}>
                         <label htmlFor="password" className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <Lock size={14} /> Password
+                          <Lock size={14} /> Password <span style={{ color: 'red' }}>*</span>
                         </label>
                         <div style={{ position: 'relative' }}>
                           <input id="password" name="password" type={showPassword ? 'text' : 'password'} className="modern-input" placeholder="Create a strong password"
@@ -388,7 +389,7 @@ export default function Register() {
 
                       <div style={{ marginBottom: 4 }}>
                         <label htmlFor="confirmPassword" className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <Lock size={14} /> Confirm Password
+                          <Lock size={14} /> Confirm Password <span style={{ color: 'red' }}>*</span>
                         </label>
                         <div style={{ position: 'relative' }}>
                           <input id="confirmPassword" name="confirmPassword" type={showConfirmPassword ? 'text' : 'password'} className={`modern-input${formData.confirmPassword && formData.password !== formData.confirmPassword ? ' error' : ''}`} placeholder="Confirm your password"
@@ -411,7 +412,7 @@ export default function Register() {
                     <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }}>
                       <div style={{ marginBottom: 20 }}>
                         <label htmlFor="phone" className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <Phone size={14} /> Phone Number
+                          <Phone size={14} /> Phone Number <span style={{ color: 'var(--text-secondary)', fontSize: '0.85em' }}>(optional)</span>
                         </label>
                         <div style={{ position: 'relative' }}>
                           <input id="phone" name="phone" type="tel" className="modern-input" placeholder="+1 (555) 000-0000"
@@ -424,7 +425,7 @@ export default function Register() {
 
                       <div style={{ marginBottom: 20 }}>
                         <label htmlFor="region" className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <MapPin size={14} /> Region / Country
+                          <MapPin size={14} /> Region / Country <span style={{ color: 'var(--text-secondary)', fontSize: '0.85em' }}>(optional)</span>
                         </label>
                         <div style={{ position: 'relative' }}>
                           <input id="region" name="region" type="text" className="modern-input" placeholder="e.g. United States"

@@ -27,6 +27,7 @@ type FormData = {
   category: string
   color: string
   storage: string
+  description: string
   notes: string
   purchaseDate: string
   estimatedValue: string
@@ -34,7 +35,7 @@ type FormData = {
 
 const initialState: FormData = {
   brand: '', model: '', imei: '', serial: '', category: 'smartphone',
-  color: '', storage: '', notes: '', purchaseDate: '', estimatedValue: '',
+  color: '', storage: '', description: '', notes: '', purchaseDate: '', estimatedValue: '',
 }
 
 export default function DeviceRegistration() {
@@ -133,6 +134,7 @@ export default function DeviceRegistration() {
                 {step === 2 && (
                   <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
                     <h4 className="mb-4">Device Information</h4>
+                    <div style={{fontSize:12,color:'var(--text-tertiary)',marginBottom:12}}><span style={{color:'red'}}>*</span> Required fields</div>
                     <div className="row g-3">
                       <div className="col-md-6">
                         <label className="form-label">Brand *</label>
@@ -143,19 +145,19 @@ export default function DeviceRegistration() {
                         <input className="modern-input" placeholder="e.g. iPhone 14" value={form.model} onChange={e => update('model', e.target.value)} required />
                       </div>
                       <div className="col-md-6">
-                        <label className="form-label">IMEI (if applicable)</label>
+                        <label className="form-label">IMEI (if applicable) <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                         <input className="modern-input" placeholder="15-digit IMEI" value={form.imei} onChange={e => update('imei', e.target.value.replace(/\D/g, '').slice(0, 15))} />
                       </div>
                       <div className="col-md-6">
-                        <label className="form-label">Serial Number</label>
+                        <label className="form-label">Serial Number <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                         <input className="modern-input" placeholder="Serial number" value={form.serial} onChange={e => update('serial', e.target.value)} />
                       </div>
                       <div className="col-md-4">
-                        <label className="form-label">Color</label>
+                        <label className="form-label">Color <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                         <input className="modern-input" placeholder="e.g. Space Gray" value={form.color} onChange={e => update('color', e.target.value)} />
                       </div>
                       <div className="col-md-4">
-                        <label className="form-label">Storage</label>
+                        <label className="form-label">Storage <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                         <select className="modern-select" value={form.storage} onChange={e => update('storage', e.target.value)}>
                           <option value="">Select</option>
                           <option value="16GB">16 GB</option>
@@ -169,15 +171,21 @@ export default function DeviceRegistration() {
                         </select>
                       </div>
                       <div className="col-md-4">
-                        <label className="form-label">Estimated Value ($)</label>
+                        <label className="form-label">Estimated Value ($) <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                         <input type="number" className="modern-input" placeholder="0.00" value={form.estimatedValue} onChange={e => update('estimatedValue', e.target.value)} />
                       </div>
                       <div className="col-md-6">
-                        <label className="form-label">Purchase Date</label>
+                        <label className="form-label">Purchase Date <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                         <input type="date" className="modern-input" value={form.purchaseDate} onChange={e => update('purchaseDate', e.target.value)} />
                       </div>
+                      {form.category === 'other' && (
+                        <div className="col-12">
+                          <label className="form-label">Description *</label>
+                          <textarea className="modern-textarea" rows={2} placeholder="Describe your device (e.g. brand, model, physical characteristics)" value={form.description} onChange={e => update('description', e.target.value)} required />
+                        </div>
+                      )}
                       <div className="col-12">
-                        <label className="form-label">Additional Notes</label>
+                        <label className="form-label">Additional Notes <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                         <textarea className="modern-textarea" rows={3} placeholder="Any additional details..." value={form.notes} onChange={e => update('notes', e.target.value)} />
                       </div>
                     </div>
@@ -205,6 +213,7 @@ export default function DeviceRegistration() {
                         <div className="col-md-6"><strong>Storage:</strong> {form.storage || '—'}</div>
                         <div className="col-md-6"><strong>Value:</strong> {form.estimatedValue ? `$${form.estimatedValue}` : '—'}</div>
                         <div className="col-md-6"><strong>Purchase Date:</strong> {form.purchaseDate || '—'}</div>
+                        {form.category === 'other' && <div className="col-12"><strong>Description:</strong> {form.description || '—'}</div>}
                         <div className="col-12"><strong>Notes:</strong> {form.notes || '—'}</div>
                       </div>
                     </div>

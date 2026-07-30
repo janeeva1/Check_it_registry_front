@@ -174,21 +174,22 @@ export default function ReportDeviceIncident() {
                   <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                     <div className="modern-card p-4 p-md-5 mb-4">
                       <h5 className="mb-4 d-flex align-items-center gap-2"><Smartphone size={20} style={{ color: 'var(--primary-600)' }} /> Device Details</h5>
+                      <div style={{fontSize:12,color:'var(--text-tertiary)',marginBottom:12}}><span style={{color:'red'}}>*</span> Required fields</div>
                       <div className="row g-3">
                         <div className="col-md-6">
                           <label className="form-label">Device Model *</label>
                           <input className="modern-input" placeholder="e.g. iPhone 14 Pro Max" value={form.deviceModel} onChange={e => setForm(p => ({ ...p, deviceModel: e.target.value }))} required />
                         </div>
                         <div className="col-md-6">
-                          <label className="form-label">IMEI</label>
+                          <label className="form-label">IMEI <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                           <input className="modern-input" placeholder="15-digit IMEI" value={form.imei} onChange={e => setForm(p => ({ ...p, imei: e.target.value.replace(/\D/g, '').slice(0, 15) }))} />
                         </div>
                         <div className="col-md-6">
-                          <label className="form-label">Serial Number</label>
+                          <label className="form-label">Serial Number <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                           <input className="modern-input" placeholder="Serial number" value={form.serial} onChange={e => setForm(p => ({ ...p, serial: e.target.value }))} />
                         </div>
                         <div className="col-md-6">
-                          <label className="form-label">Police Report #</label>
+                          <label className="form-label">Police Report # <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                           <input className="modern-input" placeholder="If available" value={form.policeReport} onChange={e => setForm(p => ({ ...p, policeReport: e.target.value }))} />
                         </div>
                       </div>
@@ -206,7 +207,7 @@ export default function ReportDeviceIncident() {
                           <textarea className="modern-textarea" rows={4} placeholder="Provide a detailed description of what happened" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} required />
                         </div>
                         <div className="col-md-6">
-                          <label className="form-label">Contact Email</label>
+                          <label className="form-label">Contact Email <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                           <input type="email" className="modern-input" placeholder="For updates" value={form.contactEmail} onChange={e => setForm(p => ({ ...p, contactEmail: e.target.value }))} />
                         </div>
                       </div>

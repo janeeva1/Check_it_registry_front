@@ -180,6 +180,7 @@ export default function DeviceTransfer() {
                 <form onSubmit={initiateTransfer}>
                   <div className="modern-card p-4 p-md-5 mb-4">
                     <h5 className="mb-4 d-flex align-items-center gap-2"><Smartphone size={20} style={{ color: 'var(--primary-600)' }} /> Select Device</h5>
+                    <div style={{fontSize:12,color:'var(--text-tertiary)',marginBottom:12}}><span style={{color:'red'}}>*</span> Required fields</div>
                     <div className="mb-3">
                       <label className="form-label">Device to Transfer *</label>
                       {loadingDevices ? (
