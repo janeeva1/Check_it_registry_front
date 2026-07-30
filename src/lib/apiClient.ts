@@ -83,7 +83,15 @@ class ApiClient {
       }
 
       try {
-        return JSON.parse(text);
+        const parsed = JSON.parse(text);
+        // Unwrap response envelope if present ({ success: true, data: ... } or { success: false, error: ... })
+        if (parsed && typeof parsed === 'object' && parsed.success !== undefined) {
+          if (!parsed.success) {
+            throw new Error(parsed.error?.message || parsed.error || 'Request failed');
+          }
+          return parsed.data !== undefined ? parsed.data : parsed;
+        }
+        return parsed;
       } catch {
         throw new Error("Invalid JSON response from server");
       }
@@ -798,16 +806,16 @@ class ApiClient {
         body: JSON.stringify(data),
       }),
     verifyNIN: (data: { nin: string; provider?: string; bypass_payment?: boolean }) =>
-      this.request('/security/verify-nin', {
+      this.request('/security/nin/verify', {
         method: 'POST',
         body: JSON.stringify(data),
       }),
     verifyCAC: (data: { rc_number: string; company_name?: string; provider?: string; bypass_payment?: boolean }) =>
-      this.request('/security/verify-cac', {
+      this.request('/security/cac/verify', {
         method: 'POST',
         body: JSON.stringify(data),
       }),
-    riskCheck: () => this.request('/security/risk-check'),
+    riskCheck: () => this.request('/security/check-risk', { method: 'POST' }),
     getVerificationStatus: () => this.request('/security/verification-status'),
   };
 

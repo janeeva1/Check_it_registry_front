@@ -75,13 +75,13 @@ function RecoveryServiceDashboard() {
           })}`,
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              Authorization: `Bearer ${localStorage.getItem('auth_token')}`,
             },
           }
         ),
         fetch('/api/recovery-services/admin/stats', {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            Authorization: `Bearer ${localStorage.getItem('auth_token')}`,
           },
         }),
       ])
@@ -109,7 +109,7 @@ function RecoveryServiceDashboard() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem('auth_token')}`,
         },
         body: JSON.stringify({ status: newStatus, notes }),
       })
@@ -130,7 +130,7 @@ function RecoveryServiceDashboard() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem('auth_token')}`,
         },
         body: JSON.stringify({ reason, partialAmount }),
       })
