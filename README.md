@@ -73,7 +73,7 @@ The dev server proxies `/api` requests to the backend via Vite's proxy config.
 
 ## Notes
 
-- `lib/supabase.ts` is the API client (not Supabase) — connects to the Express backend
+- `lib/apiClient.ts` is the API client — connects to the Express backend via fetch
 - All API calls use `fetch()` directly with JWT Bearer tokens
 - Role gating via `Layout` component with `allowedRoles` prop
 - See root `README.md` for full project documentation
