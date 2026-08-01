@@ -105,7 +105,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onMenuClick, sidebarOpe
       <div className="d-flex align-items-center justify-content-between w-100 h-100 px-3 px-md-4">
         {/* Left: sidebar toggle + logo */}
         <div className="d-flex align-items-center gap-2">
-          {user ? (
+          {user && onMenuClick ? (
             <button
               onClick={() => onMenuClick?.()}
               className="nav-action-btn d-none d-md-flex"
