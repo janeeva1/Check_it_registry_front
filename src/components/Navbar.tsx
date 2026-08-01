@@ -16,7 +16,8 @@ import {
   Search,
   Store,
   Flag,
-  ShoppingCart
+  ShoppingCart,
+  LayoutDashboard
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useCart } from '../contexts/CartContext';
@@ -69,6 +70,14 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onMenuClick, sidebarOpe
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = prev; };
+    }
+  }, [isMobileMenuOpen]);
 
   const getUserInitials = (name: string) => {
     return name
@@ -269,8 +278,8 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onMenuClick, sidebarOpe
             </>
           ) : (
             <div className="d-flex align-items-center gap-2">
-              <Link to="/login" className="nav-action-btn fw-semibold" style={{ padding: '0 18px' }}>Sign In</Link>
-              <Link to="/register" className="nav-action-btn fw-bold" style={{ background: 'var(--primary-600)', color: '#fff', borderRadius: '999px', padding: '0 22px', border: 'none' }}>Sign Up</Link>
+              <Link to="/login" className="nav-action-btn fw-semibold d-none d-sm-flex" style={{ padding: '0 18px' }}>Sign In</Link>
+              <Link to="/register" className="nav-action-btn fw-bold d-none d-sm-flex" style={{ background: 'var(--primary-600)', color: '#fff', borderRadius: '999px', padding: '0 22px', border: 'none' }}>Sign Up</Link>
             </div>
           )}
         </div>
@@ -281,83 +290,135 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onMenuClick, sidebarOpe
         {isMobileMenuOpen && (
           <motion.div
             ref={mobileMenuRef}
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
             className="d-lg-none"
             style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              right: 0,
+              zIndex: 99999,
+              maxHeight: 'calc(100vh - 64px)',
+              overflowY: 'auto',
               backgroundColor: 'var(--bg-primary)',
               borderBottom: '1px solid var(--border-color)',
-              overflow: 'hidden',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+              boxShadow: '0 24px 48px -12px rgba(0,0,0,0.25)',
             }}
           >
-            <div className="px-3 py-3 d-flex flex-column gap-1">
-              {NAV_LINKS.map(link => (
-                <NavLink
-                  key={link.path}
-                  to={link.path}
-                  className={({ isActive }) =>
-                    `d-flex align-items-center gap-3 px-3 py-3 rounded-3 text-decoration-none ${isActive ? 'mobile-nav-active' : 'mobile-nav-link'}`
-                  }
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  style={({ isActive }) => ({
-                    color: isActive ? 'var(--primary-600)' : 'var(--text-secondary)',
-                    fontWeight: isActive ? 600 : 500,
-                    background: isActive ? 'rgba(34, 197, 94, 0.08)' : 'transparent',
-                  })}
-                >
-                  <link.icon size={20} />
-                  <span>{link.label}</span>
-                </NavLink>
-              ))}
-              <hr className="my-2" style={{ borderColor: 'var(--border-color)' }} />
+            <div className="px-3 pt-3 pb-4">
+              {/* Primary actions */}
+              <div className="d-flex flex-column gap-1">
+                <div className="px-3 pt-1 pb-2 text-uppercase fw-semibold" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', letterSpacing: '0.08em' }}>
+                  Quick Actions
+                </div>
+                {NAV_LINKS.map(link => (
+                  <NavLink
+                    key={link.path}
+                    to={link.path}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="d-flex align-items-center gap-3 px-3 py-2 rounded-3 text-decoration-none"
+                    style={({ isActive }) => ({
+                      color: isActive ? 'var(--primary-600)' : 'var(--text-primary)',
+                      fontWeight: isActive ? 600 : 500,
+                      background: isActive ? 'rgba(34, 197, 94, 0.08)' : 'transparent',
+                    })}
+                  >
+                    {({ isActive }) => (
+                      <>
+                        <span
+                          className="d-flex align-items-center justify-content-center flex-shrink-0"
+                          style={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: 12,
+                            background: isActive ? 'rgba(34, 197, 94, 0.12)' : 'var(--bg-tertiary)',
+                            color: isActive ? 'var(--primary-600)' : 'var(--text-secondary)',
+                          }}
+                        >
+                          <link.icon size={18} />
+                        </span>
+                        <span style={{ fontSize: 15 }}>{link.label}</span>
+                      </>
+                    )}
+                  </NavLink>
+                ))}
+              </div>
+
+              <hr className="my-3" style={{ borderColor: 'var(--border-color)' }} />
+
               {user ? (
                 <>
-                  <Link
-                    to="/dashboard"
-                    className="d-flex align-items-center gap-3 px-3 py-3 rounded-3 text-decoration-none mobile-nav-link"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <User size={20} />
-                    <span>Dashboard</span>
-                  </Link>
-                  <Link
-                    to="/profile"
-                    className="d-flex align-items-center gap-3 px-3 py-3 rounded-3 text-decoration-none mobile-nav-link"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <Settings size={20} />
-                    <span>Profile</span>
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="d-flex align-items-center gap-3 px-3 py-3 rounded-3 border-0 bg-transparent w-100 text-start mobile-nav-link"
-                    style={{ color: 'var(--danger-500)' }}
-                    type="button"
-                  >
-                    <LogOut size={20} />
-                    <span>Sign Out</span>
-                  </button>
+                  <div className="px-3 pt-1 pb-2 text-uppercase fw-semibold" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', letterSpacing: '0.08em' }}>
+                    Account
+                  </div>
+                  <div className="d-flex flex-column gap-1">
+                    <Link
+                      to="/dashboard"
+                      className="d-flex align-items-center gap-3 px-3 py-2 rounded-3 text-decoration-none mobile-nav-link"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      style={{ color: 'var(--text-primary)' }}
+                    >
+                      <span className="d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: 40, height: 40, borderRadius: 12, background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}>
+                        <LayoutDashboard size={18} />
+                      </span>
+                      <span style={{ fontSize: 15 }}>Dashboard</span>
+                    </Link>
+                    <Link
+                      to="/profile"
+                      className="d-flex align-items-center gap-3 px-3 py-2 rounded-3 text-decoration-none mobile-nav-link"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      style={{ color: 'var(--text-primary)' }}
+                    >
+                      <span className="d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: 40, height: 40, borderRadius: 12, background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}>
+                        <User size={18} />
+                      </span>
+                      <span style={{ fontSize: 15 }}>Profile</span>
+                    </Link>
+                    <Link
+                      to="/settings"
+                      className="d-flex align-items-center gap-3 px-3 py-2 rounded-3 text-decoration-none mobile-nav-link"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      style={{ color: 'var(--text-primary)' }}
+                    >
+                      <span className="d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: 40, height: 40, borderRadius: 12, background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}>
+                        <Settings size={18} />
+                      </span>
+                      <span style={{ fontSize: 15 }}>Settings</span>
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="d-flex align-items-center gap-3 px-3 py-2 rounded-3 border-0 bg-transparent w-100 text-start"
+                      style={{ color: 'var(--danger-500)', fontWeight: 500 }}
+                      type="button"
+                    >
+                      <span className="d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(239, 68, 68, 0.08)', color: 'var(--danger-500)' }}>
+                        <LogOut size={18} />
+                      </span>
+                      <span style={{ fontSize: 15 }}>Sign Out</span>
+                    </button>
+                  </div>
                 </>
               ) : (
-                <>
-                  <Link
-                    to="/login"
-                    className="d-flex align-items-center gap-3 px-3 py-3 rounded-3 text-decoration-none mobile-nav-link"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <LogOut size={20} />
-                    <span>Sign In</span>
-                  </Link>
+                <div className="d-flex flex-column gap-2">
                   <Link
                     to="/register"
-                    className="btn-gradient-primary w-100 text-center py-3 rounded-pill mt-2"
                     onClick={() => setIsMobileMenuOpen(false)}
+                    className="btn-gradient-primary w-100 text-center py-3 rounded-pill fw-bold text-white text-decoration-none"
                   >
-                    Sign Up Free
+                    Create Free Account
                   </Link>
-                </>
+                  <Link
+                    to="/login"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="w-100 text-center py-3 rounded-pill fw-semibold text-decoration-none"
+                    style={{ border: '1px solid var(--border-color)', color: 'var(--text-primary)', background: 'var(--bg-secondary)' }}
+                  >
+                    Sign In
+                  </Link>
+                </div>
               )}
             </div>
           </motion.div>
