@@ -12,9 +12,11 @@ type Payout = {
   id: string
   amount: number
   currency: string
-  status: 'pending' | 'processing' | 'paid'
+  status: 'pending' | 'processing' | 'completed' | 'failed'
   requestedAt: string
   method?: string
+  listingTitle?: string
+  reference?: string
 }
 
 export default function BusinessPayouts() {
@@ -22,7 +24,7 @@ export default function BusinessPayouts() {
   const [pendingBalance, setPendingBalance] = useState(0)
   const [method, setMethod] = useState('Bank Transfer')
   const [payouts, setPayouts] = useState<Payout[]>([])
-  const [status, setStatus] = useState<'all' | 'pending' | 'processing' | 'paid'>('all')
+  const [status, setStatus] = useState<'all' | 'pending' | 'processing' | 'completed'>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(true)
   const [requesting, setRequesting] = useState(false)
@@ -36,14 +38,22 @@ export default function BusinessPayouts() {
   const fetchData = async () => {
     try {
       setLoading(true)
-      const bal = await apiClient.payments.getBalance()
+      const bal: any = await apiClient.payments.getBalance()
       if (bal && typeof bal.balance === 'number') setBalance(bal.balance)
       if (bal && typeof bal.pending === 'number') setPendingBalance(bal.pending)
 
-      setPayouts([
-        { id: 'p1', amount: 500000, currency: '₦', status: 'paid', requestedAt: '2025-09-12', method: 'Bank Transfer' },
-        { id: 'p2', amount: 300000, currency: '₦', status: 'processing', requestedAt: '2025-10-18', method: 'Bank Transfer' },
-      ])
+      const payoutData: any = await apiClient.payments.getPayouts({ page: 1, limit: 50 })
+      const rows = Array.isArray(payoutData?.data) ? payoutData.data : Array.isArray(payoutData) ? payoutData : []
+      setPayouts(rows.map((r: any) => ({
+        id: r.id,
+        amount: Number(r.amount),
+        currency: r.currency || 'NGN',
+        status: r.status,
+        requestedAt: r.requestedAt || r.created_at,
+        method: r.method || 'Bank Transfer',
+        listingTitle: r.listingTitle || null,
+        reference: r.reference || null,
+      })))
     } catch {
       showError('Error', 'Failed to load payout data')
     } finally {
@@ -58,13 +68,7 @@ export default function BusinessPayouts() {
     }
     setRequesting(true)
     try {
-      const id = `p${payouts.length + 1}`
-      setPayouts(prev => [
-        { id, amount: Math.min(balance, 200000), currency: '₦', status: 'pending', requestedAt: new Date().toISOString().slice(0, 10), method },
-        ...prev,
-      ])
-      setBalance(prev => Math.max(0, prev - Math.min(prev, 200000)))
-      setPendingBalance(prev => prev + Math.min(balance, 200000))
+      await fetchData()
       showSuccess('Payout requested successfully')
     } catch {
       showError('Failed', 'Could not process payout request')
@@ -73,24 +77,26 @@ export default function BusinessPayouts() {
     }
   }
 
-  const currency = (n: number, c = '₦') => `${c}${n.toLocaleString()}`
+  const currency = (n: number, c = 'NGN') => `${c === 'NGN' ? '₦' : c}${n.toLocaleString()}`
 
   const filtered = payouts
     .filter(p => status === 'all' || p.status === status)
-    .filter(p => searchQuery === '' || p.id.toLowerCase().includes(searchQuery.toLowerCase()))
+    .filter(p => searchQuery === '' || p.id.toLowerCase().includes(searchQuery.toLowerCase()) || (p.listingTitle || '').toLowerCase().includes(searchQuery.toLowerCase()))
 
   const getStatusBadge = (s: string) => {
     const map: Record<string, { className: string; label: string }> = {
+      completed: { className: 'status-verified', label: 'Paid' },
       paid: { className: 'status-verified', label: 'Paid' },
       processing: { className: 'status-pending', label: 'Processing' },
       pending: { className: 'status-pending', label: 'Pending' },
+      failed: { className: 'status-inactive', label: 'Failed' },
     }
     const s2 = map[s] || { className: 'status-inactive', label: s }
     return <span className={`status-badge ${s2.className}`}>{s2.label}</span>
   }
 
   const getStatusIcon = (s: string) => {
-    if (s === 'paid') return <CheckCircle size={16} style={{ color: 'var(--success-500)' }} />
+    if (s === 'completed' || s === 'paid') return <CheckCircle size={16} style={{ color: 'var(--success-500)' }} />
     if (s === 'processing') return <Clock size={16} style={{ color: '#f59e0b' }} />
     return <AlertCircle size={16} style={{ color: 'var(--text-tertiary)' }} />
   }
@@ -281,7 +287,7 @@ export default function BusinessPayouts() {
               <option value="all">All Status</option>
               <option value="pending">Pending</option>
               <option value="processing">Processing</option>
-              <option value="paid">Paid</option>
+              <option value="completed">Paid</option>
             </select>
           </div>
           <div className="toolbar-actions">
@@ -330,6 +336,7 @@ export default function BusinessPayouts() {
                   <tr>
                     <th>Payout ID</th>
                     <th>Amount</th>
+                    <th>Listing</th>
                     <th>Method</th>
                     <th>Status</th>
                     <th>Requested Date</th>
@@ -346,10 +353,13 @@ export default function BusinessPayouts() {
                       <td>
                         <div className="d-flex align-items-center gap-2">
                           {getStatusIcon(p.status)}
-                          <span className="fw-medium">{p.id.toUpperCase()}</span>
+                          <span className="fw-medium">{p.id.slice(0, 8).toUpperCase()}</span>
                         </div>
                       </td>
-                      <td className="fw-bold">{currency(p.amount, p.currency)}</td>
+                      <td className="fw-bold">{currency(p.amount)}</td>
+                      <td className="text-secondary" style={{ maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {p.listingTitle || '-'}
+                      </td>
                       <td className="text-secondary">{p.method || 'Bank Transfer'}</td>
                       <td>{getStatusBadge(p.status)}</td>
                       <td className="text-secondary">

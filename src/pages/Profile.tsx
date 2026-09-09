@@ -50,7 +50,7 @@ interface UserProfile {
   caution_flag: boolean
 }
 
-// Mock stats for now
+// Profile stats from API
 interface ProfileStats {
   total_devices: number
   verified_devices: number
@@ -114,12 +114,23 @@ export default function Profile() {
           region: data.user.region || ''
         })
 
-        setStats({
-          total_devices: Math.floor(Math.random() * 5),
-          verified_devices: Math.floor(Math.random() * 3),
-          total_reports: 0,
-          active_transfers: 0
-        })
+        try {
+          const statsRes = await fetch(`${API_URL}/profile/stats`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          })
+          if (statsRes.ok) {
+            const statsData = await statsRes.json()
+            const s = statsData.stats || statsData
+            setStats({
+              total_devices: s.devices || s.total_devices || 0,
+              verified_devices: s.verified_devices || 0,
+              total_reports: s.reports || s.total_reports || 0,
+              active_transfers: s.transfers || s.active_transfers || 0
+            })
+          }
+        } catch {
+          setStats({ total_devices: 0, verified_devices: 0, total_reports: 0, active_transfers: 0 })
+        }
       } else {
         throw new Error('Failed to load profile')
       }
@@ -430,10 +441,11 @@ export default function Profile() {
                   <div className="d-flex justify-content-center gap-3 mb-3">
                     <div className="text-center">
                       <img
-                        src={profile.profile_image_url || 'https://via.placeholder.com/60'}
+                        src={profile.profile_image_url || undefined}
                         alt="Profile"
                         className="rounded-circle border border-2 border-white shadow-sm"
-                        style={{ width: '56px', height: '56px', objectFit: 'cover' }}
+                        style={{ width: '56px', height: '56px', objectFit: 'cover', background: 'var(--primary-100)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-600)', fontWeight: 600, fontSize: 18 }}
+                        onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
                       />
                       <small className="d-block text-muted" style={{ fontSize: 10, marginTop: 2 }}>Profile</small>
                     </div>
@@ -825,9 +837,9 @@ export default function Profile() {
                             </div>
                           </div>
                           <div>
-                            <p className="mb-1 fw-bold text-dark">Profile Updated</p>
-                            <p className="small text-muted mb-0">You updated your profile information</p>
-                            <span className="text-muted" style={{ fontSize: '11px' }}>Just now</span>
+                            <p className="mb-1 fw-bold text-dark">Account Created</p>
+                            <p className="small text-muted mb-0">You registered your account on ProveOwner</p>
+                            <span className="text-muted" style={{ fontSize: '11px' }}>{new Date(profile.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                           </div>
                         </div>
                         
@@ -840,27 +852,29 @@ export default function Profile() {
                             </div>
                             <div>
                               <p className="mb-1 fw-bold text-dark">Identity Verified</p>
-                              <p className="small text-muted mb-0">Your identity was successfully verified via NIN</p>
-                              <span className="text-muted" style={{ fontSize: '11px' }}>Recently</span>
+                              <p className="small text-muted mb-0">Your identity was successfully verified</p>
+                              <span className="text-muted" style={{ fontSize: '11px' }}>Verified</span>
                             </div>
                           </div>
                         )}
 
-                        <div className="d-flex gap-3 p-3 border-bottom border-light">
-                          <div className="mt-1">
-                            <div className="rounded-circle bg-primary-subtle p-2">
-                              <User size={16} className="text-primary" />
+                        {profile.kyc_status === 'pending' && (
+                          <div className="d-flex gap-3 p-3 border-bottom border-light">
+                            <div className="mt-1">
+                              <div className="rounded-circle bg-warning-subtle p-2">
+                                <Shield size={16} className="text-warning" />
+                              </div>
+                            </div>
+                            <div>
+                              <p className="mb-1 fw-bold text-dark">Verification Pending</p>
+                              <p className="small text-muted mb-0">Your identity verification is being reviewed</p>
+                              <span className="text-muted" style={{ fontSize: '11px' }}>In progress</span>
                             </div>
                           </div>
-                          <div>
-                            <p className="mb-1 fw-bold text-dark">Login Successful</p>
-                            <p className="small text-muted mb-0">Logged in from Windows PC (Chrome)</p>
-                            <span className="text-muted" style={{ fontSize: '11px' }}>2 hours ago</span>
-                          </div>
-                        </div>
+                        )}
                         
                         <div className="text-center mt-3">
-                          <button className="btn btn-link text-decoration-none text-muted small">View Full History</button>
+                          <span className="text-muted small">Activity is recorded as you use the platform.</span>
                         </div>
                       </div>
                     </motion.div>

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Layout } from '../components/Layout'
 import { Settings, Shield, Bell, Smartphone, Globe, Clock, Save, RefreshCw, Lock, Key, Users, DollarSign, TrendingUp } from 'lucide-react'
 import { useToast, ToastContainer } from '../components/Toast'
+import { apiClient } from '../lib/apiClient'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -31,18 +32,45 @@ export default function AdminSystemSettings() {
   const { toasts, removeToast, showSuccess, showError } = useToast()
 
   useEffect(() => {
-    const fetchFee = async () => {
+    const fetchSettings = async () => {
       try {
         const token = localStorage.getItem('auth_token')
-        const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/escrow/admin/settings`, {
+        const API_URL = import.meta.env.VITE_API_URL || '/api'
+
+        const feeRes = await fetch(`${API_URL}/escrow/admin/settings`, {
           headers: { Authorization: `Bearer ${token}` }
         })
-        if (!res.ok) throw new Error('Failed to fetch')
-        const data = await res.json()
-        if (data.platformFeePercent) setPlatformFee(String(data.platformFeePercent))
-      } catch { /* use default */ } finally { setLoadingFee(false) }
+        if (feeRes.ok) {
+          const feeData = await feeRes.json()
+          if (feeData.platformFeePercent) setPlatformFee(String(feeData.platformFeePercent))
+        }
+
+        const sysRes = await fetch(`${API_URL}/admin-system/settings`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        if (sysRes.ok) {
+          const sysData = await sysRes.json()
+          const s = sysData.settings || {}
+          setFeatureFlags({
+            marketplace: s.feature_marketplace !== undefined ? Boolean(s.feature_marketplace) : true,
+            leaPortal: s.feature_lea_portal !== undefined ? Boolean(s.feature_lea_portal) : true,
+            emailNotifications: s.feature_email_notifications !== undefined ? Boolean(s.feature_email_notifications) : true,
+            smsNotifications: s.feature_sms_notifications !== undefined ? Boolean(s.feature_sms_notifications) : false,
+            publicCheck: s.feature_public_check !== undefined ? Boolean(s.feature_public_check) : true,
+            bulkRegistration: s.feature_bulk_registration !== undefined ? Boolean(s.feature_bulk_registration) : false,
+            autoVerification: s.feature_auto_verification !== undefined ? Boolean(s.feature_auto_verification) : false,
+          })
+          setSecurity({
+            require2FA: s.security_require_2fa !== undefined ? Boolean(s.security_require_2fa) : true,
+            sessionTimeout: s.security_session_timeout || 30,
+            allowPasswordless: s.security_passwordless !== undefined ? Boolean(s.security_passwordless) : false,
+            maxLoginAttempts: s.security_max_login_attempts || 5,
+            passwordMinLength: s.security_password_min_length || 8,
+          })
+        }
+      } catch { /* use defaults */ } finally { setLoadingFee(false) }
     }
-    fetchFee()
+    fetchSettings()
   }, [])
 
   const updateFlag = (k: keyof typeof featureFlags) =>
@@ -52,16 +80,40 @@ export default function AdminSystemSettings() {
     setSaving(true)
     try {
       const token = localStorage.getItem('auth_token')
+      const API_URL = import.meta.env.VITE_API_URL || '/api'
+
       const feeNum = parseFloat(platformFee)
       if (isNaN(feeNum) || feeNum < 0 || feeNum > 100) throw new Error('Fee must be between 0 and 100')
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/escrow/admin/settings`, {
+      const feeRes = await fetch(`${API_URL}/escrow/admin/settings`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ platformFeePercent: feeNum })
+        body: JSON.stringify({ platform_fee_percent: feeNum })
       })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Save failed')
+      if (!feeRes.ok) { const d = await feeRes.json(); throw new Error(d.error || 'Save failed') }
+
+      const sysSettings: Record<string, any> = {
+        feature_marketplace: featureFlags.marketplace,
+        feature_lea_portal: featureFlags.leaPortal,
+        feature_email_notifications: featureFlags.emailNotifications,
+        feature_sms_notifications: featureFlags.smsNotifications,
+        feature_public_check: featureFlags.publicCheck,
+        feature_bulk_registration: featureFlags.bulkRegistration,
+        feature_auto_verification: featureFlags.autoVerification,
+        security_require_2fa: security.require2FA,
+        security_session_timeout: security.sessionTimeout,
+        security_passwordless: security.allowPasswordless,
+        security_max_login_attempts: security.maxLoginAttempts,
+        security_password_min_length: security.passwordMinLength,
+      }
+
+      const sysRes = await fetch(`${API_URL}/admin-system/settings`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ settings: sysSettings })
+      })
+      if (!sysRes.ok) { const d = await sysRes.json(); throw new Error(d.error || 'Save failed') }
+
       showSuccess('Settings saved successfully')
     } catch (err: any) {
       showError(err.message)
@@ -252,15 +304,34 @@ export default function AdminSystemSettings() {
                   </div>
                 </div>
                 <div className="p-4 d-flex flex-column gap-3">
-                  <button className="btn-ghost w-100 justify-content-between text-start p-3" style={{ borderRadius: 12, background: 'var(--bg-tertiary)' }}>
+                  <button className="btn-ghost w-100 justify-content-between text-start p-3" style={{ borderRadius: 12, background: 'var(--bg-tertiary)' }} onClick={async () => {
+                    try {
+                      await apiClient.files.cleanup()
+                      showSuccess('Cache Cleared', 'System cache has been cleared successfully')
+                    } catch { showError('Failed', 'Could not clear system cache') }
+                  }}>
                     <span style={{ color: 'var(--text-primary)' }}>Clear System Cache</span>
                     <small style={{ color: 'var(--text-tertiary)' }}>Run now</small>
                   </button>
-                  <button className="btn-ghost w-100 justify-content-between text-start p-3" style={{ borderRadius: 12, background: 'var(--bg-tertiary)' }}>
+                  <button className="btn-ghost w-100 justify-content-between text-start p-3" style={{ borderRadius: 12, background: 'var(--bg-tertiary)' }} onClick={() => {
+                    try {
+                      const url = apiClient.dataExport.download('audit')
+                      const link = document.createElement('a')
+                      link.href = url; link.target = '_blank'
+                      document.body.appendChild(link); link.click(); document.body.removeChild(link)
+                      showSuccess('Export Started', 'Audit logs are being exported')
+                    } catch { showError('Failed', 'Could not export audit logs') }
+                  }}>
                     <span style={{ color: 'var(--text-primary)' }}>Export System Logs</span>
                     <small style={{ color: 'var(--text-tertiary)' }}>Download</small>
                   </button>
-                  <button className="btn-ghost w-100 justify-content-between text-start p-3" style={{ borderRadius: 12, background: 'rgba(239, 68, 68, 0.05)', color: 'var(--danger-500)' }}>
+                  <button className="btn-ghost w-100 justify-content-between text-start p-3" style={{ borderRadius: 12, background: 'rgba(239, 68, 68, 0.05)', color: 'var(--danger-500)' }} onClick={async () => {
+                    if (!confirm('Run database cleanup? This will remove old notifications, expired transfers, and stale audit logs.')) return
+                    try {
+                      await apiClient.files.cleanup()
+                      showSuccess('Cleanup Complete', 'Database maintenance completed successfully')
+                    } catch { showError('Failed', 'Could not run database cleanup') }
+                  }}>
                     <span>Run Database Cleanup</span>
                     <small>Maintenance</small>
                   </button>

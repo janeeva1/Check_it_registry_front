@@ -57,6 +57,7 @@ export default function AdminDashboard() {
   const [recentRegistrations, setRecentRegistrations] = useState<RecentRegistration[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [monthlyGrowthData, setMonthlyGrowthData] = useState<{ month_label: string; count: number }[]>([])
   const { toasts, removeToast, showSuccess, showError } = useToast()
 
   const API_BASE = (import.meta.env.VITE_API_BASE_URL as string) || ''
@@ -105,24 +106,25 @@ export default function AdminDashboard() {
           under_review: data.under_review_cases || 0
         },
         marketplace: {
-          total_listings: data.total_listings || 0,
-          active_listings: data.active_listings || 0,
-          total_sales: data.total_sales || 0,
-          revenue: data.revenue || 0
+          total_listings: data.marketplace?.total_listings || data.total_listings || 0,
+          active_listings: data.marketplace?.active_listings || data.active_listings || 0,
+          total_sales: data.marketplace?.total_sales || data.total_sales || 0,
+          revenue: data.marketplace?.revenue || data.revenue || 0
         },
         system: {
           uptime: data.system_uptime || '99.9%',
-          response_time: data.response_time || 124,
-          error_rate: data.error_rate || 0.02,
-          active_sessions: data.active_sessions || 42
+          response_time: data.response_time || 0,
+          error_rate: data.error_rate || 0,
+          active_sessions: data.system_health?.active_users || data.active_sessions || 0
         },
         escrow: data.escrow || { total_transactions: 0, held: 0, released: 0, disputed: 0, refunded: 0, total_held_amount: 0, total_fees_collected: 0 },
         platform_fee_percent: data.platform_fee_percent || '2.50'
       }
 
+      setMonthlyGrowthData(data.monthly_user_growth || [])
       setStats(mapped)
 
-      const usersRes = await fetch(`${API_URL}/admin/users?page=1&limit=5`, {
+      const usersRes = await fetch(`${API_URL}/admin-portal/users?page=1&limit=5`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       const usersData = await usersRes.json().catch(() => ({}))
@@ -309,24 +311,41 @@ export default function AdminDashboard() {
                     </div>
                     <div className="p-4">
                       <div className="d-flex align-items-end gap-2" style={{ height: 160 }}>
-                        {[40, 65, 45, 80, 55, 90, 70, 95, 60, 85, 75, 100].map((h, i) => (
-                          <div key={i} className="d-flex flex-column align-items-center flex-grow-1" style={{ height: '100%', justifyContent: 'flex-end' }}>
-                            <div
-                              style={{
-                                width: '70%',
-                                height: `${h}%`,
-                                background: h > 80 ? 'linear-gradient(180deg, #22c55e, #16a34a)' :
-                                            h > 60 ? 'linear-gradient(180deg, #0ea5e9, #0284c7)' :
-                                                     'linear-gradient(180deg, #94a3b8, #64748b)',
-                                borderRadius: '4px 4px 0 0',
-                                transition: 'height 0.6s ease'
-                              }}
-                            />
-                            <span style={{ color: 'var(--text-tertiary)', fontSize: 10, marginTop: 4 }}>
-                              {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][i]}
-                            </span>
-                          </div>
-                        ))}
+                        {(() => {
+                          const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+                          const now = new Date()
+                          const chartData: { label: string; count: number }[] = []
+
+                          for (let i = 11; i >= 0; i--) {
+                            const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+                            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+                            const found = monthlyGrowthData.find((m: any) => m.month_label === key)
+                            chartData.push({
+                              label: months[d.getMonth()],
+                              count: found?.count || 0,
+                            })
+                          }
+
+                          const maxCount = Math.max(...chartData.map(c => c.count), 1)
+
+                          return chartData.map((c, i) => (
+                            <div key={i} className="d-flex flex-column align-items-center flex-grow-1" style={{ height: '100%', justifyContent: 'flex-end' }}>
+                              <div
+                                style={{
+                                  width: '70%',
+                                  height: `${Math.max((c.count / maxCount) * 100, c.count > 0 ? 4 : 0)}%`,
+                                  background: c.count > 0 ? 'linear-gradient(180deg, #22c55e, #16a34a)' : 'var(--gray-200)',
+                                  borderRadius: '4px 4px 0 0',
+                                  transition: 'height 0.6s ease',
+                                }}
+                                title={`${c.label}: ${c.count} users`}
+                              />
+                              <span style={{ color: 'var(--text-tertiary)', fontSize: 10, marginTop: 4 }}>
+                                {c.label}
+                              </span>
+                            </div>
+                          ))
+                        })()}
                       </div>
                     </div>
                   </div>

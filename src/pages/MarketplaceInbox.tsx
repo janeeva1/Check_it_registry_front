@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Layout } from '../components/Layout'
-import { useToast } from '../components/Toast'
+import { useToast, ToastContainer } from '../components/Toast'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Search, Inbox,
@@ -8,75 +8,65 @@ import {
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { getUserInitials } from '../utils/userHelpers'
+import { apiClient } from '../lib/apiClient'
 
 interface InboxMessage {
   id: string
-  device_id?: string
-  device_title?: string
-  from_name: string
-  from_contact?: string
+  deviceId?: string
+  deviceTitle?: string
+  fromName: string
+  fromContact?: string
   subject: string
   message: string
   status: 'unread' | 'read'
-  created_at: string
+  createdAt: string
   online?: boolean
 }
 
 export default function MarketplaceInbox() {
   const [items, setItems] = useState<InboxMessage[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, _setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all')
   const [search, setSearch] = useState('')
-  const { toasts: _toasts, removeToast: _removeToast, showError: _showError } = useToast()
+  const { toasts, removeToast, showError } = useToast()
   const navigate = useNavigate()
 
   useEffect(() => {
-    const sample: InboxMessage[] = [
-      {
-        id: 'msg_1',
-        device_id: 'dev_123',
-        device_title: 'Samsung S22 - Blue',
-        from_name: 'Jane Doe',
-        from_contact: '+233 555 123 456',
-        subject: 'Interested in your device',
-        message: 'Hi, is this device still available? Can we meet at Accra Mall?',
-        status: 'unread',
-        created_at: new Date().toISOString(),
-        online: true,
-      },
-      {
-        id: 'msg_2',
-        device_id: 'dev_987',
-        device_title: 'iPhone 12 - Black',
-        from_name: 'Kofi Mensah',
-        subject: 'Can you share more photos?',
-        message: 'Please send additional photos and battery health.',
-        status: 'read',
-        created_at: new Date(Date.now() - 86400000).toISOString(),
-        online: false,
-      },
-      {
-        id: 'msg_3',
-        device_id: 'dev_456',
-        device_title: 'Tecno Camon 18',
-        from_name: 'Ama Serwaa',
-        subject: 'Price negotiation',
-        message: 'Would you consider ₦450,000? I can pick it up today.',
-        status: 'unread',
-        created_at: new Date(Date.now() - 3600000).toISOString(),
-        online: true,
-      },
-    ]
-    setItems(sample)
-    setLoading(false)
+    loadInbox()
   }, [])
+
+  const loadInbox = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const data: any = await apiClient.marketplace.getInbox()
+      const rows = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : []
+      setItems(rows.map((r: any) => ({
+        id: r.id,
+        deviceId: r.deviceId || r.device_id || null,
+        deviceTitle: r.deviceTitle || r.device_title || null,
+        fromName: r.fromName || r.from_name || 'Unknown',
+        fromContact: r.fromContact || r.from_contact || '',
+        subject: r.subject || r.deviceTitle || 'No subject',
+        message: r.message || '',
+        status: r.status === 'unread' ? 'unread' : 'read',
+        createdAt: r.createdAt || r.created_at || new Date().toISOString(),
+        online: r.online || false,
+      })))
+    } catch (err: any) {
+      setError(err?.message || 'Failed to load inbox')
+      showError('Load Failed', err?.message || 'Could not load inbox')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const filtered = useMemo(() => {
     const s = search.trim().toLowerCase()
     let list = items
     if (filter !== 'all') list = list.filter(i => i.status === filter)
-    if (s) list = list.filter(i => [i.subject, i.message, i.device_title || '', i.from_name].some(v => v.toLowerCase().includes(s)))
+    if (s) list = list.filter(i => [i.subject, i.message, i.deviceTitle || '', i.fromName].some(v => v.toLowerCase().includes(s)))
     return list
   }, [items, filter, search])
 
@@ -94,6 +84,7 @@ export default function MarketplaceInbox() {
 
   return (
     <Layout requireAuth>
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
       <div className="container-fluid" style={{ maxWidth: 900, margin: '0 auto' }}>
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
           <div className="page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
@@ -142,6 +133,7 @@ export default function MarketplaceInbox() {
         ) : error ? (
           <div className="modern-card" style={{ padding: 32, textAlign: 'center' }}>
             <p style={{ color: 'var(--danger-500)' }}>{error}</p>
+            <button className="btn-ghost mt-2" onClick={loadInbox}>Retry</button>
           </div>
         ) : filtered.length === 0 ? (
           <div className="empty-state">
@@ -168,7 +160,7 @@ export default function MarketplaceInbox() {
                     borderLeft: m.status === 'unread' ? '3px solid var(--primary-500)' : '3px solid transparent',
                     background: m.status === 'unread' ? 'rgba(34, 197, 94, 0.02)' : undefined,
                   }}
-                  onClick={() => navigate(`/marketplace-inbox/${m.id}`)}
+                  onClick={() => navigate(m.deviceId ? `/marketplace/${m.deviceId}` : '#')}
                 >
                   <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
                     <div style={{ position: 'relative' }}>
@@ -179,7 +171,7 @@ export default function MarketplaceInbox() {
                           background: m.online ? 'var(--primary-500)' : 'var(--gray-400)',
                         }}
                       >
-                        {getUserInitials({ name: m.from_name })}
+                        {getUserInitials({ name: m.fromName })}
                       </div>
                       {m.online && (
                         <span
@@ -194,13 +186,13 @@ export default function MarketplaceInbox() {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <span style={{ fontWeight: 600, fontSize: 15 }}>{m.from_name}</span>
+                          <span style={{ fontWeight: 600, fontSize: 15 }}>{m.fromName}</span>
                           {m.online && (
                             <span style={{ fontSize: 12, color: 'var(--success-500)' }}>Online</span>
                           )}
                         </div>
                         <span style={{ fontSize: 12, color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                          <Clock size={12} /> {timeAgo(m.created_at)}
+                          <Clock size={12} /> {timeAgo(m.createdAt)}
                         </span>
                       </div>
                       <div style={{ fontWeight: 500, fontSize: 14, color: m.status === 'unread' ? 'var(--text-primary)' : 'var(--text-secondary)', marginBottom: 2 }}>
@@ -212,10 +204,10 @@ export default function MarketplaceInbox() {
                       }}>
                         {m.message}
                       </p>
-                      {m.device_title && (
+                      {m.deviceTitle && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6 }}>
                           <span style={{ fontSize: 12, padding: '2px 8px', borderRadius: 4, background: 'var(--bg-tertiary)', color: 'var(--text-tertiary)' }}>
-                            {m.device_title}
+                            {m.deviceTitle}
                           </span>
                           {m.status === 'unread' && (
                             <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 10, background: 'var(--primary-500)', color: '#fff' }}>

@@ -190,13 +190,16 @@ export default function MarketplaceThread() {
             }}
             onClick={() => navigate(`/marketplace/listing/${id}`)}
           >
-            <div style={{ width: 44, height: 44, borderRadius: 8, overflow: 'hidden', flexShrink: 0, background: 'var(--bg-tertiary)' }}>
-              <img
-                src={(Array.isArray(listing.images) && listing.images[0]) || 'https://via.placeholder.com/44'}
-                onError={e => { (e.currentTarget as HTMLImageElement).src = 'https://via.placeholder.com/44' }}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                alt=""
-              />
+            <div style={{ width: 44, height: 44, borderRadius: 8, overflow: 'hidden', flexShrink: 0, background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {(Array.isArray(listing.images) && listing.images[0]) ? (
+                <img
+                  src={listing.images[0]}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  alt=""
+                />
+              ) : (
+                <span style={{ fontSize: 10, color: 'var(--text-tertiary)' }}>No img</span>
+              )}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontWeight: 600, fontSize: 14, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>

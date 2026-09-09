@@ -48,7 +48,7 @@ export default function BusinessMyListings() {
         currency: l.currency,
         status: l.status,
         verified: l.seller?.verified,
-        views: l.views || Math.floor(Math.random() * 100),
+        views: l.views || 0,
         updated_at: l.updated_at,
         condition: l.condition,
         location: l.location,

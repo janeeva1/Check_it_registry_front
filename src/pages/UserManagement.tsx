@@ -570,7 +570,7 @@ export default function UserManagement() {
                       <h6 style={{ color: 'var(--text-tertiary)' }} className="mb-3">Reports ({userDetails.reports?.length || 0})</h6>
                       {userDetails.reports?.length > 0 ? userDetails.reports.map((r: any) => (
                         <div key={r.id} className="d-flex justify-content-between align-items-center py-2 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
-                          <span><FileText size={14} className="me-2" style={{ color: 'var(--text-tertiary)' }} />Type: {r.type || r.status} &middot; {r.brand} {r.model}</span>
+                          <span><FileText size={14} className="me-2" style={{ color: 'var(--text-tertiary)' }} />Type: {r.report_type || r.type || r.status} &middot; {r.brand} {r.model}</span>
                           <small style={{ color: 'var(--text-tertiary)' }}>{new Date(r.created_at).toLocaleString()}</small>
                         </div>
                       )) : <small style={{ color: 'var(--text-tertiary)' }}>No reports</small>}

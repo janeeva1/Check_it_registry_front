@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Layout } from '../components/Layout'
+import { useToast, ToastContainer } from '../components/Toast'
+import { apiClient } from '../lib/apiClient'
 import {
   Settings, User, Bell, Shield, EyeOff, Save,
   Globe, Lock, Clock, Smartphone, Mail, Phone, MapPin,
-  Building, AlertTriangle, CheckCircle
+  Building, AlertTriangle, CheckCircle, RefreshCw
 } from 'lucide-react'
 
 interface LEAProfile {
@@ -19,46 +21,99 @@ interface LEAProfile {
 }
 
 interface NotificationPrefs {
-  emailAlerts: boolean
-  smsAlerts: boolean
-  criticalAlerts: boolean
-  dailyDigest: boolean
-  newReports: boolean
-  recoveryUpdates: boolean
-  transferNotifications: boolean
+  email_alerts: boolean
+  sms_alerts: boolean
+  critical_alerts: boolean
+  daily_digest: boolean
+  new_reports: boolean
+  recovery_updates: boolean
+  transfer_notifications: boolean
 }
 
 export default function LEASettings() {
   const [activeTab, setActiveTab] = useState<'profile' | 'notifications' | 'preferences'>('profile')
   const [saved, setSaved] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const { toasts, removeToast, showSuccess, showError } = useToast()
 
   const [profile, setProfile] = useState<LEAProfile>({
-    agencyName: 'Cybercrime Investigation Unit',
-    agencyCode: 'CIU-NG-042',
+    agencyName: '',
+    agencyCode: '',
     jurisdiction: 'Federal',
-    region: 'Lagos',
-    commanderName: 'Adebayo Ogunlade',
-    commanderEmail: 'adebayo.ogunlade@police.gov.ng',
-    commanderPhone: '+234 802 345 6789',
-    address: 'Police Headquarters, Ikeja, Lagos State'
+    region: '',
+    commanderName: '',
+    commanderEmail: '',
+    commanderPhone: '',
+    address: '',
   })
 
   const [notifications, setNotifications] = useState<NotificationPrefs>({
-    emailAlerts: true,
-    smsAlerts: false,
-    criticalAlerts: true,
-    dailyDigest: false,
-    newReports: true,
-    recoveryUpdates: true,
-    transferNotifications: false
+    email_alerts: true,
+    sms_alerts: false,
+    critical_alerts: true,
+    daily_digest: false,
+    new_reports: true,
+    recovery_updates: true,
+    transfer_notifications: false,
   })
 
-  const [twoFactor, setTwoFactor] = useState(true)
+  const [twoFactor, setTwoFactor] = useState(false)
   const [sessionTimeout, setSessionTimeout] = useState('30')
 
-  const handleSave = () => {
-    setSaved(true)
-    setTimeout(() => setSaved(false), 3000)
+  useEffect(() => {
+    loadSettings()
+  }, [])
+
+  const loadSettings = async () => {
+    try {
+      setLoading(true)
+      const data: any = await apiClient.leaPortal.getSettings()
+      if (data?.profile) {
+        setProfile({
+          agencyName: data.agency?.name || '',
+          agencyCode: data.agency?.abbreviation || '',
+          jurisdiction: data.agency?.jurisdiction || 'Federal',
+          region: data.profile.region || '',
+          commanderName: data.profile.name || '',
+          commanderEmail: data.profile.email || '',
+          commanderPhone: data.profile.phone || '',
+          address: data.agency?.address || '',
+        })
+      }
+      if (data?.notifications) {
+        setNotifications({
+          email_alerts: !!data.notifications.email_alerts,
+          sms_alerts: !!data.notifications.sms_alerts,
+          critical_alerts: !!data.notifications.critical_alerts,
+          daily_digest: !!data.notifications.daily_digest,
+          new_reports: !!data.notifications.new_reports,
+          recovery_updates: !!data.notifications.recovery_updates,
+          transfer_notifications: !!data.notifications.transfer_notifications,
+        })
+      }
+    } catch (err: any) {
+      showError('Load Failed', err?.message || 'Could not load settings')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSave = async () => {
+    try {
+      setSaving(true)
+      await apiClient.leaPortal.updateSettings({
+        region: profile.region,
+        notifications,
+      })
+      setSaved(true)
+      showSuccess('Settings Saved', 'Your changes have been applied successfully.')
+      setTimeout(() => setSaved(false), 3000)
+    } catch (err: any) {
+      showError('Save Failed', err?.message || 'Could not save settings')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const containerVariants = {
@@ -94,8 +149,24 @@ export default function LEASettings() {
     </button>
   )
 
+  if (loading) {
+    return (
+      <Layout requireAuth allowedRoles={['lea']}>
+        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '400px' }}>
+          <div className="text-center">
+            <div className="spinner-border mb-3" style={{ color: 'var(--primary-600)' }} role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+            <p style={{ color: 'var(--text-secondary)' }}>Loading settings...</p>
+          </div>
+        </div>
+      </Layout>
+    )
+  }
+
   return (
     <Layout requireAuth allowedRoles={['lea']}>
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
       <motion.div className="container-fluid" variants={containerVariants} initial="hidden" animate="visible">
         <motion.div variants={childVariants} className="page-header">
           <div className="d-flex align-items-center gap-3">
@@ -146,12 +217,12 @@ export default function LEASettings() {
           <motion.div variants={childVariants} className="modern-card p-4">
             <div className="d-flex align-items-center gap-3 mb-4">
               <div className="avatar avatar-xl" style={{ background: 'linear-gradient(135deg, var(--primary-500), var(--primary-700))', fontSize: 28 }}>
-                {profile.agencyName.split(' ').map(w => w[0]).slice(0, 2).join('')}
+                {(profile.agencyName || 'LE').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()}
               </div>
               <div>
-                <h3 className="h5 mb-1">{profile.agencyName}</h3>
+                <h3 className="h5 mb-1">{profile.agencyName || 'LEA Agency'}</h3>
                 <div className="text-muted small d-flex align-items-center gap-2">
-                  <Shield size={14} /> {profile.agencyCode} &bull; {profile.jurisdiction} Jurisdiction
+                  <Shield size={14} /> {profile.agencyCode || 'N/A'} &bull; {profile.jurisdiction} Jurisdiction
                 </div>
               </div>
             </div>
@@ -195,7 +266,9 @@ export default function LEASettings() {
               </div>
             </div>
             <div className="mt-4">
-              <button className="btn-gradient-primary" onClick={handleSave}><Save size={18} /> Save Changes</button>
+              <button className="btn-gradient-primary" onClick={handleSave} disabled={saving}>
+                {saving ? <RefreshCw size={18} className="spinner" /> : <Save size={18} />} Save Changes
+              </button>
             </div>
           </motion.div>
         )}
@@ -208,13 +281,13 @@ export default function LEASettings() {
             </div>
             <div className="d-flex flex-column gap-3">
               {[
-                { key: 'emailAlerts', label: 'Email Alerts', desc: 'Receive alert notifications via email' },
-                { key: 'smsAlerts', label: 'SMS Alerts', desc: 'Receive critical alerts via SMS' },
-                { key: 'criticalAlerts', label: 'Critical Alerts', desc: 'Immediate notifications for critical severity alerts' },
-                { key: 'dailyDigest', label: 'Daily Digest', desc: 'Receive a daily summary of all alerts and updates' },
-                { key: 'newReports', label: 'New Reports', desc: 'Notify when new device reports are filed in your region' },
-                { key: 'recoveryUpdates', label: 'Recovery Updates', desc: 'Updates on recovery operation status changes' },
-                { key: 'transferNotifications', label: 'Transfer Notifications', desc: 'Notifications for ownership transfers in your region' },
+                { key: 'email_alerts', label: 'Email Alerts', desc: 'Receive alert notifications via email' },
+                { key: 'sms_alerts', label: 'SMS Alerts', desc: 'Receive critical alerts via SMS' },
+                { key: 'critical_alerts', label: 'Critical Alerts', desc: 'Immediate notifications for critical severity alerts' },
+                { key: 'daily_digest', label: 'Daily Digest', desc: 'Receive a daily summary of all alerts and updates' },
+                { key: 'new_reports', label: 'New Reports', desc: 'Notify when new device reports are filed in your region' },
+                { key: 'recovery_updates', label: 'Recovery Updates', desc: 'Updates on recovery operation status changes' },
+                { key: 'transfer_notifications', label: 'Transfer Notifications', desc: 'Notifications for ownership transfers in your region' },
               ].map(item => (
                 <div key={item.key} className="d-flex align-items-center justify-content-between p-3" style={{ background: 'var(--bg-tertiary)', borderRadius: 12 }}>
                   <div>
@@ -223,13 +296,15 @@ export default function LEASettings() {
                   </div>
                   <Toggle
                     checked={notifications[item.key as keyof NotificationPrefs]}
-                    onChange={v => setNotifications({ ...notifications, [item.key as keyof NotificationPrefs]: v })}
+                    onChange={v => setNotifications({ ...notifications, [item.key]: v })}
                   />
                 </div>
               ))}
             </div>
             <div className="mt-4">
-              <button className="btn-gradient-primary" onClick={handleSave}><Save size={18} /> Save Preferences</button>
+              <button className="btn-gradient-primary" onClick={handleSave} disabled={saving}>
+                {saving ? <RefreshCw size={18} className="spinner" /> : <Save size={18} />} Save Preferences
+              </button>
             </div>
           </motion.div>
         )}
@@ -312,7 +387,9 @@ export default function LEASettings() {
             </div>
 
             <div className="mt-4">
-              <button className="btn-gradient-primary" onClick={handleSave}><Save size={18} /> Save All Changes</button>
+              <button className="btn-gradient-primary" onClick={handleSave} disabled={saving}>
+                {saving ? <RefreshCw size={18} className="spinner" /> : <Save size={18} />} Save All Changes
+              </button>
             </div>
           </motion.div>
         )}

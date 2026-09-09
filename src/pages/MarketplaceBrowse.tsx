@@ -88,7 +88,7 @@ export default function MarketplaceBrowse() {
           condition: condition === 'all' ? undefined : condition,
           max_price: priceRange > 0 ? PRICE_RANGES[priceRange].max : undefined,
           min_price: priceRange > 0 ? PRICE_RANGES[priceRange].min : undefined,
-          status: status === 'all' ? undefined : status,
+          seller_verified: status === 'all' ? undefined : status,
         })
 
         const mapped: Listing[] = data.map((l: any) => ({
@@ -101,17 +101,16 @@ export default function MarketplaceBrowse() {
           currency: l.currency === 'NGN' ? '₦' : l.currency,
           location: l.location,
           verified: l.seller?.verified,
-          thumbnail: l.images?.[0] || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=800&auto=format&fit=crop',
+          thumbnail: l.images?.[0] || '',
           category: l.category || 'Smartphones',
           description: l.description,
           created_at: l.created_at,
           seller: {
             name: getDisplayName(l.seller) || 'Unknown',
             verified: l.seller?.verified,
-            rating: 5.0,
+            rating: 0,
           },
           featured: !!l.featured,
-          rating: 0,
           reviewCount: 0,
         }))
 
@@ -386,13 +385,19 @@ export default function MarketplaceBrowse() {
                                   height: 200,
                                   backgroundSize: 'cover',
                                   backgroundPosition: 'center',
-                                  backgroundImage: `url(${l.thumbnail})`,
+                                  backgroundImage: l.thumbnail ? `url(${l.thumbnail})` : undefined,
+                                  backgroundColor: l.thumbnail ? undefined : 'var(--bg-tertiary)',
                                   cursor: 'pointer',
                                   transition: 'transform 0.3s ease',
+                                  display: l.thumbnail ? undefined : 'flex',
+                                  alignItems: l.thumbnail ? undefined : 'center',
+                                  justifyContent: l.thumbnail ? undefined : 'center',
                                 }}
                                 className="hover-scale"
                                 onClick={() => navigate(`/marketplace/listing/${l.id}`)}
-                              />
+                              >
+                                {!l.thumbnail && <span style={{ color: 'var(--text-tertiary)', fontSize: 13 }}>No image</span>}
+                              </div>
                               {l.featured && (
                                 <span style={{ position: 'absolute', top: 8, left: 8, background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff', border: 'none' }} className="status-badge bg-gradient-warm">
                                   Featured
@@ -453,7 +458,9 @@ export default function MarketplaceBrowse() {
                             style={{ cursor: 'pointer' }}
                             onClick={() => navigate(`/marketplace/listing/${l.id}`)}
                           >
-                            <div style={{ width: 200, minHeight: 160, flexShrink: 0, backgroundSize: 'cover', backgroundPosition: 'center', backgroundImage: `url(${l.thumbnail})` }} />
+                            <div style={{ width: 200, minHeight: 160, flexShrink: 0, backgroundSize: 'cover', backgroundPosition: 'center', backgroundImage: l.thumbnail ? `url(${l.thumbnail})` : undefined, backgroundColor: l.thumbnail ? undefined : 'var(--bg-tertiary)', display: l.thumbnail ? undefined : 'flex', alignItems: l.thumbnail ? undefined : 'center', justifyContent: l.thumbnail ? undefined : 'center' }}>
+                              {!l.thumbnail && <span style={{ color: 'var(--text-tertiary)', fontSize: 12 }}>No image</span>}
+                            </div>
                             <div style={{ padding: 16, flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
                               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                                 <div>

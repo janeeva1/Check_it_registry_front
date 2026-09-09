@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Layout } from '../components/Layout'
-import { useToast } from '../components/Toast'
-import { Plus, Trash2, Edit3, Tag, X, Save } from 'lucide-react'
+import { useToast, ToastContainer } from '../components/Toast'
+import { apiClient } from '../lib/apiClient'
+import { Plus, Trash2, Edit3, Tag, X, Save, RefreshCw } from 'lucide-react'
 
-type Category = { id: string; name: string; description?: string }
+type Category = { id: string; key: string; name: string; description?: string }
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -18,51 +19,71 @@ const itemVariants = {
 
 export default function AdminDeviceCategories() {
   const [categories, setCategories] = useState<Category[]>([])
+  const [loading, setLoading] = useState(true)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
-  const { showSuccess, showError } = useToast()
+  const [editDesc, setEditDesc] = useState('')
+  const { showSuccess, showError, toasts, removeToast } = useToast()
 
-  useEffect(() => {
-    setCategories([
-      { id: 'c1', name: 'Apple', description: 'iPhone, iPad, etc.' },
-      { id: 'c2', name: 'Samsung', description: 'Galaxy phones and tablets' },
-      { id: 'c3', name: 'Tecno', description: 'Tecno devices' },
-    ])
-  }, [])
-
-  const addCategory = () => {
-    const n = name.trim()
-    if (!n) return showError('Category name is required')
-    setCategories([{ id: `c${Date.now()}`, name: n, description: description.trim() }, ...categories])
-    setName(''); setDescription('')
-    showSuccess('Category added')
+  const loadCategories = async () => {
+    try {
+      setLoading(true)
+      const data = await apiClient.devices.categories()
+      const list = Array.isArray(data) ? data : []
+      setCategories(list.map((c: any) => ({ id: c.key || c.id, key: c.key, name: c.label || c.name, description: c.description })))
+    } catch (err: any) {
+      showError('Failed to load categories', err.message || String(err))
+    } finally { setLoading(false) }
   }
 
-  const removeCategory = (id: string) => {
-    setCategories(prev => prev.filter(c => c.id !== id))
-    showSuccess('Category removed')
+  useEffect(() => { loadCategories() }, [])
+
+  const addCategory = async () => {
+    const n = name.trim()
+    if (!n) return showError('Category name is required')
+    try {
+      await apiClient.devices.createCategory({ name: n, description: description.trim() })
+      setName(''); setDescription('')
+      showSuccess('Category added')
+      await loadCategories()
+    } catch (err: any) {
+      showError('Failed to add category', err.message || String(err))
+    }
+  }
+
+  const removeCategory = async (id: string) => {
+    try {
+      await apiClient.devices.deleteCategory(id)
+      showSuccess('Category removed')
+      await loadCategories()
+    } catch (err: any) {
+      showError('Failed to remove category', err.message || String(err))
+    }
   }
 
   const startEdit = (c: Category) => {
     setEditingId(c.id)
     setEditName(c.name)
+    setEditDesc(c.description || '')
   }
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (!editName.trim() || !editingId) return
-    setCategories(prev => prev.map(c => c.id === editingId ? { ...c, name: editName.trim() } : c))
-    setEditingId(null)
-    showSuccess('Category updated')
-  }
-
-  if (categories.length === 0 && !name && !description) {
-    // initial loading state
+    try {
+      await apiClient.devices.updateCategory(editingId, { name: editName.trim(), description: editDesc.trim() })
+      setEditingId(null)
+      showSuccess('Category updated')
+      await loadCategories()
+    } catch (err: any) {
+      showError('Failed to update category', err.message || String(err))
+    }
   }
 
   return (
     <Layout requireAuth allowedRoles={['admin', 'super_admin']}>
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
       <div className="container-fluid px-0">
         <motion.div variants={containerVariants} initial="hidden" animate="visible">
           <motion.div variants={itemVariants} className="page-header">
@@ -71,20 +92,21 @@ export default function AdminDeviceCategories() {
                 <h1>Device Categories</h1>
                 <p>Manage device categories for classification</p>
               </div>
+              <button onClick={loadCategories} className="btn-ghost"><RefreshCw size={16} /> Refresh</button>
             </div>
           </motion.div>
 
           <motion.div variants={itemVariants} className="modern-card p-4 mb-4">
             <h3 className="section-title"><Plus size={18} /> Add New Category</h3>
-            <div style={{fontSize:12,color:'var(--text-tertiary)',marginBottom:12}}><span style={{color:'red'}}>*</span> Required fields</div>
+            <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginBottom: 12 }}><span style={{ color: 'red' }}>*</span> Required fields</div>
             <div className="row g-3 align-items-end">
               <div className="col-md-4">
-                <label className="form-label">Category Name <span style={{color:'red'}}>*</span></label>
+                <label className="form-label">Category Name <span style={{ color: 'red' }}>*</span></label>
                 <input className="modern-input" placeholder="e.g. Apple" value={name} onChange={e => setName(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && addCategory()} />
               </div>
               <div className="col-md-6">
-                <label className="form-label">Description <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
+                <label className="form-label">Description <span style={{ color: 'var(--text-secondary)', fontSize: '0.85em' }}>(optional)</span></label>
                 <input className="modern-input" placeholder="Short description" value={description} onChange={e => setDescription(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && addCategory()} />
               </div>
@@ -98,7 +120,11 @@ export default function AdminDeviceCategories() {
 
           <div className="row g-3">
             <AnimatePresence>
-              {categories.map((c, i) => (
+              {loading ? (
+                <div className="col-12 text-center py-5">
+                  <div className="spinner-border" style={{ color: 'var(--primary-600)' }} />
+                </div>
+              ) : categories.map((c, i) => (
                 <motion.div key={c.id} variants={itemVariants} initial="hidden" animate="visible" exit={{ opacity: 0, y: -20 }} transition={{ delay: i * 0.05 }}
                   className="col-12 col-md-6 col-lg-4">
                   <div className="modern-card p-4 d-flex flex-column gap-3">
@@ -108,16 +134,21 @@ export default function AdminDeviceCategories() {
                       </div>
                       <div className="flex-grow-1">
                         {editingId === c.id ? (
-                          <div className="d-flex gap-2">
+                          <div className="d-flex flex-column gap-2">
                             <input className="modern-input" value={editName} onChange={e => setEditName(e.target.value)}
                               onKeyDown={e => e.key === 'Enter' && saveEdit()} autoFocus style={{ padding: '6px 10px', fontSize: 14 }} />
-                            <button className="btn-ghost" style={{ color: 'var(--success-500)' }} onClick={saveEdit}><Save size={16} /></button>
-                            <button className="btn-ghost" onClick={() => setEditingId(null)}><X size={16} /></button>
+                            <input className="modern-input" value={editDesc} onChange={e => setEditDesc(e.target.value)}
+                              onKeyDown={e => e.key === 'Enter' && saveEdit()} placeholder="Description" style={{ padding: '6px 10px', fontSize: 14 }} />
+                            <div className="d-flex gap-1">
+                              <button className="btn-ghost" style={{ color: 'var(--success-500)' }} onClick={saveEdit}><Save size={16} /></button>
+                              <button className="btn-ghost" onClick={() => setEditingId(null)}><X size={16} /></button>
+                            </div>
                           </div>
                         ) : (
                           <>
                             <div className="fw-semibold" style={{ color: 'var(--text-primary)' }}>{c.name}</div>
-                            <small style={{ color: 'var(--text-tertiary)' }}>{c.description || '\u2014'}</small>
+                            <small style={{ color: 'var(--text-tertiary)' }}>{c.key}</small>
+                            {c.description && <small style={{ color: 'var(--text-secondary)', display: 'block' }}>{c.description}</small>}
                           </>
                         )}
                       </div>
@@ -136,7 +167,7 @@ export default function AdminDeviceCategories() {
                 </motion.div>
               ))}
             </AnimatePresence>
-            {categories.length === 0 && (
+            {!loading && categories.length === 0 && (
               <motion.div variants={itemVariants} className="col-12">
                 <div className="empty-state">
                   <div className="empty-state-icon"><Tag size={32} /></div>

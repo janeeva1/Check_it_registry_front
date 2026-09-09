@@ -482,13 +482,8 @@ export default function Dashboard() {
                       </div>
                       <div className="d-flex align-items-end gap-1" style={{ height: 120 }}>
                         {['verified', 'unverified', 'stolen', 'lost', 'found'].map(status => {
-                          const count = devices.filter(d => d.status === 'found').length
-                          const _pct = devices.length > 0 ? (count / devices.length) * 100 : 0
-                          const barPct = status === 'verified'
-                            ? 80 : status === 'unverified'
-                            ? 30 : status === 'stolen'
-                            ? 55 : status === 'lost'
-                            ? 20 : 45
+                          const count = devices.filter(d => d.status === status).length
+                          const barPct = devices.length > 0 ? (count / devices.length) * 100 : 0
                           const colors: Record<string, string> = {
                             verified: 'linear-gradient(180deg, #22c55e, #16a34a)',
                             unverified: 'linear-gradient(180deg, #f59e0b, #d97706)',

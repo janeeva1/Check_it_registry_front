@@ -1,6 +1,16 @@
 // API Client for MySQL Backend
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
+function buildQuery(params: Record<string, any>): string {
+  const q = new URLSearchParams();
+  Object.keys(params).forEach(key => {
+    const v = params[key];
+    if (v !== undefined && v !== null && v !== '') q.append(key, String(v));
+  });
+  const qs = q.toString();
+  return qs ? `?${qs}` : '';
+}
+
 interface User {
   id: string;
   name: string;
@@ -76,7 +86,14 @@ class ApiClient {
           error = { error: `HTTP ${response.status}` };
         }
         console.error("API Error:", error);
-        throw new Error(error.error || `HTTP ${response.status}`);
+        const errMsg = typeof error?.error === 'string'
+          ? error.error
+          : typeof error?.error?.message === 'string'
+            ? error.error.message
+            : typeof error?.message === 'string'
+              ? error.message
+              : `HTTP ${response.status}`;
+        throw new Error(errMsg);
       }
 
       // Handle empty responses
@@ -90,7 +107,12 @@ class ApiClient {
         // Unwrap response envelope if present ({ success: true, data: ... } or { success: false, error: ... })
         if (parsed && typeof parsed === 'object' && parsed.success !== undefined) {
           if (!parsed.success) {
-            throw new Error(parsed.error?.message || parsed.error || 'Request failed');
+            const envelopeErr = typeof parsed.error?.message === 'string'
+              ? parsed.error.message
+              : typeof parsed.error === 'string'
+                ? parsed.error
+                : 'Request failed';
+            throw new Error(envelopeErr);
           }
           return parsed.data !== undefined ? parsed.data : parsed;
         }
@@ -379,6 +401,27 @@ class ApiClient {
         body: JSON.stringify(data),
       }),
     categories: () => this.request("/device-management/categories"),
+    createCategory: (data: { name: string; description?: string }) =>
+      this.request("/device-management/categories", {
+        method: "POST", body: JSON.stringify(data),
+      }),
+    updateCategory: (id: string, data: { name?: string; description?: string; active?: boolean }) =>
+      this.request(`/device-management/categories/${id}`, {
+        method: "PUT", body: JSON.stringify(data),
+      }),
+    deleteCategory: (id: string) =>
+      this.request(`/device-management/categories/${id}`, { method: "DELETE" }),
+    leaAgencies: (params?: { page?: number; limit?: number; search?: string }) => {
+      const q = new URLSearchParams();
+      if (params) {
+        Object.keys(params).forEach(key => {
+          const v = (params as any)[key];
+          if (v !== undefined && v !== null && v !== '') q.append(key, String(v));
+        });
+      }
+      const qs = q.toString();
+      return this.request(`/admin-portal/lea-agencies${qs ? `?${qs}` : ''}`);
+    },
     update: (id: string, data: any) =>
       this.request(`/device-management/${id}`, {
         method: "PUT",
@@ -398,7 +441,7 @@ class ApiClient {
   // Report management (Admin)
   reportManagement = {
     list: (params?: { status?: string; report_type?: string }) => {
-      const query = params ? `?${new URLSearchParams(params).toString()}` : "";
+      const query = params ? buildQuery(params) : "";
       return this.request(`/report-management${query}`);
     },
     get: (caseId: string) => this.request(`/report-management/${caseId}`),
@@ -420,7 +463,7 @@ class ApiClient {
     stats: () => this.request("/admin-portal/stats"),
     verificationQueue: (params?: { page?: number; limit?: number }) => {
       const query = params
-        ? `?${new URLSearchParams(params as any).toString()}`
+        ? buildQuery(params as any)
         : "";
       return this.request(`/admin-portal/verification-queue${query}`);
     },
@@ -430,11 +473,11 @@ class ApiClient {
         body: JSON.stringify(data),
       }),
     auditLogs: (params?: any) => {
-      const query = params ? `?${new URLSearchParams(params).toString()}` : "";
+      const query = params ? buildQuery(params) : "";
       return this.request(`/admin-portal/audit-logs${query}`);
     },
     users: (params?: any) => {
-      const query = params ? `?${new URLSearchParams(params).toString()}` : "";
+      const query = params ? buildQuery(params) : "";
       return this.request(`/admin-portal/users${query}`);
     },
     updateUserRole: (id: string, role: string) =>
@@ -449,19 +492,19 @@ class ApiClient {
     overview: () => this.request('/admin-system/overview'),
     configuration: () => this.request('/admin-system/configuration'),
     userManagement: (params?: any) => {
-      const query = params ? `?${new URLSearchParams(params).toString()}` : '';
+      const query = params ? buildQuery(params) : '';
       return this.request(`/admin-system/users/management${query}`);
     },
     verificationQueue: (params?: any) => {
-      const query = params ? `?${new URLSearchParams(params).toString()}` : '';
+      const query = params ? buildQuery(params) : '';
       return this.request(`/admin-system/devices/verification-queue${query}`);
     },
     reportManagement: (params?: any) => {
-      const query = params ? `?${new URLSearchParams(params).toString()}` : '';
+      const query = params ? buildQuery(params) : '';
       return this.request(`/admin-system/reports/management${query}`);
     },
     auditLogs: (params?: any) => {
-      const query = params ? `?${new URLSearchParams(params).toString()}` : '';
+      const query = params ? buildQuery(params) : '';
       return this.request(`/admin-system/audit-logs${query}`);
     },
     maintenance: (operation: string, parameters?: any) => this.request('/admin-system/maintenance', {
@@ -469,7 +512,7 @@ class ApiClient {
       body: JSON.stringify({ operation, parameters }),
     }),
     performance: (params?: any) => {
-      const query = params ? `?${new URLSearchParams(params).toString()}` : '';
+      const query = params ? buildQuery(params) : '';
       return this.request(`/admin-system/performance${query}`);
     }
   };
@@ -477,14 +520,14 @@ class ApiClient {
   // Analytics
   analytics = {
     dashboard: (params?: any) => {
-      const query = params ? `?${new URLSearchParams(params).toString()}` : '';
+      const query = params ? buildQuery(params) : '';
       return this.request(`/analytics/dashboard${query}`);
     },
     deviceBrands: () => this.request('/analytics/devices/brands'),
     hotspots: () => this.request('/analytics/hotspots'),
     leaPerformance: () => this.request('/analytics/lea-performance'),
     export: (type: string, params?: any) => {
-      const query = params ? `?${new URLSearchParams(params).toString()}` : '';
+      const query = params ? buildQuery(params) : '';
       return this.request(`/analytics/export/${type}${query}`);
     }
   };
@@ -493,7 +536,7 @@ class ApiClient {
   systemHealth = {
     status: () => this.request('/system-health/status'),
     auditLogs: (params?: any) => {
-      const query = params ? `?${new URLSearchParams(params).toString()}` : '';
+      const query = params ? buildQuery(params) : '';
       return this.request(`/system-health/audit-logs${query}`);
     },
     maintenance: (operation: string) => this.request(`/system-health/maintenance/${operation}`, {
@@ -504,7 +547,7 @@ class ApiClient {
   // User Management
   userManagement = {
     users: (params?: any) => {
-      const query = params ? `?${new URLSearchParams(params).toString()}` : '';
+      const query = params ? buildQuery(params) : '';
       return this.request(`/user-management/users${query}`);
     },
     getUser: (userId: string) => this.request(`/user-management/users/${userId}`),
@@ -539,7 +582,7 @@ class ApiClient {
   leaPortal = {
     stats: () => this.request('/lea-portal/stats'),
     cases: (params?: any) => {
-      const query = params ? `?${new URLSearchParams(params).toString()}` : '';
+      const query = params ? buildQuery(params) : '';
       return this.request(`/lea-portal/cases${query}`);
     },
     getCase: (caseId: string) => this.request(`/lea-portal/cases/${caseId}`),
@@ -553,9 +596,24 @@ class ApiClient {
     }),
     regionalStats: () => this.request('/lea-portal/regional-stats'),
     exportCases: (params?: any) => {
-      const query = params ? `?${new URLSearchParams(params).toString()}` : '';
+      const query = params ? buildQuery(params) : '';
       return this.request(`/lea-portal/export/cases${query}`);
-    }
+    },
+    getSettings: () => this.request('/lea-portal/settings'),
+    updateSettings: (data: any) => this.request('/lea-portal/settings', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+    getThreads: () => this.request('/lea-portal/threads'),
+    createThread: (data: { subject: string; participantUserId: string; caseId?: string }) => this.request('/lea-portal/threads', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+    getThreadMessages: (threadId: string) => this.request(`/lea-portal/threads/${threadId}/messages`),
+    sendThreadMessage: (threadId: string, content: string) => this.request(`/lea-portal/threads/${threadId}/messages`, {
+      method: 'POST',
+      body: JSON.stringify({ content }),
+    }),
   };
 
   // Device Transfer
@@ -583,7 +641,7 @@ class ApiClient {
       body: JSON.stringify(data),
     }),
     requests: (params?: any) => {
-      const query = params ? `?${new URLSearchParams(params).toString()}` : '';
+      const query = params ? buildQuery(params) : '';
       return this.request(`/device-transfer/requests${query}`);
     },
     cancel: (transferId: string) => this.request('/device-transfer/cancel', {
@@ -610,15 +668,15 @@ class ApiClient {
   // Found Device
   foundDevice = {
     check: (params: any) => {
-      const query = new URLSearchParams(params).toString();
-      return this.request(`/found-device/check?${query}`);
+      const query = buildQuery(params);
+      return this.request(`/found-device/check${query}`);
     },
     report: (data: any) => this.request('/found-device/report', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
     reports: (params?: any) => {
-      const query = params ? `?${new URLSearchParams(params).toString()}` : '';
+      const query = params ? buildQuery(params) : '';
       return this.request(`/found-device/reports${query}`);
     }
   };
@@ -661,7 +719,18 @@ class ApiClient {
       body: JSON.stringify({ content })
     }),
     // Admin methods
-    adminGetAll: (params?: any) => this.request(`/marketplace/admin/all${params ? '?' + new URLSearchParams(params) : ''}`),
+    adminGetAll: (params?: any) => {
+      const q = new URLSearchParams();
+      if (params) {
+        Object.keys(params).forEach(key => {
+          if (params[key] !== undefined && params[key] !== null && params[key] !== '') {
+            q.append(key, String(params[key]));
+          }
+        });
+      }
+      const qs = q.toString();
+      return this.request(`/marketplace/admin/all${qs ? `?${qs}` : ''}`);
+    },
     adminUpdateStatus: (id: string, status: string) => this.request(`/marketplace/admin/${id}/status`, {
       method: 'PUT',
       body: JSON.stringify({ status })
@@ -669,7 +738,8 @@ class ApiClient {
     adminToggleFeatured: (id: string, featured: boolean) => this.request(`/marketplace/admin/${id}/featured`, {
       method: 'PUT',
       body: JSON.stringify({ featured })
-    })
+    }),
+    getInbox: () => this.request('/marketplace/inbox'),
   };
 
   // Payments
@@ -686,7 +756,11 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify(data)
     }),
-    getBalance: () => this.request('/payments/balance')
+    getBalance: () => this.request('/payments/balance'),
+    getPayouts: (params?: any) => {
+      const query = params ? buildQuery(params) : '';
+      return this.request(`/payments/payouts${query}`);
+    },
   };
 
   // Profile methods
@@ -770,7 +844,7 @@ class ApiClient {
   // Reports (User Portal)
   reports = {
     list: async (params?: any) => {
-      const query = params ? `?${new URLSearchParams(params).toString()}` : '';
+      const query = params ? buildQuery(params) : '';
       const res = await this.request(`/user-portal/reports${query}`);
       const normalized = Array.isArray(res)
         ? res
@@ -804,11 +878,11 @@ class ApiClient {
         body: JSON.stringify(data),
       }),
     transactions: (params?: { page?: number; limit?: number; type?: string; status?: string }) => {
-      const query = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+      const query = params ? buildQuery(params as any) : '';
       return this.request(`/revenue-admin/transactions${query}`);
     },
     summary: (params?: { start_date?: string; end_date?: string }) => {
-      const query = params ? `?${new URLSearchParams(params).toString()}` : '';
+      const query = params ? buildQuery(params) : '';
       return this.request(`/revenue-admin/summary${query}`);
     },
     createInvoice: (data: { fee_type: string; amount: number; currency?: string; description?: string }) =>
@@ -848,9 +922,9 @@ class ApiClient {
     getCACHistory: () => this.request('/security/cac/history'),
     getVerificationStatus: () => this.request('/security/cac/status'),
     getVerificationQueue: (status: string = 'pending', page: number = 1) =>
-      this.request(`/admin/verification-queue?status=${status}&page=${page}`),
+      this.request(`/security/admin/verification-queue?status=${status}&page=${page}`),
     updateQueueItem: (id: string, status: string) =>
-      this.request(`/admin/verification-queue/${id}`, {
+      this.request(`/security/admin/verification-queue/${id}`, {
         method: 'PUT', body: JSON.stringify({ status }),
       }),
     riskCheck: () => this.request('/security/check-risk', { method: 'POST' }),
@@ -859,7 +933,7 @@ class ApiClient {
   // Fraud detection (admin)
   fraud = {
     alerts: (params?: { page?: number; limit?: number; status?: string }) => {
-      const query = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+      const query = params ? buildQuery(params as any) : '';
       return this.request(`/revenue-admin/fraud-alerts${query}`);
     },
     getAlert: (id: string) => this.request(`/revenue-admin/fraud-alerts/${id}`),
@@ -879,7 +953,7 @@ class ApiClient {
         body: JSON.stringify(data),
       }),
     onboardings: (params?: { page?: number; limit?: number }) => {
-      const query = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+      const query = params ? buildQuery(params as any) : '';
       return this.request(`/business/onboardings${query}`);
     },
     onboardingStats: () => this.request('/business/onboardings/stats'),
@@ -901,7 +975,7 @@ class ApiClient {
   // Device Checks
   deviceChecks = {
     history: async (params: { device_id?: string; identifier?: string; limit?: number }) => {
-      const query = `?${new URLSearchParams(params as any).toString()}`;
+      const query = buildQuery(params as any);
       return this.request(`/public-check/history${query}`);
     },
     get: async (checkId: string) => this.request(`/public-check/report/${checkId}`),
@@ -938,12 +1012,12 @@ class ApiClient {
   archive = {
     stats: () => this.request('/archive/stats'),
     deletedUsers: (params?: { page?: number; search?: string }) => {
-      const q = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+      const q = params ? buildQuery(params as any) : '';
       return this.request(`/archive/deleted-users${q}`);
     },
     deletedUserDetail: (id: string) => this.request(`/archive/deleted-users/${id}`),
     deletedDevices: (params?: { page?: number; search?: string }) => {
-      const q = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+      const q = params ? buildQuery(params as any) : '';
       return this.request(`/archive/deleted-devices${q}`);
     },
     deletedDeviceDetail: (id: string) => this.request(`/archive/deleted-devices/${id}`),
@@ -954,7 +1028,7 @@ class ApiClient {
     leaView: (userId: string) => this.request(`/archive/lea-view/${userId}`),
     deviceLifecycle: (deviceId: string) => this.request(`/archive/device-lifecycle/${deviceId}`),
     exportAudit: (params?: { page?: number }) => {
-      const q = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+      const q = params ? buildQuery(params as any) : '';
       return this.request(`/archive/export-audit${q}`);
     },
   };

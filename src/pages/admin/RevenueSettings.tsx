@@ -59,11 +59,16 @@ export default function RevenueSettings() {
         apiClient.revenue.transactions({ page: 1, limit: 10 }),
       ])
       const feeMap: Record<string, FeeConfig> = {}
-      ;(Array.isArray(feeData) ? feeData : feeData.fees || []).forEach((f: FeeConfig) => { feeMap[f.setting_key] = f })
+      const feesObj = feeData?.fees || feeData || {}
+      if (Array.isArray(feesObj)) {
+        feesObj.forEach((f: FeeConfig) => { feeMap[f.setting_key] = f })
+      } else if (typeof feesObj === 'object') {
+        Object.entries(feesObj).forEach(([key, val]) => { feeMap[key] = { setting_key: key, setting_value: String(val) } })
+      }
       setFees(feeMap)
       setCurrentProvider(provData?.provider || 'prembly')
       setSummary(summData)
-      setTransactions(Array.isArray(txData) ? txData : txData.transactions || [])
+      setTransactions(Array.isArray(txData) ? txData : txData.data || txData.transactions || [])
     } catch {
       showError('Failed to load revenue settings')
     } finally {
@@ -109,7 +114,7 @@ export default function RevenueSettings() {
     try {
       const next = txPage + 1
       const data = await apiClient.revenue.transactions({ page: next, limit: 10 })
-      const txList = Array.isArray(data) ? data : data.transactions || []
+      const txList = Array.isArray(data) ? data : data.data || data.transactions || []
       setTransactions(prev => [...prev, ...txList])
       setTxPage(next)
     } catch { /* pagination fetch failed */ } finally { setTxLoading(false) }

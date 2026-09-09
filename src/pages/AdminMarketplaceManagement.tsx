@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Layout } from '../components/Layout'
 import { apiClient } from '../lib/apiClient'
 import { Search, Filter, Ban, CheckCircle, Star, StarOff, Tag, X, RefreshCw } from 'lucide-react'
-import { useToast } from '../components/Toast'
+import { useToast, ToastContainer } from '../components/Toast'
 import { getDisplayName } from '../utils/userHelpers'
 
 const containerVariants = {
@@ -21,7 +21,7 @@ export default function AdminMarketplaceManagement() {
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState('all')
   const [search, setSearch] = useState('')
-  const { showSuccess, showError } = useToast()
+  const { showSuccess, showError, toasts, removeToast } = useToast()
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchListings() }, [statusFilter, search])
@@ -29,7 +29,9 @@ export default function AdminMarketplaceManagement() {
   const fetchListings = async () => {
     try {
       setLoading(true)
-      const data = await (apiClient as any).marketplace.adminGetAll({ status: statusFilter, search: search || undefined })
+      const params: Record<string, string> = { status: statusFilter }
+      if (search) params.search = search
+      const data = await (apiClient as any).marketplace.adminGetAll(params)
       if (Array.isArray(data)) setListings(data)
     } catch {
       showError('Error', 'Failed to fetch listings')
@@ -62,6 +64,7 @@ export default function AdminMarketplaceManagement() {
 
   return (
     <Layout requireAuth allowedRoles={['admin', 'super_admin']}>
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
       <div className="container-fluid px-0">
         <motion.div variants={containerVariants} initial="hidden" animate="visible">
           <motion.div variants={itemVariants} className="page-header">
@@ -129,8 +132,13 @@ export default function AdminMarketplaceManagement() {
                       <tr key={l.id}>
                         <td>
                           <div className="d-flex align-items-center gap-3">
-                            <img src={Array.isArray(l.images) && l.images[0] ? l.images[0] : 'https://via.placeholder.com/40'}
-                              className="rounded" style={{ width: 40, height: 40, objectFit: 'cover' }} />
+                            <div style={{ width: 40, height: 40, borderRadius: 6, overflow: 'hidden', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                              {Array.isArray(l.images) && l.images[0] ? (
+                                <img src={l.images[0]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                              ) : (
+                                <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>No img</span>
+                              )}
+                            </div>
                             <div>
                               <div className="fw-medium" style={{ color: 'var(--text-primary)' }}>{l.title}</div>
                               <small style={{ color: 'var(--text-tertiary)' }}>{l.brand} {l.model}</small>

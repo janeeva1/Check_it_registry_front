@@ -82,6 +82,24 @@ export default function Settings() {
     apiClient.securityQuestions.get().then((r: any) => {
       setHasSecurityQuestion(r.hasSecurityQuestion)
     }).catch(() => setHasSecurityQuestion(false))
+    apiClient.profile.getPreferences().then((r: any) => {
+      if (r?.preferences) {
+        setPreferences(prev => ({
+          ...prev,
+          email_notifications: r.preferences.email_notifications ?? prev.email_notifications,
+          sms_notifications: r.preferences.sms_notifications ?? prev.sms_notifications,
+          push_notifications: r.preferences.push_notifications ?? prev.push_notifications,
+          device_alerts: r.preferences.device_alerts ?? prev.device_alerts,
+          transfer_notifications: r.preferences.transfer_notifications ?? prev.transfer_notifications,
+          verification_notifications: r.preferences.verification_notifications ?? prev.verification_notifications,
+          report_updates: r.preferences.report_updates ?? prev.report_updates,
+          marketing_emails: r.preferences.marketing_emails ?? prev.marketing_emails,
+          language: r.preferences.language ?? prev.language,
+          timezone: r.preferences.timezone ?? prev.timezone,
+          two_factor_enabled: r.preferences.two_factor_enabled ?? prev.two_factor_enabled,
+        }))
+      }
+    }).catch(() => {})
   }, [])
 
   const updatePreference = (key: keyof UserPreferences, value: any) => {
@@ -91,7 +109,7 @@ export default function Settings() {
   const handleSave = async () => {
     try {
       setSaving(true)
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await apiClient.profile.updatePreferences(preferences)
       showSuccess('Settings Saved', 'Your preferences have been updated successfully')
     } catch (err) {
       showError('Save Failed', 'Failed to update preferences')

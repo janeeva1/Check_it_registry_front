@@ -105,7 +105,7 @@ export default function MarketplaceListing() {
           inStock: data.status === 'active',
         }
         if (mapped.images.length === 0) {
-          mapped.images = ['https://images.unsplash.com/photo-1592750475338-74b7b21085ab?q=80&w=800&auto=format&fit=crop']
+          mapped.images = []
         }
         setListing(mapped)
       }
@@ -133,7 +133,7 @@ export default function MarketplaceListing() {
         price: typeof l.price === 'string' ? parseFloat(l.price) : l.price,
         currency: l.currency === 'NGN' ? '₦' : l.currency,
         location: l.location,
-        thumbnail: l.images?.[0] || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=800&auto=format&fit=crop',
+        thumbnail: l.images?.[0] || '',
         condition: l.device_condition,
       }))
       setSimilarListings(mapped)
@@ -229,6 +229,7 @@ export default function MarketplaceListing() {
                 onClick={() => setZoomed(!zoomed)}
               >
                 <div style={{ position: 'relative', overflow: 'hidden' }}>
+                  {listing.images.length > 0 ? (
                   <img
                     src={listing.images[currentImageIndex]}
                     alt={listing.title}
@@ -241,6 +242,11 @@ export default function MarketplaceListing() {
                       display: 'block',
                     }}
                   />
+                  ) : (
+                    <div style={{ width: '100%', height: 450, background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>
+                      No image available
+                    </div>
+                  )}
                   {listing.images.length > 1 && (
                     <>
                       <button
@@ -509,7 +515,9 @@ export default function MarketplaceListing() {
                   style={{ cursor: 'pointer' }}
                   onClick={() => { navigate(`/marketplace/listing/${l.id}`); window.scrollTo(0, 0) }}
                 >
-                  <div style={{ height: 180, backgroundSize: 'cover', backgroundPosition: 'center', backgroundImage: `url(${l.thumbnail})` }} />
+                  <div style={{ height: 180, backgroundSize: 'cover', backgroundPosition: 'center', backgroundImage: l.thumbnail ? `url(${l.thumbnail})` : undefined, backgroundColor: l.thumbnail ? undefined : 'var(--bg-tertiary)', display: l.thumbnail ? undefined : 'flex', alignItems: l.thumbnail ? undefined : 'center', justifyContent: l.thumbnail ? undefined : 'center' }}>
+                    {!l.thumbnail && <span style={{ color: 'var(--text-tertiary)', fontSize: 12 }}>No image</span>}
+                  </div>
                   <div style={{ padding: 14 }}>
                     <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4, display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                       {l.title}

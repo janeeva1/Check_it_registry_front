@@ -96,7 +96,7 @@ export default function AdminReportManagement() {
       const res = await fetch(`/api/admin-dashboard/reports/${reportId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify({ lea_assigned: leaId })
+        body: JSON.stringify({ assigned_lea_id: leaId })
       })
       if (!res.ok) throw new Error('Failed to assign LEA')
       setShowAssign(null)
