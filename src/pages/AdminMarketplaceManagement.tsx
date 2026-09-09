@@ -132,8 +132,13 @@ export default function AdminMarketplaceManagement() {
                       <tr key={l.id}>
                         <td>
                           <div className="d-flex align-items-center gap-3">
-                            <img src={Array.isArray(l.images) && l.images[0] ? l.images[0] : 'https://via.placeholder.com/40'}
-                              className="rounded" style={{ width: 40, height: 40, objectFit: 'cover' }} />
+                            <div style={{ width: 40, height: 40, borderRadius: 6, overflow: 'hidden', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                              {Array.isArray(l.images) && l.images[0] ? (
+                                <img src={l.images[0]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                              ) : (
+                                <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>No img</span>
+                              )}
+                            </div>
                             <div>
                               <div className="fw-medium" style={{ color: 'var(--text-primary)' }}>{l.title}</div>
                               <small style={{ color: 'var(--text-tertiary)' }}>{l.brand} {l.model}</small>

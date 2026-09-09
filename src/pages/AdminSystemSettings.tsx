@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Layout } from '../components/Layout'
 import { Settings, Shield, Bell, Smartphone, Globe, Clock, Save, RefreshCw, Lock, Key, Users, DollarSign, TrendingUp } from 'lucide-react'
 import { useToast, ToastContainer } from '../components/Toast'
+import { apiClient } from '../lib/apiClient'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -303,15 +304,34 @@ export default function AdminSystemSettings() {
                   </div>
                 </div>
                 <div className="p-4 d-flex flex-column gap-3">
-                  <button className="btn-ghost w-100 justify-content-between text-start p-3" style={{ borderRadius: 12, background: 'var(--bg-tertiary)' }}>
+                  <button className="btn-ghost w-100 justify-content-between text-start p-3" style={{ borderRadius: 12, background: 'var(--bg-tertiary)' }} onClick={async () => {
+                    try {
+                      await apiClient.files.cleanup()
+                      showSuccess('Cache Cleared', 'System cache has been cleared successfully')
+                    } catch { showError('Failed', 'Could not clear system cache') }
+                  }}>
                     <span style={{ color: 'var(--text-primary)' }}>Clear System Cache</span>
                     <small style={{ color: 'var(--text-tertiary)' }}>Run now</small>
                   </button>
-                  <button className="btn-ghost w-100 justify-content-between text-start p-3" style={{ borderRadius: 12, background: 'var(--bg-tertiary)' }}>
+                  <button className="btn-ghost w-100 justify-content-between text-start p-3" style={{ borderRadius: 12, background: 'var(--bg-tertiary)' }} onClick={() => {
+                    try {
+                      const url = apiClient.dataExport.download('audit')
+                      const link = document.createElement('a')
+                      link.href = url; link.target = '_blank'
+                      document.body.appendChild(link); link.click(); document.body.removeChild(link)
+                      showSuccess('Export Started', 'Audit logs are being exported')
+                    } catch { showError('Failed', 'Could not export audit logs') }
+                  }}>
                     <span style={{ color: 'var(--text-primary)' }}>Export System Logs</span>
                     <small style={{ color: 'var(--text-tertiary)' }}>Download</small>
                   </button>
-                  <button className="btn-ghost w-100 justify-content-between text-start p-3" style={{ borderRadius: 12, background: 'rgba(239, 68, 68, 0.05)', color: 'var(--danger-500)' }}>
+                  <button className="btn-ghost w-100 justify-content-between text-start p-3" style={{ borderRadius: 12, background: 'rgba(239, 68, 68, 0.05)', color: 'var(--danger-500)' }} onClick={async () => {
+                    if (!confirm('Run database cleanup? This will remove old notifications, expired transfers, and stale audit logs.')) return
+                    try {
+                      await apiClient.files.cleanup()
+                      showSuccess('Cleanup Complete', 'Database maintenance completed successfully')
+                    } catch { showError('Failed', 'Could not run database cleanup') }
+                  }}>
                     <span>Run Database Cleanup</span>
                     <small>Maintenance</small>
                   </button>

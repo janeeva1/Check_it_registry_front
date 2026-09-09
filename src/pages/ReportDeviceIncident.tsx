@@ -137,7 +137,7 @@ export default function ReportDeviceIncident() {
     try {
       setDevicesLoading(true)
       setDevicesError(null)
-      const data = await apiClient.request('/report-management/my-devices')
+      const data = await apiClient.reportManagement.myDevices()
       const list = Array.isArray(data) ? data : data?.devices || data?.data || []
       setDevices(list)
     } catch (err: any) {
@@ -930,7 +930,7 @@ export default function ReportDeviceIncident() {
                         type="button"
                         className="btn-gradient-danger d-flex align-items-center gap-2"
                         disabled={submitting || (ninVerified === false && ninInput.trim().length < 11)}
-                        onClick={handleSubmitReport}
+                        onClick={() => handleSubmitReport()}
                       >
                         {submitting ? (
                           <>
