@@ -91,7 +91,7 @@ export default function AuditTrail() {
       if (resourceFilter !== 'all') params.append('resource_type', resourceFilter)
       if (statusFilter !== 'all') params.append('status', statusFilter)
 
-      const base = `${import.meta.env.VITE_API_BASE_URL || ''}/api/audit-trail`
+      const base = `${import.meta.env.VITE_API_BASE_URL || ''}/api/audit`
       const logsPath = user?.role === 'admin' ? '/logs' : user?.role === 'lea' ? '/lea/logs' : '/my/logs'
 
       const res = await fetch(`${base}${logsPath}?${params.toString()}`, {

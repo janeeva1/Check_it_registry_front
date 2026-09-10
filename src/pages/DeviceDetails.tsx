@@ -40,7 +40,7 @@ export default function DeviceDetails() {
       try {
         setLoading(true)
         const token = localStorage.getItem('auth_token')
-        const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/devices/${id}`, { headers: { Authorization: `Bearer ${token}` } })
+        const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/device-management/${id}`, { headers: { Authorization: `Bearer ${token}` } })
         if (!res.ok) throw new Error('Device not found')
       const data = await res.json()
         setDevice(data.data || data)
@@ -54,7 +54,7 @@ export default function DeviceDetails() {
     if (!device) return
     try {
       const token = localStorage.getItem('auth_token')
-      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/devices/${device.id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/device-management/${device.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(editForm),
@@ -71,7 +71,7 @@ export default function DeviceDetails() {
     if (!device || !window.confirm('Are you sure? This cannot be undone.')) return
     try {
       const token = localStorage.getItem('auth_token')
-      await fetch(`${import.meta.env.VITE_API_URL || '/api'}/devices/${device.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
+      await fetch(`${import.meta.env.VITE_API_URL || '/api'}/device-management/${device.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
       showSuccess('Device removed')
       navigate('/my-devices')
     } catch (err: any) { showError(err.message) }

@@ -21,7 +21,7 @@ export default function CreateListing() {
       try {
         setLoading(true)
         const token = localStorage.getItem('auth_token')
-        const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/devices`, { headers: { Authorization: `Bearer ${token}` } })
+        const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/device-management`, { headers: { Authorization: `Bearer ${token}` } })
         if (res.ok) {
           const data = await res.json()
           setDevices(data.data || [])
