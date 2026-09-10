@@ -191,7 +191,7 @@ export default function Search() {
                   <AnimatePresence>
                     {results.map((d, i) => (
                       <motion.div key={d.id} className="col-12 col-md-6" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ delay: i * 0.03 }}>
-                        <Link to={`/device-details/${d.id}`} className="text-decoration-none">
+                        <Link to={`/device/${d.id}`} className="text-decoration-none">
                           <div className="modern-card p-3">
                             <div className="d-flex align-items-start gap-3">
                               <div className="avatar" style={{ background: 'var(--primary-50)' }}><Smartphone size={20} style={{ color: 'var(--primary-600)' }} /></div>

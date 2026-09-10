@@ -117,7 +117,7 @@ export default function ReportDetails() {
                     <div>
                       <p className="fw-semibold mb-1">{report.device.brand} {report.device.model}</p>
                       <p style={{ color: 'var(--text-secondary)', fontSize: 13 }}>IMEI: {report.device.imei || '—'} &middot; Serial: {report.device.serial || '—'}</p>
-                      <Link to={`/device-details/${report.device.id}`} className="btn-ghost d-inline-flex align-items-center gap-1" style={{ fontSize: 13 }}><ExternalLink size={14} /> View Device</Link>
+                      <Link to={`/device/${report.device.id}`} className="btn-ghost d-inline-flex align-items-center gap-1" style={{ fontSize: 13 }}><ExternalLink size={14} /> View Device</Link>
                     </div>
                   </div>
                 ) : <p style={{ color: 'var(--text-secondary)' }}>No device information</p>}

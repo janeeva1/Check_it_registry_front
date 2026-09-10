@@ -148,7 +148,7 @@ export default function TransactionHistory() {
                         {statusBadge(t.status)}
                       </div>
                       <div className="col-auto">
-                        <Link to={`/payment/confirmation?tx=${t.id}`} className="btn-ghost d-inline-flex align-items-center gap-1" style={{ fontSize: 13 }}>
+                        <Link to={`/payments/confirm?tx=${t.id}`} className="btn-ghost d-inline-flex align-items-center gap-1" style={{ fontSize: 13 }}>
                           <Eye size={14} />
                         </Link>
                       </div>

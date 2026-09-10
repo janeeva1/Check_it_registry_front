@@ -220,7 +220,7 @@ export default function DeviceDetails() {
                 <h5 className="mb-4 d-flex align-items-center gap-2"><Shield size={20} style={{ color: 'var(--primary-600)' }} /> Quick Actions</h5>
                 <div className="d-flex flex-column gap-2">
                   <Link to={`/device-check-report?deviceId=${device.id}`} className="btn-outline-primary d-flex align-items-center gap-2"><Shield size={16} /> Check Device</Link>
-                  <Link to={`/device-transfer?device=${device.id}`} className="btn-outline-primary d-flex align-items-center gap-2"><Smartphone size={16} /> Transfer Ownership</Link>
+                  <Link to={`/transfer?device=${device.id}`} className="btn-outline-primary d-flex align-items-center gap-2"><Smartphone size={16} /> Transfer Ownership</Link>
                   <Link to={`/verify-device?device=${device.id}`} className="btn-outline-primary d-flex align-items-center gap-2"><CheckCircle size={16} /> Verify Ownership</Link>
                   <Link to={`/report-incident?device=${device.id}`} className="btn-outline-primary d-flex align-items-center gap-2" style={{ color: 'var(--danger-500)' }}><AlertTriangle size={16} /> Report Incident</Link>
                   <button onClick={handleRelease} className="btn-outline-primary d-flex align-items-center gap-2" style={{ color: 'var(--warning-500)' }}><LogOut size={16} /> Release Device</button>
@@ -236,7 +236,7 @@ export default function DeviceDetails() {
                     <p style={{ color: 'var(--text-secondary)', fontSize: 11 }}>{new Date(device.created_at).toLocaleString()}</p>
                   </div>
                 </div>
-                <Link to={`/audit?entity=${device.id}`} className="btn-ghost d-inline-flex align-items-center gap-2" style={{ fontSize: 13 }}>
+                <Link to={`/audit-trail?resource=device&q=${encodeURIComponent(String(device.id))}`} className="btn-ghost d-inline-flex align-items-center gap-2" style={{ fontSize: 13 }}>
                   <History size={14} /> View Full Audit Trail
                 </Link>
               </div>

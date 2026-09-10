@@ -9,6 +9,7 @@ type CaseDetails = {
   device: any
   reporter: any
   lea: any
+  history?: any[]
 }
 
 export default function LEACaseDetails() {
@@ -28,12 +29,26 @@ export default function LEACaseDetails() {
       setLoading(true)
       setError(null)
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/lea-portal/cases/${id}`)
+        const token = localStorage.getItem('auth_token')
+        const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/lea-portal/cases/${id}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        })
         if (!res.ok) throw new Error(`Failed to load case: ${res.status}`)
       const json = await res.json()
         if (isMounted) {
-          setData(json)
-          setNewStatus(json?.report?.status || '')
+          const c = json.case || json.report || {}
+          setData({
+            report: c,
+            device: c
+              ? { id: c.device_id || c.id, brand: c.brand, model: c.model, imei: c.imei }
+              : json.device,
+            reporter: c
+              ? { name: c.reporter_name, email: c.reporter_email }
+              : json.reporter,
+            lea: json.lea || null,
+            history: json.history || [],
+          })
+          setNewStatus(c.status || '')
         }
       } catch (err: any) {
         console.error('Load LEA case error:', err)
@@ -51,9 +66,10 @@ export default function LEACaseDetails() {
     setStatusUpdating(true)
     setError(null)
     try {
+      const token = localStorage.getItem('auth_token')
       const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/lea-portal/cases/${id}/status`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({ status: newStatus })
       })
       if (!res.ok) throw new Error('Failed to update status')
@@ -72,10 +88,11 @@ export default function LEACaseDetails() {
     setNoteSaving(true)
     setError(null)
     try {
+      const token = localStorage.getItem('auth_token')
       const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/lea-portal/cases/${id}/notes`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ note: note.trim() })
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ notes: note.trim() })
       })
       if (!res.ok) throw new Error('Failed to add note')
       setNote('')

@@ -136,7 +136,10 @@ const DeviceCheckModal: React.FC<DeviceCheckModalProps> = ({
           ...fingerprint,
           macAddress: securityMetadata.macAddress
         },
-        networkInfo,
+        networkInfo: {
+          ...networkInfo,
+          macAddress: securityMetadata.macAddress
+        },
         checkReason: 'purchase_check'
       };
 

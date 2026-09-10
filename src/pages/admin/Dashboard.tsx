@@ -402,7 +402,7 @@ export default function AdminDashboard() {
                                   {new Date(u.created_at).toLocaleDateString()}
                                 </td>
                                 <td style={{ textAlign: 'right' }}>
-                                  <Link to={`/admin/users/${u.id}`} className="btn btn-sm btn-ghost p-1">
+                                  <Link to={`/admin/user/${u.id}`} className="btn btn-sm btn-ghost p-1">
                                     <Eye size={15} />
                                   </Link>
                                 </td>
@@ -476,7 +476,7 @@ export default function AdminDashboard() {
                             <small style={{ color: 'var(--text-tertiary)' }}>Roles and permissions</small>
                           </div>
                         </Link>
-                        <Link to="/admin/devices" className="btn btn-outline-primary d-flex align-items-center gap-3 text-start w-100" style={{ justifyContent: 'flex-start' }}>
+                        <Link to="/admin/device-management" className="btn btn-outline-primary d-flex align-items-center gap-3 text-start w-100" style={{ justifyContent: 'flex-start' }}>
                           <Smartphone size={18} />
                           <div>
                             <div className="fw-medium" style={{ fontSize: 13 }}>Device Management</div>
@@ -497,7 +497,7 @@ export default function AdminDashboard() {
                             <small style={{ color: 'var(--text-tertiary)' }}>Security logs</small>
                           </div>
                         </Link>
-                        <Link to="/admin/reports" className="btn btn-outline-primary d-flex align-items-center gap-3 text-start w-100" style={{ justifyContent: 'flex-start' }}>
+                        <Link to="/admin/report-management" className="btn btn-outline-primary d-flex align-items-center gap-3 text-start w-100" style={{ justifyContent: 'flex-start' }}>
                           <FileText size={18} />
                           <div>
                             <div className="fw-medium" style={{ fontSize: 13 }}>Report Management</div>

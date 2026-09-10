@@ -25,6 +25,7 @@ import {
   MessageSquare,
   ArrowLeftRight,
   Archive,
+  RotateCcw,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -148,6 +149,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, user }) => {
         { path: "/admin/device-management", label: "Device Management", icon: Smartphone },
         { path: "/admin/lea-management", label: "LEA Management", icon: Shield },
         { path: "/admin/report-management", label: "Report Management", icon: FileText },
+        { path: "/admin/recovery", label: "Recovery Services", icon: RotateCcw },
         { path: "/admin/marketplace", label: "Marketplace Management", icon: Inbox },
         { path: "/admin/system-settings", label: "System Settings", icon: Settings },
         { path: "/admin/device-categories", label: "Device Categories", icon: Settings },

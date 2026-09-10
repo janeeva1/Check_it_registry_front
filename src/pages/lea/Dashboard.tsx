@@ -498,7 +498,7 @@ export default function LEADashboard() {
                     </Link>
                   </div>
                   <div className="col-md-4">
-                    <Link to="/lea/report-recovery"
+                    <Link to="/lea/recovery"
                       className="d-flex flex-column align-items-center justify-content-center p-4 rounded-3 text-decoration-none text-center"
                       style={{ background: 'rgba(34, 197, 94, 0.04)', border: '1px solid rgba(34, 197, 94, 0.12)', transition: 'all 0.2s' }}
                       onMouseOver={e => { e.currentTarget.style.background = 'rgba(34, 197, 94, 0.08)'; e.currentTarget.style.borderColor = 'rgba(34, 197, 94, 0.25)' }}

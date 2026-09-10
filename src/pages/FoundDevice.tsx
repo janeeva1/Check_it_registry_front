@@ -3,14 +3,12 @@ import { motion } from 'framer-motion'
 import { Search, Smartphone, MapPin, MessageSquare, Send, CheckCircle, Loader2, ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Layout } from '../components/Layout'
-import { useAuth } from '../contexts/AuthContext'
 import { useToast, ToastContainer } from '../components/Toast'
 
 type Step = 'lookup' | 'details' | 'contact' | 'success'
 
 export default function FoundDevice() {
   const navigate = useNavigate()
-  const { user } = useAuth()
   const { toasts, removeToast, showSuccess, showError } = useToast()
   const [step, setStep] = useState<Step>('lookup')
   const [imei, setImei] = useState('')
@@ -24,13 +22,24 @@ export default function FoundDevice() {
     if (!imei && !serial) { showError('Enter an IMEI or serial number'); return }
     try {
       setLoading(true)
-      const q = imei || serial
-      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/devices/lookup?q=${encodeURIComponent(q)}`)
-      if (!res.ok) throw new Error('Device not found in registry')
-      const data = await res.json()
-      setDeviceData(data.data || data)
+      const params = new URLSearchParams()
+      if (imei) params.append('imei', imei)
+      if (serial) params.append('serial', serial)
+      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/found-device/check?${params.toString()}`)
+      const json = await res.json()
+      if (!json.found_eligible) {
+        showError(json.message || json.reason || 'Device cannot be reported as found')
+        return
+      }
+      setDeviceData({
+        brand: json.device_info?.brand,
+        model: json.device_info?.model,
+        imei: imei || json.device_info?.imei,
+        serial: serial || json.device_info?.serial,
+        original_case: json.original_case?.case_id
+      })
       setStep('details')
-    } catch (err: any) { showError(err.message) }
+    } catch (err: any) { showError(err.message || 'Lookup failed') }
     finally { setLoading(false) }
   }
 
@@ -38,14 +47,22 @@ export default function FoundDevice() {
     e.preventDefault()
     try {
       setSubmitting(true)
-      const payload = { deviceId: deviceData?.id, imei: imei || deviceData?.imei, serial: serial || deviceData?.serial, ...form, reportedBy: user?.id || 'anonymous' }
-      const token = localStorage.getItem('auth_token')
-      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/devices/found`, {
+      const payload = {
+        imei: imei || undefined,
+        serial: serial || undefined,
+        finder_name: form.contactName,
+        finder_contact: form.contactPhone || form.contactEmail,
+        finder_email: form.contactEmail,
+        location_found: form.location,
+        description: form.description
+      }
+      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/found-device/report`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
-      if (!res.ok) throw new Error('Failed to submit report')
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(json.error || 'Failed to submit report')
       setStep('success')
       showSuccess('Thank you for reporting a found device!')
     } catch (err: any) { showError(err.message) }

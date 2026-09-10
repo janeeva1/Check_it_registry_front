@@ -151,7 +151,7 @@ export default function VerifyDevice() {
                   </div>
                   <h3>Verification Successful</h3>
                   <p style={{ color: 'var(--text-secondary)' }}>Device ownership has been verified.</p>
-                  <button className="btn-gradient-primary mt-3" onClick={() => navigate(`/device-details/${deviceInfo?.id}`)}>View Device</button>
+                  <button className="btn-gradient-primary mt-3" onClick={() => navigate(`/device/${deviceInfo?.id}`)}>View Device</button>
                 </div>
               </motion.div>
             )}

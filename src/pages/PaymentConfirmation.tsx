@@ -90,7 +90,7 @@ export default function PaymentConfirmation() {
                   <div className="empty-state-icon"><AlertTriangle size={48} /></div>
                   <h3>Transaction Not Found</h3>
                   <p>We couldn't find a transaction with that ID</p>
-                  <Link to="/transaction-history" className="btn-gradient-primary mt-3">View History</Link>
+                  <Link to="/payments/transactions" className="btn-gradient-primary mt-3">View History</Link>
                 </div>
               </div>
             </div>
@@ -162,7 +162,7 @@ export default function PaymentConfirmation() {
                 </div>
 
                 <div className="d-flex justify-content-center gap-3 mt-3">
-                  <Link to="/transaction-history" className="btn-ghost">View All Transactions</Link>
+                  <Link to="/payments/transactions" className="btn-ghost">View All Transactions</Link>
                   <Link to="/" className="btn-ghost">Go Home</Link>
                 </div>
               </div>
