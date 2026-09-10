@@ -164,7 +164,7 @@ export default function DeviceVerificationStatus() {
                       <button className="btn-ghost d-inline-flex align-items-center gap-1" style={{ fontSize: 13 }} onClick={() => navigator.clipboard?.writeText(v.id)}>
                         <Copy size={14} /> ID
                       </button>
-                      <Link to={`/device-details/${v.device_id}`} className="btn-ghost d-inline-flex align-items-center gap-1 ms-1" style={{ fontSize: 13 }}>
+                      <Link to={`/device/${v.device_id}`} className="btn-ghost d-inline-flex align-items-center gap-1 ms-1" style={{ fontSize: 13 }}>
                         <Eye size={14} /> View
                       </Link>
                     </div>

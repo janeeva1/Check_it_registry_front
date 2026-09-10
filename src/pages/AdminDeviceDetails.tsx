@@ -90,7 +90,7 @@ export default function AdminDeviceDetails() {
         <div className="d-flex align-items-center mb-3">
           <h2 className="h4 mb-0">Device Details</h2>
           <div className="ms-auto">
-            <Link to="/admin/reports" className="btn btn-outline-secondary btn-sm">Back to Reports</Link>
+            <Link to="/admin/report-management" className="btn btn-outline-secondary btn-sm">Back to Reports</Link>
           </div>
         </div>
         {loading && <p>Loading device details…</p>}

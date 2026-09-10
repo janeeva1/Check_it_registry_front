@@ -162,7 +162,7 @@ export default function ReportsV2() {
                   const Icon = tc.icon
                   return (
                     <motion.div key={r.id} className="col-12" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} layout>
-                      <Link to={`/report/${r.id}`} className="text-decoration-none">
+                      <Link to={`/reports/${r.id}`} className="text-decoration-none">
                         <div className="modern-card p-3">
                           <div className="row g-3 align-items-center">
                             <div className="col-auto">

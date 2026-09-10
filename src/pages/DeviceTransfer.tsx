@@ -237,7 +237,7 @@ export default function DeviceTransfer() {
 
                 {devices.length === 0 && !loadingDevices && (
                   <div className="modern-card p-4 text-center">
-                    <div className="empty-state"><div className="empty-state-icon"><Smartphone size={48} /></div><h3>No Devices</h3><p>Register a device before initiating a transfer</p><Link to="/device-registration" className="btn-gradient-primary mt-3">Register Device</Link></div>
+                    <div className="empty-state"><div className="empty-state-icon"><Smartphone size={48} /></div><h3>No Devices</h3><p>Register a device before initiating a transfer</p><Link to="/register-device" className="btn-gradient-primary mt-3">Register Device</Link></div>
                   </div>
                 )}
               </div>

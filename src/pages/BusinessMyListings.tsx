@@ -149,7 +149,7 @@ export default function BusinessMyListings() {
           </div>
           <button
             className="btn-gradient-primary"
-            onClick={() => navigate('/marketplace/create')}
+            onClick={() => navigate('/marketplace/create-listing')}
           >
             <Plus size={18} />
             Create Listing
@@ -268,7 +268,7 @@ export default function BusinessMyListings() {
                 {!searchQuery && statusFilter === 'all' && (
                   <button
                     className="btn-gradient-primary"
-                    onClick={() => navigate('/marketplace/create')}
+                    onClick={() => navigate('/marketplace/create-listing')}
                   >
                     <Plus size={18} />
                     Create First Listing

@@ -49,6 +49,7 @@ const LEACommunication = lazy(() => import('./pages/LEACommunication'))
 const LEADeviceSearch = lazy(() => import('./pages/LEADeviceSearch'))
 const LEADeviceDetails = lazy(() => import('./pages/LEADeviceDetails'))
 const LEARecovery = lazy(() => import('./pages/LEARecovery'))
+const LEARecoveryDetail = lazy(() => import('./pages/LEARecoveryDetail'))
 const LEASettings = lazy(() => import('./pages/LEASettings'))
 const PaymentAddMethod = lazy(() => import('./pages/PaymentAddMethod'))
 const PaymentMethodSelection = lazy(() => import('./pages/PaymentMethodSelection'))
@@ -82,6 +83,7 @@ const Profile = lazy(() => import('./pages/Profile'))
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
 const TermsOfService = lazy(() => import('./pages/TermsOfService'))
 const CookiePolicy = lazy(() => import('./pages/CookiePolicy'))
+const HelpPage = lazy(() => import('./pages/HelpPage'))
 const Settings = lazy(() => import('./pages/Settings'))
 const Checkout = lazy(() => import('./pages/Checkout'))
 const Cart = lazy(() => import('./pages/Cart'))
@@ -96,6 +98,7 @@ const BusinessOnboardings = lazy(() => import('./pages/BusinessOnboardings'))
 const DeviceRecovery = lazy(() => import('./pages/DeviceRecovery'))
 const RevenueSettings = lazy(() => import('./pages/admin/RevenueSettings'))
 const FraudAlerts = lazy(() => import('./pages/admin/FraudAlerts'))
+const RecoveryServiceDashboard = lazy(() => import('./components/admin/RecoveryServiceDashboard'))
 const AdminVerificationQueue = lazy(() => import('./pages/AdminVerificationQueue'))
 const AdminArchive = lazy(() => import('./pages/AdminArchive'))
 const AdminUserDetail = lazy(() => import('./pages/AdminUserDetail'))
@@ -170,6 +173,7 @@ function AppRoutes() {
         <Route path="/lea/communication" element={<ProtectedRoute allowedRoles={['lea','admin']}><LEACommunication /></ProtectedRoute>} />
         <Route path="/lea/device-search" element={<ProtectedRoute allowedRoles={['lea','admin']}><LEADeviceSearch /></ProtectedRoute>} />
         <Route path="/lea/recovery" element={<ProtectedRoute allowedRoles={['lea','admin']}><LEARecovery /></ProtectedRoute>} />
+        <Route path="/lea/recovery/:id" element={<ProtectedRoute allowedRoles={['lea','admin']}><LEARecoveryDetail /></ProtectedRoute>} />
         <Route path="/lea/settings" element={<ProtectedRoute allowedRoles={['lea','admin']}><LEASettings /></ProtectedRoute>} />
         <Route path="/lea/transfers" element={<ProtectedRoute allowedRoles={['lea','admin']}><LEATransferHistory /></ProtectedRoute>} />
         <Route path="/transfer" element={user ? <DeviceTransfer /> : <Navigate to="/login" />} />
@@ -201,6 +205,7 @@ function AppRoutes() {
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="/cookies" element={<CookiePolicy />} />
+        <Route path="/help" element={<HelpPage />} />
         <Route path="/identity-verification" element={user ? <IdentityVerification /> : <Navigate to="/login" />} />
         <Route path="/business-verification" element={user ? <BusinessVerification /> : <Navigate to="/login" />} />
         <Route path="/business/onboard" element={<ProtectedRoute allowedRoles={['business','admin']}><BusinessOnboarding /></ProtectedRoute>} />
@@ -212,6 +217,7 @@ function AppRoutes() {
         <Route path="/admin/marketplace" element={<ProtectedRoute allowedRoles={['admin']}><ErrorBoundary><AdminMarketplaceManagement /></ErrorBoundary></ProtectedRoute>} />
         <Route path="/admin/revenue" element={<ProtectedRoute allowedRoles={['admin']}><ErrorBoundary><RevenueSettings /></ErrorBoundary></ProtectedRoute>} />
         <Route path="/admin/fraud-alerts" element={<ProtectedRoute allowedRoles={['admin']}><ErrorBoundary><FraudAlerts /></ErrorBoundary></ProtectedRoute>} />
+        <Route path="/admin/recovery" element={<ProtectedRoute allowedRoles={['admin']}><ErrorBoundary><RecoveryServiceDashboard /></ErrorBoundary></ProtectedRoute>} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={user ? <Checkout /> : <Navigate to="/login" />} />
         {/* Catch-all route: send all unknown links to NotFound with back to dashboard */}

@@ -5,7 +5,7 @@ import {
   ArrowLeftRight, Search, RefreshCw, Shield,
   Calendar, User, ChevronLeft, ChevronRight,
   Smartphone, CheckCircle, XCircle, AlertTriangle, Ban,
-  Clock
+  Clock, X
 } from 'lucide-react'
 
 interface TransferRow {
@@ -46,6 +46,7 @@ export default function LEATransferHistory() {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [selectedTransfer, setSelectedTransfer] = useState<TransferRow | null>(null)
 
   const loadData = async () => {
     try {
@@ -274,9 +275,9 @@ export default function LEATransferHistory() {
                           </div>
                         </td>
                         <td className="text-end">
-                          <a href={`/lea/transfers/${r.id}`} className="btn-ghost">
+                          <button onClick={() => setSelectedTransfer(r)} className="btn-ghost">
                             Details <ChevronRight size={14} />
-                          </a>
+                          </button>
                         </td>
                       </motion.tr>
                     ))}
@@ -298,6 +299,43 @@ export default function LEATransferHistory() {
           )}
         </motion.div>
       </motion.div>
+
+      {selectedTransfer && (
+        <div className="modal fade show d-block" tabIndex={-1} style={{ backgroundColor: 'rgba(0,0,0,0.55)' }} onClick={() => setSelectedTransfer(null)}>
+          <div className="modal-dialog modal-dialog-centered" onClick={e => e.stopPropagation()}>
+            <div className="modal-content" style={{ borderRadius: 20 }}>
+              <div className="modal-header border-0">
+                <h5 className="m-0">Transfer Detail</h5>
+                <button onClick={() => setSelectedTransfer(null)} className="btn-ghost p-1"><X size={20} /></button>
+              </div>
+              <div className="modal-body pt-0">
+                <div className="d-flex align-items-center gap-2 mb-3">
+                  <Smartphone size={16} className="text-secondary" />
+                  <strong>{selectedTransfer.brand} {selectedTransfer.model}</strong>
+                  <StatusBadge status={selectedTransfer.status} />
+                </div>
+                <div className="row g-3 small">
+                  <div className="col-6"><strong>Transfer ID:</strong></div>
+                  <div className="col-6 text-end text-secondary">{selectedTransfer.id}</div>
+                  <div className="col-6"><strong>IMEI:</strong></div>
+                  <div className="col-6 text-end text-secondary">{selectedTransfer.imei || 'N/A'}</div>
+                  <div className="col-6"><strong>Serial:</strong></div>
+                  <div className="col-6 text-end text-secondary">{selectedTransfer.serial || 'N/A'}</div>
+                  <div className="col-6"><strong>From:</strong></div>
+                  <div className="col-6 text-end text-secondary">{selectedTransfer.from_user_name}</div>
+                  <div className="col-6"><strong>To:</strong></div>
+                  <div className="col-6 text-end text-secondary">{selectedTransfer.to_user_name}</div>
+                  <div className="col-6"><strong>Initiated:</strong></div>
+                  <div className="col-6 text-end text-secondary">{new Date(selectedTransfer.created_at).toLocaleString()}</div>
+                </div>
+                <div className="d-flex justify-content-end mt-4">
+                  <button onClick={() => setSelectedTransfer(null)} className="btn-ghost">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   )
 }

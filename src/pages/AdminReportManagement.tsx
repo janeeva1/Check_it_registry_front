@@ -82,7 +82,10 @@ export default function AdminReportManagement() {
 
   async function searchLeaDirectory(query: string) {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/admin-dashboard/lea-directory?search=${encodeURIComponent(query)}`)
+      const token = localStorage.getItem('auth_token')
+      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/admin-dashboard/lea-directory?search=${encodeURIComponent(query)}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      })
       const json = await res.json()
       setLeaResults(json.users || [])
     } catch {

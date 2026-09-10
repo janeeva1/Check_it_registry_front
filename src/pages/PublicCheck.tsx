@@ -46,15 +46,64 @@ export default function PublicCheck() {
   const [searched, setSearched] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const getLocation = (): Promise<{ lat: number; lon: number; acc: number }> =>
+    new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error('Geolocation is not supported by this browser.'))
+        return
+      }
+      navigator.geolocation.getCurrentPosition(
+        (p) => resolve({ lat: p.coords.latitude, lon: p.coords.longitude, acc: Math.round(p.coords.accuracy || 100) }),
+        () => reject(new Error('Unable to get your location. Enable location access to perform a check.')),
+        { enableHighAccuracy: true, timeout: 10000 }
+      )
+    })
+
+  const getPseudoMac = () => {
+    const seed = `${query.trim()}-${navigator.userAgent}`
+    let hash = 0
+    for (let i = 0; i < seed.length; i++) { hash = ((hash << 5) - hash) + seed.charCodeAt(i); hash |= 0 }
+    const hex = (Math.abs(hash).toString(16).padStart(8, '0') + Date.now().toString(16).slice(-4)).padEnd(12, '0').slice(0, 12)
+    return `02:${hex.slice(0, 2)}:${hex.slice(2, 4)}:${hex.slice(4, 6)}:${hex.slice(6, 8)}:${hex.slice(8, 10)}`
+  }
+
   const handleCheck = async () => {
     const q = query.trim()
     if (!q) return
     try {
       setLoading(true); setError(null); setResult(null); setSearched(false)
-      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/devices/check?q=${encodeURIComponent(q)}`)
-      if (!res.ok) throw new Error('Device not found in registry')
+      const pos = await getLocation()
+      const params = new URLSearchParams()
+      if (/^\d{15}$/.test(q)) params.append('imei', q)
+      else params.append('serial', q)
+      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/public-check?${params.toString()}`, {
+        headers: {
+          'x-mac-address': getPseudoMac(),
+          'x-location-lat': String(pos.lat),
+          'x-location-lon': String(pos.lon),
+          'x-location-accuracy': String(pos.acc)
+        }
+      })
       const data = await res.json()
-      setResult(data.data || data)
+      if (!res.ok) throw new Error(data.error || 'Lookup failed')
+      if (!data || data.status === 'not_found') {
+        setError(data?.message || 'Device not found in registry')
+        return
+      }
+      const isReported = data.status === 'stolen' || data.status === 'lost'
+      setResult({
+        status: data.status,
+        brand: data.device_details?.brand,
+        model: data.device_details?.model,
+        imei: params.get('imei') || undefined,
+        serial: params.get('serial') || undefined,
+        reported: isReported,
+        reportType: data.report_type || data.status,
+        riskScore: isReported ? 95 : 0,
+        latitude: pos.lat,
+        longitude: pos.lon,
+        locationAccuracy: pos.acc
+      })
     } catch (err: any) { setError(err.message || 'Lookup failed') }
     finally { setLoading(false); setSearched(true) }
   }
@@ -64,6 +113,8 @@ export default function PublicCheck() {
     if (['clean', 'verified', 'clear'].includes(st)) return { label: 'No Reports Found', color: 'var(--success-500)', icon: CheckCircle, badge: 'status-verified' }
     if (st === 'stolen') return { label: 'Reported Stolen', color: 'var(--danger-500)', icon: AlertTriangle, badge: 'status-stolen' }
     if (st === 'lost') return { label: 'Reported Lost', color: 'var(--warning-500)', icon: AlertTriangle, badge: 'status-unverified' }
+    if (st === 'released') return { label: 'Device Released', color: 'var(--warning-500)', icon: Shield, badge: 'status-found' }
+    if (st === 'unverified') return { label: 'Pending Verification', color: 'var(--warning-500)', icon: Shield, badge: 'status-unverified' }
     return { label: 'Unknown Status', color: 'var(--text-secondary)', icon: Shield, badge: 'status-found' }
   }
 

@@ -39,7 +39,7 @@ export default function PaymentAddMethod() {
       })
       if (!res.ok) throw new Error('Failed to add payment method')
       showSuccess('Payment method added!')
-      setTimeout(() => navigate('/payment-methods'), 1200)
+      setTimeout(() => navigate('/payments/method-selection'), 1200)
     } catch (err: any) { showError(err.message) }
     finally { setSubmitting(false) }
   }

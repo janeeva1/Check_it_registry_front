@@ -779,7 +779,7 @@ export default function Profile() {
                               <p className="text-muted small mb-0">Last changed 30 days ago</p>
                             </div>
                           </div>
-                          <Link to="/password-reset" className="btn btn-sm px-3 rounded-pill fw-medium"
+                          <Link to="/forgot-password" className="btn btn-sm px-3 rounded-pill fw-medium"
                             style={{ border: '1px solid var(--border-color)', color: 'var(--text-primary)', background: 'var(--bg-primary)' }}>
                             Change Password
                           </Link>

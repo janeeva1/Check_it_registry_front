@@ -80,7 +80,7 @@ export default function PaymentMethodSelection() {
                   <p>Manage your saved cards</p>
                 </div>
                 <div className="ms-md-auto">
-                  <Link to="/payment/add" className="btn-gradient-primary d-inline-flex align-items-center gap-2">
+                  <Link to="/payments/add-method" className="btn-gradient-primary d-inline-flex align-items-center gap-2">
                     <Plus size={18} /> Add Method
                   </Link>
                 </div>
@@ -99,7 +99,7 @@ export default function PaymentMethodSelection() {
                   <div className="empty-state-icon"><CreditCard size={48} /></div>
                   <h3>No Payment Methods</h3>
                   <p>Add a credit or debit card to get started</p>
-                  <Link to="/payment/add" className="btn-gradient-primary mt-3 d-inline-flex align-items-center gap-2"><Plus size={18} /> Add Method</Link>
+                  <Link to="/payments/add-method" className="btn-gradient-primary mt-3 d-inline-flex align-items-center gap-2"><Plus size={18} /> Add Method</Link>
                 </div>
               </div>
             </div>

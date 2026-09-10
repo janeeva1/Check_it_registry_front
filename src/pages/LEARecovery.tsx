@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import {
   Shield, RefreshCw, Search, MapPin, Calendar, Clock,
@@ -26,12 +27,10 @@ interface RecoveryRecord {
 }
 
 const statusConfig: Record<string, { class: string; label: string }> = {
-  pending_recovery: { class: 'status-pending', label: 'Pending Recovery' },
-  in_progress: { class: 'status-pending', label: 'In Progress' },
-  recovered: { class: 'status-recovered', label: 'Recovered' },
-  confirmed: { class: 'status-verified', label: 'Confirmed' },
-  closed: { class: 'status-inactive', label: 'Closed' },
-  failed: { class: 'status-stolen', label: 'Failed' }
+  open: { class: 'status-pending', label: 'Open' },
+  under_review: { class: 'status-pending', label: 'Under Review' },
+  resolved: { class: 'status-recovered', label: 'Recovered' },
+  dismissed: { class: 'status-inactive', label: 'Dismissed' }
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -86,9 +85,9 @@ export default function LEARecovery() {
 
   const stats = {
     total: records.length,
-    recovered: records.filter(r => r.status === 'recovered' || r.status === 'confirmed').length,
-    pending: records.filter(r => r.status === 'pending_recovery' || r.status === 'in_progress').length,
-    failed: records.filter(r => r.status === 'failed').length
+    recovered: records.filter(r => r.status === 'resolved').length,
+    pending: records.filter(r => r.status === 'open' || r.status === 'under_review').length,
+    failed: records.filter(r => r.status === 'dismissed').length
   }
 
   const containerVariants = {
@@ -174,7 +173,7 @@ export default function LEARecovery() {
                 </div>
                 <div>
                   <div className="stat-value">{stats.failed}</div>
-                  <div className="stat-label">Failed</div>
+                  <div className="stat-label">Dismissed</div>
                 </div>
               </div>
             </div>
@@ -190,11 +189,9 @@ export default function LEARecovery() {
             <select className="modern-select" style={{ width: 'auto' }} value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1) }}>
               <option value="all">All Statuses</option>
               <option value="pending_recovery">Pending Recovery</option>
-              <option value="in_progress">In Progress</option>
+              <option value="under_review">Under Review</option>
               <option value="recovered">Recovered</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="closed">Closed</option>
-              <option value="failed">Failed</option>
+              <option value="dismissed">Dismissed</option>
             </select>
           </div>
           <div className="toolbar-actions">
@@ -259,9 +256,9 @@ export default function LEARecovery() {
                         </td>
                         <td><StatusBadge status={r.status} /></td>
                         <td className="text-end">
-                          <a href={`/lea/recovery/${r.id}`} className="btn-ghost">
+                          <Link to={`/lea/recovery/${r.id}`} className="btn-ghost">
                             <Eye size={16} /> View
-                          </a>
+                          </Link>
                         </td>
                       </motion.tr>
                     ))}

@@ -87,7 +87,7 @@ export default function DeviceRecovery() {
       const payload: any = {
         deviceId: selectedDevice.id,
         servicePackage: 'standard',
-        bypass_payment: !!bypassToken,
+        bypass_payment: bypassToken || null,
       }
       if (mfa) payload.mfaToken = mfa
       const token = localStorage.getItem('auth_token')
@@ -96,20 +96,24 @@ export default function DeviceRecovery() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload),
       })
+      const json = await res.json().catch(() => ({}))
+      if (json.requiresPayment && !bypassToken) {
+        setShowPayment(true)
+        return
+      }
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        if (err.requiresPayment || err.error?.includes('fee') || err.error?.includes('payment')) {
+        if (json.requiresPayment) {
           setShowPayment(true)
           return
         }
-        if (err.requiresMfa || err.error?.includes('MFA')) {
+        if (json.requiresMfa || json.error?.includes('MFA')) {
           setShowMfa(true)
           return
         }
-        throw new Error(err.error || 'Recovery request failed')
+        throw new Error(json.error || 'Recovery request failed')
       }
       setStep('success')
-      showSuccess('Recovey Request Submitted', 'Your device recovery request has been initiated')
+      showSuccess('Recovery Request Submitted', 'Your device recovery request has been initiated')
     } catch (e: any) {
       showError(e.message || 'Failed to submit recovery request')
     } finally {
