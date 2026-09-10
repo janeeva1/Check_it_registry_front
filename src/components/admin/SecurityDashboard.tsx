@@ -74,7 +74,7 @@ function SecurityDashboard() {
 
       const [eventsResponse, statsResponse] = await Promise.all([
         fetch(
-          `/api/admin-system/security-events?${new URLSearchParams({
+          `${import.meta.env.VITE_API_URL || '/api'}/admin-system/security-events?${new URLSearchParams({
             page: filters.page.toString(),
             limit: filters.limit.toString(),
             ...(filters.severity && { severity: filters.severity }),
@@ -87,7 +87,7 @@ function SecurityDashboard() {
             },
           }
         ),
-        fetch('/api/admin-system/security-stats', {
+        fetch(`${import.meta.env.VITE_API_URL || '/api'}/admin-system/security-stats`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('auth_token')}`,
           },
@@ -145,7 +145,7 @@ function SecurityDashboard() {
 
   const exportSecurityReport = async () => {
     try {
-      const response = await fetch('/api/admin-system/security-report', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/admin-system/security-report`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

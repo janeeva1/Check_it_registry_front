@@ -1002,7 +1002,7 @@ class ApiClient {
 
   // Data Export
   dataExport = {
-    download: (type: string = 'full') => `/api/profile/export?type=${type}`,
+    download: (type: string = 'full') => `${API_BASE_URL}/profile/export?type=${type}`,
     request: (exportType: string) =>
       this.request('/settings/data-export', { method: 'POST', body: JSON.stringify({ export_type: exportType }) }),
     status: () => this.request('/settings/data-export/status'),

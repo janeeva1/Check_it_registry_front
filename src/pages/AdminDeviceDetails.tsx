@@ -67,7 +67,7 @@ export default function AdminDeviceDetails() {
       setError(null)
       try {
         const token = localStorage.getItem('auth_token')
-        const res = await fetch(`/api/admin-dashboard/devices/${id}`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/admin-dashboard/devices/${id}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         })
         if (!res.ok) throw new Error(`Failed to load device: ${res.status}`)

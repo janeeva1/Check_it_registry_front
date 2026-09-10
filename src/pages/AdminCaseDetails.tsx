@@ -39,7 +39,7 @@ export default function AdminCaseDetails() {
       setError(null)
       try {
         const token = localStorage.getItem('auth_token')
-        const res = await fetch(`/api/admin-dashboard/reports/${caseId}`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/admin-dashboard/reports/${caseId}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         })
         if (!res.ok) throw new Error(`Failed to load case: ${res.status}`)
@@ -64,7 +64,7 @@ export default function AdminCaseDetails() {
     setSavingNotes(true)
     try {
       const token = localStorage.getItem('auth_token')
-      const res = await fetch(`/api/admin-dashboard/reports/${caseId}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/admin-dashboard/reports/${caseId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -88,7 +88,7 @@ export default function AdminCaseDetails() {
     setStatusUpdating(true)
     try {
       const token = localStorage.getItem('auth_token')
-      const res = await fetch(`/api/admin-dashboard/reports/${caseId}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/admin-dashboard/reports/${caseId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
