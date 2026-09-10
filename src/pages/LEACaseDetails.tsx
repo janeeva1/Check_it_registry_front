@@ -28,7 +28,7 @@ export default function LEACaseDetails() {
       setLoading(true)
       setError(null)
       try {
-        const res = await fetch(`/api/lea-portal/cases/${id}`)
+        const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/lea-portal/cases/${id}`)
         if (!res.ok) throw new Error(`Failed to load case: ${res.status}`)
       const json = await res.json()
         if (isMounted) {
@@ -51,7 +51,7 @@ export default function LEACaseDetails() {
     setStatusUpdating(true)
     setError(null)
     try {
-      const res = await fetch(`/api/lea-portal/cases/${id}/status`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/lea-portal/cases/${id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
@@ -72,7 +72,7 @@ export default function LEACaseDetails() {
     setNoteSaving(true)
     setError(null)
     try {
-      const res = await fetch(`/api/lea-portal/cases/${id}/notes`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/lea-portal/cases/${id}/notes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ note: note.trim() })

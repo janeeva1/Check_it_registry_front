@@ -23,7 +23,7 @@ export default function LEADeviceDetails() {
       setLoading(true)
       setError(null)
       try {
-        const res = await fetch(`/api/lea-portal/devices/${id}`)
+        const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/lea-portal/devices/${id}`)
         if (!res.ok) throw new Error(`Failed to load device: ${res.status}`)
         const json = await res.json()
         if (mounted) setData(json)

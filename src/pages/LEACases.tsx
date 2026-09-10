@@ -54,7 +54,7 @@ export default function LEACases() {
         if (status !== 'all') params.set('status', status)
         if (type !== 'all') params.set('type', type)
         if (q.trim()) params.set('search', q.trim())
-        const res = await fetch(`/api/lea-portal/cases?${params.toString()}`)
+        const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/lea-portal/cases?${params.toString()}`)
         if (!res.ok) throw new Error(`Failed: ${res.status}`)
         const json = await res.json()
         const list = Array.isArray(json) ? json : (json.cases || [])

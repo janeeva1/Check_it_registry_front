@@ -46,7 +46,7 @@ export default function AdminReportManagement() {
         if (type !== 'all') params.set('type', type)
         if (q.trim()) params.set('search', q.trim())
         const token = localStorage.getItem('auth_token')
-        const res = await fetch(`/api/admin-dashboard/reports?${params.toString()}`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/admin-dashboard/reports?${params.toString()}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         })
         if (!res.ok) throw new Error(`Failed to fetch reports: ${res.status}`)
@@ -68,7 +68,7 @@ export default function AdminReportManagement() {
   async function updateReportStatus(id: number, newStatus: string) {
     try {
       const token = localStorage.getItem('auth_token')
-      const res = await fetch(`/api/admin-dashboard/reports/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/admin-dashboard/reports/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({ status: newStatus })
@@ -82,7 +82,7 @@ export default function AdminReportManagement() {
 
   async function searchLeaDirectory(query: string) {
     try {
-      const res = await fetch(`/api/admin-dashboard/lea-directory?search=${encodeURIComponent(query)}`)
+      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/admin-dashboard/lea-directory?search=${encodeURIComponent(query)}`)
       const json = await res.json()
       setLeaResults(json.users || [])
     } catch {
@@ -93,7 +93,7 @@ export default function AdminReportManagement() {
   async function assignLeaById(reportId: number, leaId: number) {
     try {
       const token = localStorage.getItem('auth_token')
-      const res = await fetch(`/api/admin-dashboard/reports/${reportId}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/admin-dashboard/reports/${reportId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({ assigned_lea_id: leaId })

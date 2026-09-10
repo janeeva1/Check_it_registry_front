@@ -67,7 +67,7 @@ function RecoveryServiceDashboard() {
 
       const [servicesResponse, statsResponse] = await Promise.all([
         fetch(
-          `/api/recovery-services/admin/all?${new URLSearchParams({
+          `${import.meta.env.VITE_API_URL || '/api'}/recovery-services/admin/all?${new URLSearchParams({
             page: filters.page.toString(),
             limit: filters.limit.toString(),
             ...(filters.status && { status: filters.status }),
@@ -79,7 +79,7 @@ function RecoveryServiceDashboard() {
             },
           }
         ),
-        fetch('/api/recovery-services/admin/stats', {
+        fetch(`${import.meta.env.VITE_API_URL || '/api'}/recovery-services/admin/stats`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('auth_token')}`,
           },
@@ -105,7 +105,7 @@ function RecoveryServiceDashboard() {
 
   const handleStatusUpdate = async (serviceId: string, newStatus: string, notes?: string) => {
     try {
-      const response = await fetch(`/api/recovery-services/${serviceId}/status`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/recovery-services/${serviceId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -126,7 +126,7 @@ function RecoveryServiceDashboard() {
 
   const handleRefund = async (serviceId: string, reason: string, partialAmount?: number) => {
     try {
-      const response = await fetch(`/api/recovery-services/${serviceId}/refund`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/recovery-services/${serviceId}/refund`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

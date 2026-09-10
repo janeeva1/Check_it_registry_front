@@ -252,7 +252,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, user }) => {
           >
             <div className="sidebar-logo-container flex-grow-1 d-flex justify-content-center">
               <img
-                src={theme === "dark" ? "/logo12.png" : "/logo1.png"}
+                src={theme === "dark" ? "/logod.png" : "/logo1.png"}
                 alt="Prove Ownership Device Registry"
                 className="sidebar-logo"
                 style={{
