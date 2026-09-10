@@ -1,5 +1,6 @@
 // Recovery Service Dashboard - Admin interface for managing recovery services
 import React, { useState, useEffect } from 'react'
+import { Layout } from '../Layout'
 import {
   DollarSign,
   Users,
@@ -166,7 +167,8 @@ function RecoveryServiceDashboard() {
   const formatCurrency = (n: number, c = '₦') => `${c}${n.toLocaleString()}`
 
   return (
-    <div className="container-fluid">
+    <Layout requireAuth allowedRoles={['admin', 'super_admin']}>
+      <div className="container-fluid">
       <div className="d-flex align-items-center justify-content-between mb-3">
         <div className="d-flex align-items-center gap-2">
           <TrendingUp size={20} />
@@ -350,7 +352,8 @@ function RecoveryServiceDashboard() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </Layout>
   )
 }
 

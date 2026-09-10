@@ -26,7 +26,7 @@ export default function DeviceVerificationStatus() {
     try {
       setLoading(true)
       const token = localStorage.getItem('auth_token')
-      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/devices/verifications`, { headers: { Authorization: `Bearer ${token}` } })
+      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/device-management/verifications`, { headers: { Authorization: `Bearer ${token}` } })
       if (!res.ok) throw new Error('Failed to load')
       const data = await res.json()
       setVerifications(data.data || [])
