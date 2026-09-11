@@ -653,6 +653,10 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify({ transferId }),
     }),
+    resendSellerOtp: (transferId: string) => this.request('/device-transfer/resend-seller-otp', {
+      method: 'POST',
+      body: JSON.stringify({ transferId }),
+    }),
     // New OTP-based transfer endpoints (OwnershipTransferService)
     verifyOtp: (data: { transferId: string; otpCode: string }) => this.request('/device-transfer/verify-otp', {
       method: 'POST',

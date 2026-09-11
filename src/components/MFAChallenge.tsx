@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Shield, X, Loader2, AlertCircle, CheckCircle, Smartphone, Mail } from 'lucide-react'
+import { Shield, X, Loader2, AlertCircle, CheckCircle, Smartphone, Mail, RefreshCw } from 'lucide-react'
 import { apiClient } from '../lib/apiClient'
 
 interface MFAChallengeProps {
@@ -20,6 +20,8 @@ export function MFAChallenge({ isOpen, onClose, actionType, actionLabel, onSucce
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [deliveryMethod, setDeliveryMethod] = useState<string>('')
+  const [resendLoading, setResendLoading] = useState(false)
+  const [resendCooldown, setResendCooldown] = useState(0)
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
   const secondInputRefs = useRef<(HTMLInputElement | null)[]>([])
 
@@ -43,6 +45,28 @@ export function MFAChallenge({ isOpen, onClose, actionType, actionLabel, onSucce
       secondInputRefs.current[0].focus()
     }
   }, [step])
+
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [resendCooldown])
+
+  const handleResend = async () => {
+    setResendLoading(true)
+    setError(null)
+    try {
+      setOtp(['', '', '', '', '', ''])
+      setSecondOtp(['', '', '', '', '', ''])
+      await initiate()
+      setResendCooldown(60)
+    } catch (e: any) {
+      setError(e.message || 'Failed to resend code')
+    } finally {
+      setResendLoading(false)
+    }
+  }
 
   const initiate = async () => {
     setLoading(true)
@@ -249,17 +273,39 @@ export function MFAChallenge({ isOpen, onClose, actionType, actionLabel, onSucce
                     </div>
                   )}
                 </div>
-                <div className="modal-footer" style={{ justifyContent: 'center', gap: 12 }}>
-                  <button onClick={onClose} className="btn-ghost">Cancel</button>
+                <div className="modal-footer" style={{ flexDirection: 'column', alignItems: 'center', gap: 12 }}>
                   <button
-                    onClick={step === 'verify_second' ? handleVerifySecond : handleVerifyFirst}
-                    disabled={loading || (step === 'verify' ? otp.join('').length !== 6 : secondOtp.join('').length !== 6)}
-                    className="btn-gradient-primary"
-                    style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+                    onClick={handleResend}
+                    disabled={resendLoading || resendCooldown > 0}
+                    className="btn btn-link text-decoration-none p-0"
+                    style={{ color: 'var(--primary-500)' }}
                   >
-                    {loading ? <Loader2 size={16} className="spin" /> : <CheckCircle size={16} />}
-                    {loading ? 'Verifying...' : step === 'verify_second' ? 'Verify Second Code' : 'Verify'}
+                    {resendLoading ? (
+                      <>
+                        <RefreshCw size={16} className="me-1" style={{ animation: 'spin 1s linear infinite' }} />
+                        Sending...
+                      </>
+                    ) : resendCooldown > 0 ? (
+                      `Resend code in ${resendCooldown}s`
+                    ) : (
+                      <>
+                        <RefreshCw size={16} className="me-1" />
+                        Resend code
+                      </>
+                    )}
                   </button>
+                  <div style={{ display: 'flex', gap: 12 }}>
+                    <button onClick={onClose} className="btn-ghost">Cancel</button>
+                    <button
+                      onClick={step === 'verify_second' ? handleVerifySecond : handleVerifyFirst}
+                      disabled={loading || (step === 'verify' ? otp.join('').length !== 6 : secondOtp.join('').length !== 6)}
+                      className="btn-gradient-primary"
+                      style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+                    >
+                      {loading ? <Loader2 size={16} className="spin" /> : <CheckCircle size={16} />}
+                      {loading ? 'Verifying...' : step === 'verify_second' ? 'Verify Second Code' : 'Verify'}
+                    </button>
+                  </div>
                 </div>
               </>
             )}
