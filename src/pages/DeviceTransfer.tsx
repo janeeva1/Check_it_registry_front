@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeftRight, Smartphone, Mail, Key, CheckCircle, ArrowLeft, Loader2, Info, X, Send, User } from 'lucide-react'
+import { ArrowLeftRight, Smartphone, Mail, Key, CheckCircle, ArrowLeft, Loader2, Info, X, Send, User, RefreshCw } from 'lucide-react'
 import { Layout } from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast, ToastContainer } from '../components/Toast'
@@ -35,6 +35,15 @@ export default function DeviceTransfer() {
   const [submitting, setSubmitting] = useState(false)
   const [generatedTransferId, setGeneratedTransferId] = useState('')
   const [showOtpDialog, setShowOtpDialog] = useState(false)
+  const [resendLoading, setResendLoading] = useState(false)
+  const [resendCooldown, setResendCooldown] = useState(0)
+
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [resendCooldown])
 
   const [verifyingTransfer, setVerifyingTransfer] = useState<string | null>(null)
   const [otpInput, setOtpInput] = useState(['', '', '', '', '', ''])
@@ -99,6 +108,24 @@ export default function DeviceTransfer() {
       showSuccess('Transfer cancelled')
       fetchTransfers()
     } catch { showError('Failed to cancel') }
+  }
+
+  const handleResendOtp = async (transferId: string, type: 'seller' | 'buyer') => {
+    setResendLoading(true)
+    try {
+      if (type === 'seller') {
+        await apiClient.deviceTransfer.resendSellerOtp(transferId)
+        showSuccess('Verification code resent to your email')
+      } else {
+        await apiClient.deviceTransfer.resendCode(transferId)
+        showSuccess('Transfer code resent to the buyer')
+      }
+      setResendCooldown(60)
+    } catch (err: any) {
+      showError(err.message || 'Failed to resend code')
+    } finally {
+      setResendLoading(false)
+    }
   }
 
   const handleOtpChange = (idx: number, val: string) => {
@@ -269,6 +296,14 @@ export default function DeviceTransfer() {
                             {statusBadge(t.status)}
                             {['initiated', 'active', 'awaiting_buyer_otp'].includes(t.status) && (
                               <>
+                                {t.status === 'awaiting_buyer_otp' && (
+                                  <button className="btn-ghost btn-sm d-inline-flex align-items-center gap-1" style={{ fontSize: 12, color: 'var(--primary-600)' }}
+                                    onClick={() => handleResendOtp(t.id, 'buyer')}
+                                    disabled={resendLoading || resendCooldown > 0}>
+                                    {resendLoading ? <Loader2 size={14} className="spin" /> : <RefreshCw size={14} />}
+                                    {resendCooldown > 0 ? `${resendCooldown}s` : 'Resend code'}
+                                  </button>
+                                )}
                                 <button className="btn-ghost d-inline-flex align-items-center gap-1" style={{ fontSize: 12, color: 'var(--danger-500)' }} onClick={() => cancelTransfer(t.id)}><X size={14} /></button>
                               </>
                             )}
@@ -353,6 +388,26 @@ export default function DeviceTransfer() {
                       onChange={e => handleOtpChange(idx, e.target.value)} onKeyDown={e => handleOtpKeyDown(idx, e)}
                       className="modern-input text-center" style={{ width: 42, height: 48, fontSize: 20, fontWeight: 700, padding: 0 }} onPaste={handlePaste} />
                   ))}
+                </div>
+                <div className="d-flex justify-content-center mb-4">
+                  <button type="button" onClick={() => generatedTransferId && handleResendOtp(generatedTransferId, 'seller')}
+                    disabled={resendLoading || resendCooldown > 0}
+                    className="btn btn-link text-decoration-none p-0"
+                    style={{ color: 'var(--primary-500)', fontSize: 13 }}>
+                    {resendLoading ? (
+                      <>
+                        <RefreshCw size={14} className="me-1" style={{ animation: 'spin 1s linear infinite' }} />
+                        Sending...
+                      </>
+                    ) : resendCooldown > 0 ? (
+                      `Resend code in ${resendCooldown}s`
+                    ) : (
+                      <>
+                        <RefreshCw size={14} className="me-1" />
+                        Resend code
+                      </>
+                    )}
+                  </button>
                 </div>
                 <button className="btn-gradient-primary w-100 mb-2 d-flex align-items-center justify-content-center gap-2" disabled={submitting || otpInput.join('').length !== 6}
                   onClick={async () => {
