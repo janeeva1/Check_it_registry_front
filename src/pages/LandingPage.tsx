@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { apiClient } from '../lib/apiClient';
 import { companyInfo } from '../lib/companyInfo';
+import { landingVariantsEnabled, landingVersions } from '../lib/landingVariants';
 import Navbar from '../components/Navbar';
 import TechParticles from '../components/TechParticles';
 import { useAuth } from '../contexts/AuthContext';
@@ -188,7 +189,8 @@ export default function LandingPage() {
       {/* Navbar rendered outside the landing-page div to prevent overflow clipping */}
       <Navbar user={user} onLogout={logout} />
 
-      {/* Landing page version switcher */}
+      {/* Landing page version switcher (development only) */}
+      {landingVariantsEnabled && (
       <div style={{
         position: 'fixed', bottom: 12, left: '50%', transform: 'translateX(-50%)',
         zIndex: 1040, display: 'flex', alignItems: 'center', gap: 4,
@@ -199,14 +201,7 @@ export default function LandingPage() {
         scrollbarWidth: 'none', msOverflowStyle: 'none'
       }}>
         <span className="d-none d-md-inline" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', padding: '0 10px', whiteSpace: 'nowrap', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>View:</span>
-        {[
-          { path: '/', label: 'Classic' },
-          { path: '/landing/v1', label: 'Modern' },
-          { path: '/landing/v2', label: 'Minimal' },
-          { path: '/landing/v3', label: 'Premium' },
-          { path: '/landing/v4', label: 'Enterprise' },
-          { path: '/landing/v5', label: 'Stories' },
-        ].map((v) => (
+        {landingVersions.map((v) => (
           <Link
             key={v.path}
             to={v.path}
@@ -221,6 +216,7 @@ export default function LandingPage() {
           </Link>
         ))}
       </div>
+      )}
       <div className="landing-page" style={{ minHeight: '100vh', background: 'transparent', position: 'relative' }}>
         <TechParticles />
 
