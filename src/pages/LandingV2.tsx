@@ -11,6 +11,7 @@ import {
   X,
   AlertTriangle,
 } from "lucide-react";
+import { companyInfo } from "../lib/companyInfo";
 
 const capabilities = [
   {
@@ -44,10 +45,10 @@ const numbers = [
 
 const team = [
   {
-    name: "Adaeze Okonkwo",
-    role: "Chief Executive Officer",
-    bio: "Former Head of Digital Identity at a tier-1 Nigerian bank. Fifteen years across payments and consumer trust.",
-    initials: "AO",
+    name: companyInfo.owner,
+    role: companyInfo.ownerTitle,
+    bio: `Founder and Chief Executive Officer of ${companyInfo.name}, the company behind Prove Ownership.`,
+    initials: "II",
   },
   {
     name: "Ibrahim Danjuma",
@@ -467,8 +468,31 @@ export default function LandingV2() {
               </Link>
               <p className="mt-4 max-w-sm text-sm text-muted-foreground">
                 An independent national registry for personal and commercial devices.
-                Headquartered in Lagos. Operating across Nigeria.
+                Operating across Nigeria.
               </p>
+              <div className="mt-5 space-y-1.5 text-sm text-muted-foreground">
+                <p className="font-medium text-foreground">{companyInfo.name}</p>
+                <p>Owner: {companyInfo.owner} — {companyInfo.ownerTitle}</p>
+                <p>Address: {companyInfo.address}</p>
+                <p>
+                  Email:{" "}
+                  {companyInfo.emails.map((email, i) => (
+                    <span key={email}>
+                      {i > 0 ? ", " : ""}
+                      <a href={`mailto:${email}`} className="hover:text-foreground transition">{email}</a>
+                    </span>
+                  ))}
+                </p>
+                <p>
+                  Phone:{" "}
+                  {companyInfo.phones.map((phone, i) => (
+                    <span key={phone}>
+                      {i > 0 ? ", " : ""}
+                      <a href={`tel:${phone}`} className="hover:text-foreground transition">{phone}</a>
+                    </span>
+                  ))}
+                </p>
+              </div>
             </div>
             <FooterCol
               title="Platform"
@@ -485,7 +509,7 @@ export default function LandingV2() {
           </div>
           <div className="mt-14 flex flex-col gap-4 border-t border-border/60 pt-6 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
             <div style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace" }}>
-              © {new Date().getFullYear()} Prove Ownership Ltd.
+              © {new Date().getFullYear()} {companyInfo.name} — Prove Ownership Ltd.
             </div>
           </div>
         </div>

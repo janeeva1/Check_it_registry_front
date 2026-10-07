@@ -10,6 +10,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import CustomCursor from './components/CustomCursor'
 import ErrorBoundary from './components/ErrorBoundary'
 import PageLoading from './components/PageLoading'
+import { landingVariantsEnabled } from './lib/landingVariants'
 
 const LandingPage = lazy(() => import('./pages/LandingPage'))
 const LandingV1 = lazy(() => import('./pages/LandingV1'))
@@ -125,11 +126,15 @@ function AppRoutes() {
       <Suspense fallback={<PageLoading />}>
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/landing/v1" element={<LandingV1 />} />
-        <Route path="/landing/v2" element={<LandingV2 />} />
-        <Route path="/landing/v3" element={<LandingV3 />} />
-        <Route path="/landing/v4" element={<LandingV4 />} />
-        <Route path="/landing/v5" element={<LandingV5 />} />
+        {landingVariantsEnabled && (
+          <>
+            <Route path="/landing/v1" element={<LandingV1 />} />
+            <Route path="/landing/v2" element={<LandingV2 />} />
+            <Route path="/landing/v3" element={<LandingV3 />} />
+            <Route path="/landing/v4" element={<LandingV4 />} />
+            <Route path="/landing/v5" element={<LandingV5 />} />
+          </>
+        )}
         <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
         <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <Register />} />
         <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />

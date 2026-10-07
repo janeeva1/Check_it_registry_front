@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
-import { Shield } from 'lucide-react'
+import { Shield, Building2, MapPin, Mail, Phone, UserSquare2 } from 'lucide-react'
+import { companyInfo } from '../lib/companyInfo'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
@@ -24,7 +25,7 @@ export default function Footer() {
             <Shield size={18} style={{ color: 'var(--primary-600)' }} />
             <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>Prove Ownership</span>
             <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>
-              &copy; {currentYear} Prove Ownership. All rights reserved.
+              &copy; {currentYear} {companyInfo.name} &mdash; {companyInfo.product}. All rights reserved.
             </span>
           </div>
 
@@ -86,6 +87,65 @@ export default function Footer() {
             >
               Contact
             </a>
+          </div>
+        </div>
+
+        {/* Company / Owner / Contact Information */}
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '16px 40px',
+          marginTop: 20,
+          paddingTop: 16,
+          borderTop: '1px solid var(--border-color)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, minWidth: 220 }}>
+            <Building2 size={15} style={{ color: 'var(--primary-600)', marginTop: 2, flexShrink: 0 }} />
+            <div style={{ fontSize: 13, lineHeight: 1.6 }}>
+              <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{companyInfo.name}</div>
+              <div style={{ color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <UserSquare2 size={13} style={{ flexShrink: 0 }} />
+                {companyInfo.owner} &mdash; {companyInfo.ownerTitle}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, minWidth: 220 }}>
+            <MapPin size={15} style={{ color: 'var(--primary-600)', marginTop: 2, flexShrink: 0 }} />
+            <div style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--text-tertiary)' }}>
+              <div style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>Operational Address</div>
+              {companyInfo.address}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, minWidth: 200 }}>
+            <Mail size={15} style={{ color: 'var(--primary-600)', marginTop: 2, flexShrink: 0 }} />
+            <div style={{ fontSize: 13, lineHeight: 1.8, color: 'var(--text-tertiary)' }}>
+              <div style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>Email</div>
+              {companyInfo.emails.map((email) => (
+                <div key={email}>
+                  <a href={`mailto:${email}`} style={{ color: 'var(--text-tertiary)', textDecoration: 'none' }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--primary-600)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-tertiary)')}
+                  >{email}</a>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, minWidth: 180 }}>
+            <Phone size={15} style={{ color: 'var(--primary-600)', marginTop: 2, flexShrink: 0 }} />
+            <div style={{ fontSize: 13, lineHeight: 1.8, color: 'var(--text-tertiary)' }}>
+              <div style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>Phone Number</div>
+              {companyInfo.phones.map((phone) => (
+                <div key={phone}>
+                  <a href={`tel:${phone}`} style={{ color: 'var(--text-tertiary)', textDecoration: 'none' }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--primary-600)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-tertiary)')}
+                  >{phone}</a>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 

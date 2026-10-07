@@ -1,6 +1,7 @@
 import "./landing-v5.css";
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { companyInfo } from "../lib/companyInfo";
 
 const landingVersions = [
   { path: '/', label: 'Classic' },
@@ -254,6 +255,7 @@ export default function LandingV5() {
             <div>
               <div className="v5-logo" style={{ marginBottom: 16 }}>Prove<span>Ownership</span></div>
               <p>Nigeria's device registry & recovery platform. Prove It. Own It. Protect It.</p>
+              <p style={{ marginTop: 8, fontWeight: 600 }}>{companyInfo.name}</p>
             </div>
             <div>
               <strong>Platform</strong>
@@ -269,12 +271,27 @@ export default function LandingV5() {
             </div>
             <div>
               <strong>Contact</strong>
-              <p>admin@proveownership.com</p>
-              <p style={{ marginTop: 8 }}>Lagos, Nigeria</p>
+              <p>Owner: {companyInfo.owner}</p>
+              <p style={{ marginTop: 4 }}>{companyInfo.ownerTitle}</p>
+              <p style={{ marginTop: 8 }}>{companyInfo.address}</p>
+              <p style={{ marginTop: 8 }}>
+                {companyInfo.emails.map((email) => (
+                  <span key={email} style={{ display: "block" }}>
+                    <a href={`mailto:${email}`}>{email}</a>
+                  </span>
+                ))}
+              </p>
+              <p style={{ marginTop: 8 }}>
+                {companyInfo.phones.map((phone) => (
+                  <span key={phone} style={{ display: "block" }}>
+                    <a href={`tel:${phone}`}>{phone}</a>
+                  </span>
+                ))}
+              </p>
             </div>
           </div>
           <div className="v5-footer-bottom">
-            &copy; {new Date().getFullYear()} Prove Ownership. All rights reserved.
+            &copy; {new Date().getFullYear()} {companyInfo.name} — Prove Ownership. All rights reserved.
           </div>
         </div>
       </footer>
