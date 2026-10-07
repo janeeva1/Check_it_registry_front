@@ -6,6 +6,7 @@ import {
   CheckCircle2, Smartphone, Laptop, Menu, X, Star, Quote, Fingerprint,
   AlertTriangle
 } from "lucide-react";
+import { companyInfo } from "../lib/companyInfo";
 
 const features = [
   { icon: Lock, title: "Your Digital Vault", desc: "A safe, permanent record of your personal devices, linked cryptographically to your identity." },
@@ -348,6 +349,29 @@ export default function LandingV1() {
               <span className="font-bold text-lg">Prove Ownership</span>
             </div>
             <p className="mt-4 text-sm text-muted-foreground max-w-xs">Empowering ownership, preventing theft, and enabling recovery through technology.</p>
+            <div className="mt-4 space-y-1.5 text-sm text-muted-foreground max-w-xs">
+              <p className="font-semibold text-foreground">{companyInfo.name}</p>
+              <p>Owner: {companyInfo.owner} — {companyInfo.ownerTitle}</p>
+              <p>Address: {companyInfo.address}</p>
+              <p>
+                Email:{" "}
+                {companyInfo.emails.map((email, i) => (
+                  <span key={email}>
+                    {i > 0 ? ", " : ""}
+                    <a href={`mailto:${email}`} className="hover:text-foreground transition">{email}</a>
+                  </span>
+                ))}
+              </p>
+              <p>
+                Phone:{" "}
+                {companyInfo.phones.map((phone, i) => (
+                  <span key={phone}>
+                    {i > 0 ? ", " : ""}
+                    <a href={`tel:${phone}`} className="hover:text-foreground transition">{phone}</a>
+                  </span>
+                ))}
+              </p>
+            </div>
           </div>
           {[
             { title: "Platform", links: ["Public Search", "Marketplace", "Report Found", "Verify"] },
@@ -364,7 +388,7 @@ export default function LandingV1() {
         </div>
         <div className="border-t border-border/60">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
-            <p>© {new Date().getFullYear()} Prove Ownership. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} {companyInfo.name} — Prove Ownership. All rights reserved.</p>
             <div className="flex gap-5">
               <a href="#" className="hover:text-foreground">Terms</a>
               <a href="#" className="hover:text-foreground">Privacy</a>

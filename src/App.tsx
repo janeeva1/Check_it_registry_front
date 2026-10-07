@@ -10,6 +10,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import CustomCursor from './components/CustomCursor'
 import ErrorBoundary from './components/ErrorBoundary'
 import PageLoading from './components/PageLoading'
+import { landingVariantsEnabled } from './lib/landingVariants'
 
 const LandingPage = lazy(() => import('./pages/LandingPage'))
 const LandingV1 = lazy(() => import('./pages/LandingV1'))

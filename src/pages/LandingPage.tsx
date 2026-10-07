@@ -25,9 +25,13 @@ import {
   Award,
   Zap,
   ShieldCheck,
-  Quote
+  Quote,
+  Mail,
+  Building2,
+  UserSquare2
 } from 'lucide-react';
 import { apiClient } from '../lib/apiClient';
+import { companyInfo } from '../lib/companyInfo';
 import Navbar from '../components/Navbar';
 import TechParticles from '../components/TechParticles';
 import { useAuth } from '../contexts/AuthContext';
@@ -856,6 +860,100 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ===================== CONTACT / COMPANY INFO SECTION ===================== */}
+      <section id="contact" className="py-5 position-relative overflow-hidden">
+        <div className="position-absolute top-0 start-0 w-100 h-100 opacity-[0.04]" style={{
+          background: 'radial-gradient(circle at 20% 50%, var(--primary-500) 0%, transparent 50%), radial-gradient(circle at 80% 50%, var(--accent-500) 0%, transparent 50%)',
+          pointerEvents: 'none'
+        }}></div>
+
+        <div className="container py-4 position-relative" style={{ zIndex: 1 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-5"
+          >
+            <span className="d-inline-block px-3 py-1 rounded-pill fw-semibold mb-3" style={{
+              fontSize: 'var(--text-sm)',
+              background: 'rgba(22,163,74,0.08)',
+              color: 'var(--primary-600)',
+              border: '1px solid rgba(22,163,74,0.15)'
+            }}>Contact Us</span>
+            <h2 className="fw-bold mb-3" style={{ fontSize: 'clamp(1.75rem, 4vw, 2.75rem)', color: 'var(--text-primary)' }}>
+              Company &amp; Contact Information
+            </h2>
+            <p className="mx-auto" style={{ maxWidth: '620px', color: 'var(--text-secondary)', fontSize: 'var(--text-lg)' }}>
+              Reach the team that owns and operates {companyInfo.product}. We are happy to answer any question about your account, your devices, or this platform.
+            </p>
+          </motion.div>
+
+          <div className="row g-4">
+            {[
+              { icon: Building2, label: 'Company Name', value: companyInfo.name, sub: `Operator of ${companyInfo.product}` },
+              { icon: UserSquare2, label: 'Company Owner', value: companyInfo.owner, sub: companyInfo.ownerTitle },
+              { icon: MapPin, label: 'Operational Address', value: companyInfo.address, sub: 'Registered office' },
+              { icon: Mail, label: 'Email', value: companyInfo.emails[0], sub: companyInfo.emails[1], href: `mailto:${companyInfo.emails[0]}`, hrefSub: `mailto:${companyInfo.emails[1]}` },
+              { icon: Phone, label: 'Phone Number', value: companyInfo.phones[0], sub: companyInfo.phones[1], href: `tel:${companyInfo.phones[0]}`, hrefSub: `tel:${companyInfo.phones[1]}` },
+              { icon: Globe, label: 'Website', value: companyInfo.website, sub: 'Online support 24/7', href: `https://${companyInfo.website}` }
+            ].map((item, idx) => {
+              const Icon = item.icon;
+              return (
+                <motion.div
+                  key={item.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.07 }}
+                  className="col-md-6 col-lg-4"
+                >
+                  <div className="card h-100 border-0 p-4 rounded-4" style={{
+                    background: 'var(--bg-primary)',
+                    border: '1px solid var(--border-color)'
+                  }}>
+                    <div className="d-flex align-items-start gap-3">
+                      <div className="d-flex align-items-center justify-content-center flex-shrink-0" style={{
+                        width: 46, height: 46, borderRadius: 14,
+                        background: 'linear-gradient(135deg, rgba(22,163,74,0.12), rgba(99,102,241,0.12))'
+                      }}>
+                        <Icon size={22} style={{ color: 'var(--primary-600)' }} />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-uppercase fw-semibold mb-1" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)', letterSpacing: 'var(--tracking-wider)' }}>
+                          {item.label}
+                        </div>
+                        {item.href ? (
+                          <a
+                            href={item.href}
+                            className="d-inline-block fw-bold text-decoration-none"
+                            style={{ color: 'var(--text-primary)', fontSize: 'var(--text-base)', wordBreak: 'break-word' }}
+                          >
+                            {item.value}
+                          </a>
+                        ) : (
+                          <div className="fw-bold" style={{ color: 'var(--text-primary)', fontSize: 'var(--text-base)', lineHeight: 'var(--leading-relaxed)', wordBreak: 'break-word' }}>
+                            {item.value}
+                          </div>
+                        )}
+                        {item.sub && (
+                          item.hrefSub ? (
+                            <a href={item.hrefSub} className="d-block text-decoration-none mt-1" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>
+                              {item.sub}
+                            </a>
+                          ) : (
+                            <div className="mt-1" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>{item.sub}</div>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* ===================== FOOTER ===================== */}
       <footer className="py-5" style={{
         background: 'var(--bg-primary)',
@@ -871,6 +969,36 @@ export default function LandingPage() {
               <p style={{ color: 'var(--text-tertiary)', lineHeight: 'var(--leading-relaxed)' }}>
                 Empowering ownership, preventing theft, and enabling recovery through technology.
               </p>
+              <div className="d-flex flex-column gap-2 mt-3" style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' }}>
+                <div className="d-flex align-items-start gap-2">
+                  <Building2 size={15} className="flex-shrink-0 mt-1" style={{ color: 'var(--primary-600)' }} />
+                  <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{companyInfo.name}</span>
+                </div>
+                <div className="d-flex align-items-start gap-2">
+                  <UserSquare2 size={15} className="flex-shrink-0 mt-1" style={{ color: 'var(--primary-600)' }} />
+                  <span>{companyInfo.owner} &mdash; {companyInfo.ownerTitle}</span>
+                </div>
+                <div className="d-flex align-items-start gap-2">
+                  <MapPin size={15} className="flex-shrink-0 mt-1" style={{ color: 'var(--primary-600)' }} />
+                  <span>{companyInfo.address}</span>
+                </div>
+                <div className="d-flex align-items-start gap-2">
+                  <Mail size={15} className="flex-shrink-0 mt-1" style={{ color: 'var(--primary-600)' }} />
+                  <span className="d-flex flex-column">
+                    {companyInfo.emails.map((email) => (
+                      <a key={email} href={`mailto:${email}`} className="text-decoration-none" style={{ color: 'var(--text-tertiary)' }}>{email}</a>
+                    ))}
+                  </span>
+                </div>
+                <div className="d-flex align-items-start gap-2">
+                  <Phone size={15} className="flex-shrink-0 mt-1" style={{ color: 'var(--primary-600)' }} />
+                  <span className="d-flex flex-column">
+                    {companyInfo.phones.map((phone) => (
+                      <a key={phone} href={`tel:${phone}`} className="text-decoration-none" style={{ color: 'var(--text-tertiary)' }}>{phone}</a>
+                    ))}
+                  </span>
+                </div>
+              </div>
               <div className="d-flex gap-3 mt-3">
                 {['facebook', 'twitter', 'linkedin', 'instagram'].map((social) => (
                   <a key={social} href={`#${social}`} className="d-inline-flex align-items-center justify-content-center rounded-circle text-decoration-none" style={{
@@ -915,7 +1043,7 @@ export default function LandingPage() {
           </div>
           <div className="pt-4 mt-4 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3" style={{ borderTop: '1px solid var(--border-color)' }}>
             <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>
-              &copy; {new Date().getFullYear()} Prove Ownership. All rights reserved.
+              &copy; {new Date().getFullYear()} {companyInfo.name} &mdash; {companyInfo.product}. All rights reserved.
             </span>
             <div className="d-flex gap-3">
               <a href="#terms" className="text-decoration-none" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>Terms</a>
