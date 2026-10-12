@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Lock, Mail, Shield, CheckCircle, ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react'
 import { useNavigate, Link } from 'react-router-dom'
@@ -17,6 +17,14 @@ export default function PasswordReset() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    const e = new URLSearchParams(window.location.search).get('email')
+    if (e) {
+      setEmail(e)
+      setStep('code')
+    }
+  }, [])
 
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault()

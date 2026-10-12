@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Shield, Mail, ArrowLeft,
@@ -42,6 +42,7 @@ export default function ForgotPassword() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const navigate = useNavigate()
   const [sent, setSent] = useState(false)
   const { toasts: _toasts, removeToast: _removeToast, showSuccess, showError } = useToast()
 
@@ -75,8 +76,8 @@ export default function ForgotPassword() {
         throw new Error(data.error || 'Failed to request password reset')
       }
 
-      setSent(true)
       showSuccess('Reset Code Sent!', 'If an account with this email exists, a password reset code has been sent.')
+      navigate(`/reset-password?email=${encodeURIComponent(email.trim())}`)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to request password reset'
       setError(errorMessage)
@@ -198,7 +199,9 @@ export default function ForgotPassword() {
                         </div>
                       </button>
                       <div style={{ display: 'flex', gap: 12 }}>
-                        <Link to="/reset-password" className="btn-ghost"
+                        <Link
+                          to={`/reset-password?email=${encodeURIComponent(email)}`}
+                          className="btn-ghost"
                           style={{ flex: 1, height: 44, fontSize: 14, fontWeight: 600, border: '1px solid var(--border-color)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, textDecoration: 'none' }}>
                           <Lock size={16} />
                           Enter Code
