@@ -30,6 +30,8 @@ type FormData = {
   serial: string
   category: string
   otherCategory: string
+  brandCustom?: string
+  modelCustom?: string
   color: string
   storage: string
   description: string
@@ -207,14 +209,16 @@ export default function DeviceRegistration() {
     e.preventDefault()
     try {
       setSubmitting(true)
-      const categoryToSend = form.category === 'other' && form.otherCategory.trim()
+      const categoryToSend = (form.category === 'other' && form.otherCategory.trim())
         ? form.otherCategory.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '')
         : form.category
+      let brandToSend = form.brand === 'Others' ? (form.brandCustom || '') : form.brand
+      let modelToSend = form.model === 'Others' ? (form.modelCustom || '') : form.model
       const payload = {
         ...form,
         category: categoryToSend === 'other' ? 'others' : categoryToSend,
-        brand: form.brand === 'Others' ? '' : form.brand,
-        model: form.model === 'Others' ? '' : form.model,
+        brand: brandToSend || form.brand,
+        model: modelToSend || form.model,
         estimatedValue: form.estimatedValue ? parseFloat(form.estimatedValue) : null,
         purchaseDate: form.purchaseDate || null,
         userId: user?.id,
@@ -305,7 +309,7 @@ export default function DeviceRegistration() {
                     <div className="row g-3">
                       <div className="col-md-6">
                         <label className="form-label">Brand *</label>
-                        {form.category === 'other' ? (
+                        {(form.category === 'other' || form.category === 'others') ? (
                           <input className="modern-input" placeholder="Enter brand" value={form.brand} onChange={e => update('brand', e.target.value)} required />
                         ) : (
                           <select className="modern-select" value={form.brand} onChange={e => { update('brand', e.target.value); update('model', ''); }} required>
@@ -313,22 +317,22 @@ export default function DeviceRegistration() {
                             {getBrands(form.category).map(b => <option key={b} value={b}>{b}</option>)}
                           </select>
                         )}
-                        {form.brand === 'Others' && (
-                          <input className="modern-input mt-2" placeholder="Enter custom brand" value={form.brand === 'Others' ? '' : form.brand} onChange={e => update('brand', e.target.value)} />
+                        {!(['other','others'].includes(form.category)) && form.brand === 'Others' && (
+                          <input className="modern-input mt-2" placeholder="Enter custom brand" value={form.brandCustom || ''} onChange={e => { setForm(p => ({ ...p, brandCustom: e.target.value, brand: e.target.value })); }} />
                         )}
                       </div>
                       <div className="col-md-6">
                         <label className="form-label">Model *</label>
-                        {form.category === 'other' ? (
+                        {(form.category === 'other' || form.category === 'others') ? (
                           <input className="modern-input" placeholder="Enter model" value={form.model} onChange={e => update('model', e.target.value)} required />
                         ) : (
-                          <select className="modern-select" value={form.model} onChange={e => update('model', e.target.value)} required disabled={!form.brand}>
+                          <select className="modern-select" value={form.model} onChange={e => { if (e.target.value === 'Others') { update('model', 'Others'); } else { update('model', e.target.value); } }} required disabled={!form.brand || form.brand === 'Others'}>
                             <option value="">Select model</option>
-                            {form.brand && getModels(form.category, form.brand).map(m => <option key={m} value={m}>{m}</option>)}
+                            {form.brand && form.brand !== 'Others' && getModels(form.category, form.brand).map(m => <option key={m} value={m}>{m}</option>)}
                           </select>
                         )}
-                        {form.model === 'Others' && (
-                          <input className="modern-input mt-2" placeholder="Enter custom model" value="" onChange={e => update('model', e.target.value)} />
+                        {!(['other','others'].includes(form.category)) && form.model === 'Others' && (
+                          <input className="modern-input mt-2" placeholder="Enter custom model" value={form.modelCustom || ''} onChange={e => { setForm(p => ({ ...p, modelCustom: e.target.value, model: e.target.value })); }} />
                         )}
                       </div>
                       <div className="col-md-6">
