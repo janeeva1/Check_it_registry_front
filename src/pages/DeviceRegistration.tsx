@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Smartphone, Monitor, Headphones, Gamepad, Watch, Camera, Tv, Speaker, Package, Plus, Shield, Loader2 } from 'lucide-react'
+import { Smartphone, Monitor, Headphones, Gamepad, Watch, Camera, Tv, Speaker, Package, Plus, Shield, Loader2, Car, Bike, Fan } from 'lucide-react'
 import { Layout } from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast, ToastContainer } from '../components/Toast'
@@ -9,14 +9,18 @@ import { apiClient } from '../lib/apiClient'
 const DEVICE_CATEGORIES = [
   { value: 'smartphone', label: 'Smartphone', icon: Smartphone },
   { value: 'tablet', label: 'Tablet', icon: Monitor },
-  { value: 'headphones', label: 'Headphones', icon: Headphones },
-  { value: 'console', label: 'Console', icon: Gamepad },
-  { value: 'smartwatch', label: 'Smartwatch', icon: Watch },
-  { value: 'camera', label: 'Camera', icon: Camera },
-  { value: 'tv', label: 'TV', icon: Tv },
-  { value: 'speaker', label: 'Speaker', icon: Speaker },
   { value: 'laptop', label: 'Laptop', icon: Monitor },
-  { value: 'other', label: 'Other', icon: Package },
+  { value: 'headphones', label: 'Headphones', icon: Headphones },
+  { value: 'earbuds', label: 'Earbuds', icon: Headphones },
+  { value: 'speaker', label: 'Speaker', icon: Speaker },
+  { value: 'smartwatch', label: 'Smartwatch/Watch', icon: Watch },
+  { value: 'camera', label: 'Camera', icon: Camera },
+  { value: 'console', label: 'Gaming Console', icon: Gamepad },
+  { value: 'tv', label: 'TV/Smart TV', icon: Tv },
+  { value: 'vehicle', label: 'Car/Vehicle', icon: Car },
+  { value: 'motorcycle', label: 'Motorcycle/Bike', icon: Bike },
+  { value: 'appliance', label: 'Home Appliance (Fan, AC, Fridge)', icon: Fan },
+  { value: 'other', label: 'Other (Type Manually)', icon: Package },
 ]
 
 type FormData = {
@@ -25,6 +29,7 @@ type FormData = {
   imei: string
   serial: string
   category: string
+  otherCategory: string
   color: string
   storage: string
   description: string
@@ -33,8 +38,40 @@ type FormData = {
   estimatedValue: string
 }
 
+const BRAND_OPTIONS: Record<string, string[]> = {
+  smartphone: ['Apple', 'Samsung', 'Xiaomi', 'Redmi', 'OnePlus', 'Oppo', 'Vivo', 'Realme', 'Huawei', 'Nokia', 'Tecno', 'Infinix', 'Itel', 'Google', 'Motorola', 'Sony', 'Others'],
+  tablet: ['Apple', 'Samsung', 'Xiaomi', 'Huawei', 'Lenovo', 'Amazon', 'Microsoft', 'Others'],
+  laptop: ['Apple', 'Dell', 'HP', 'Lenovo', 'Acer', 'Asus', 'MSI', 'Microsoft', 'Toshiba', 'Others'],
+  headphones: ['Apple', 'Sony', 'Bose', 'JBL', 'Beats', 'Sennheiser', 'Skullcandy', 'Anker', 'Others'],
+  earbuds: ['Apple', 'Samsung', 'Sony', 'JBL', 'Xiaomi', 'Beats', 'Others'],
+  speaker: ['JBL', 'Bose', 'Sony', 'Harman Kardon', 'Sonos', 'Others'],
+  smartwatch: ['Apple', 'Samsung', 'Garmin', 'Fitbit', 'Huawei', 'Xiaomi', 'Amazfit', 'Others'],
+  camera: ['Canon', 'Nikon', 'Sony', 'Fujifilm', 'Panasonic', 'Olympus', 'Others'],
+  console: ['Sony', 'Microsoft', 'Nintendo', 'Others'],
+  tv: ['Samsung', 'LG', 'Sony', 'TCL', 'Hisense', 'Panasonic', 'Others'],
+  vehicle: ['Toyota', 'Honda', 'Nissan', 'Hyundai', 'Kia', 'Ford', 'Mercedes-Benz', 'BMW', 'Volkswagen', 'Audi', 'Lexus', 'Others'],
+  motorcycle: ['Honda', 'Yamaha', 'Suzuki', 'Kawasaki', 'Bajaj', 'TVS', 'Others'],
+  appliance: ['LG', 'Samsung', 'Hisense', 'Panasonic', 'Nexus', 'Scanfrost', 'Others'],
+  other: ['Others'],
+}
+
+const SMARTPHONE_MODELS: Record<string, string[]> = {
+  Apple: ['iPhone 16 Pro Max', 'iPhone 16 Pro', 'iPhone 16', 'iPhone 15 Pro Max', 'iPhone 15 Pro', 'iPhone 15', 'iPhone 14 Pro Max', 'iPhone 14 Pro', 'iPhone 14', 'iPhone 13 Pro Max', 'iPhone 13 Pro', 'iPhone 13', 'iPhone 12', 'iPhone 11', 'Others'],
+  Samsung: ['Galaxy S25 Ultra', 'Galaxy S25+', 'Galaxy S25', 'Galaxy S24 Ultra', 'Galaxy S24+', 'Galaxy S24', 'Galaxy A55', 'Galaxy A35', 'Galaxy Z Fold6', 'Galaxy Z Flip6', 'Others'],
+  Xiaomi: ['Xiaomi 14 Ultra', 'Xiaomi 14', 'Redmi Note 14 Pro+', 'Redmi Note 14', 'POCO X7 Pro', 'Others'],
+  Redmi: ['Redmi Note 14', 'Redmi Note 13', 'Redmi 14C', 'Others'],
+  OnePlus: ['OnePlus 13', 'OnePlus 12', 'OnePlus Nord', 'Others'],
+  Others: ['Others'],
+}
+
+const getBrands = (cat: string) => BRAND_OPTIONS[cat] || ['Others']
+const getModels = (cat: string, brand: string) => {
+  if (cat === 'smartphone' && SMARTPHONE_MODELS[brand]) return SMARTPHONE_MODELS[brand]
+  return ['Others']
+}
+
 const initialState: FormData = {
-  brand: '', model: '', imei: '', serial: '', category: 'smartphone',
+  brand: '', model: '', imei: '', serial: '', category: 'smartphone', otherCategory: '',
   color: '', storage: '', description: '', notes: '', purchaseDate: '', estimatedValue: '',
 }
 
@@ -46,14 +83,19 @@ export default function DeviceRegistration() {
   const [submitting, setSubmitting] = useState(false)
 
   const update = (k: keyof FormData, v: string) => setForm(p => ({ ...p, [k]: v }))
-
+ 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
       setSubmitting(true)
-      const _token = localStorage.getItem('auth_token')
+      const categoryToSend = form.category === 'other' && form.otherCategory.trim()
+        ? form.otherCategory.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '')
+        : form.category
       const payload = {
         ...form,
+        category: categoryToSend === 'other' ? 'others' : categoryToSend,
+        brand: form.brand === 'Others' ? '' : form.brand,
+        model: form.model === 'Others' ? '' : form.model,
         estimatedValue: form.estimatedValue ? parseFloat(form.estimatedValue) : null,
         purchaseDate: form.purchaseDate || null,
         userId: user?.id,
@@ -119,14 +161,20 @@ export default function DeviceRegistration() {
                               className={`d-flex flex-column align-items-center gap-2 w-100 p-4 rounded-3 border ${active ? 'border-primary' : ''}`}
                               style={{ background: active ? 'var(--primary-50)' : 'var(--gray-50)', transition: 'all 0.2s', cursor: 'pointer', borderColor: active ? 'var(--primary-500)' : 'var(--border-color)' }}>
                               <Icon size={32} style={{ color: active ? 'var(--primary-600)' : 'var(--text-secondary)' }} />
-                              <span className="fw-medium" style={{ fontSize: 13, color: active ? 'var(--primary-700)' : 'var(--text-primary)' }}>{cat.label}</span>
+                              <span className="fw-medium text-center" style={{ fontSize: 12, color: active ? 'var(--primary-700)' : 'var(--text-primary)' }}>{cat.label}</span>
                             </button>
                           </div>
                         )
                       })}
                     </div>
+                    {form.category === 'other' && (
+                      <div className="mt-3">
+                        <label className="form-label">Specify device type *</label>
+                        <input className="modern-input" placeholder="e.g. Generator, Drone, CCTV, Power Bank, GPS Tracker" value={form.otherCategory} onChange={e => update('otherCategory', e.target.value)} />
+                      </div>
+                    )}
                     <div className="mt-4 text-end">
-                      <button type="button" className="btn-gradient-primary" onClick={() => setStep(2)}>Next Step</button>
+                      <button type="button" className="btn-gradient-primary" onClick={() => setStep(2)} disabled={form.category === 'other' && !form.otherCategory.trim()}>Next Step</button>
                     </div>
                   </motion.div>
                 )}
@@ -138,15 +186,35 @@ export default function DeviceRegistration() {
                     <div className="row g-3">
                       <div className="col-md-6">
                         <label className="form-label">Brand *</label>
-                        <input className="modern-input" placeholder="e.g. Apple, Samsung" value={form.brand} onChange={e => update('brand', e.target.value)} required />
+                        {form.category === 'other' ? (
+                          <input className="modern-input" placeholder="Enter brand" value={form.brand} onChange={e => update('brand', e.target.value)} required />
+                        ) : (
+                          <select className="modern-select" value={form.brand} onChange={e => { update('brand', e.target.value); update('model', ''); }} required>
+                            <option value="">Select brand</option>
+                            {getBrands(form.category).map(b => <option key={b} value={b}>{b}</option>)}
+                          </select>
+                        )}
+                        {form.brand === 'Others' && (
+                          <input className="modern-input mt-2" placeholder="Enter custom brand" value={form.brand === 'Others' ? '' : form.brand} onChange={e => update('brand', e.target.value)} />
+                        )}
                       </div>
                       <div className="col-md-6">
                         <label className="form-label">Model *</label>
-                        <input className="modern-input" placeholder="e.g. iPhone 14" value={form.model} onChange={e => update('model', e.target.value)} required />
+                        {form.category === 'other' ? (
+                          <input className="modern-input" placeholder="Enter model" value={form.model} onChange={e => update('model', e.target.value)} required />
+                        ) : (
+                          <select className="modern-select" value={form.model} onChange={e => update('model', e.target.value)} required disabled={!form.brand}>
+                            <option value="">Select model</option>
+                            {form.brand && getModels(form.category, form.brand).map(m => <option key={m} value={m}>{m}</option>)}
+                          </select>
+                        )}
+                        {form.model === 'Others' && (
+                          <input className="modern-input mt-2" placeholder="Enter custom model" value="" onChange={e => update('model', e.target.value)} />
+                        )}
                       </div>
                       <div className="col-md-6">
-                        <label className="form-label">IMEI (if applicable) <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
-                        <input className="modern-input" placeholder="15-digit IMEI" value={form.imei} onChange={e => update('imei', e.target.value.replace(/\D/g, '').slice(0, 15))} />
+                        <label className="form-label">IMEI/Serial/ID <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
+                        <input className="modern-input" placeholder="Unique identifier (IMEI, Serial, VIN, etc.)" value={form.imei} onChange={e => update('imei', e.target.value)} />
                       </div>
                       <div className="col-md-6">
                         <label className="form-label">Serial Number <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
@@ -178,10 +246,10 @@ export default function DeviceRegistration() {
                         <label className="form-label">Purchase Date <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
                         <input type="date" className="modern-input" value={form.purchaseDate} onChange={e => update('purchaseDate', e.target.value)} />
                       </div>
-                      {form.category === 'other' && (
+                      {(form.category === 'other' || form.category === 'others') && (
                         <div className="col-12">
                           <label className="form-label">Description *</label>
-                          <textarea className="modern-textarea" rows={2} placeholder="Describe your device (e.g. brand, model, physical characteristics)" value={form.description} onChange={e => update('description', e.target.value)} required />
+                          <textarea className="modern-textarea" rows={2} placeholder="Describe your device (e.g. brand, model, physical characteristics, unique features)" value={form.description} onChange={e => update('description', e.target.value)} required />
                         </div>
                       )}
                       <div className="col-12">
@@ -191,7 +259,17 @@ export default function DeviceRegistration() {
                     </div>
                     <div className="mt-4 d-flex justify-content-between">
                       <button type="button" className="btn-ghost" onClick={() => setStep(1)}>Back</button>
-                      <button type="button" className="btn-gradient-primary" onClick={() => setStep(3)}>Review & Confirm</button>
+                      <button type="button" className="btn-gradient-primary" onClick={() => {
+                        if ((form.category === 'other' || form.category === 'others') && !form.description.trim()) {
+                          showError('Description is required for this device type')
+                          return
+                        }
+                        if (!form.brand || !form.model) {
+                          showError('Brand and model are required')
+                          return
+                        }
+                        setStep(3)
+                      }}>Review & Confirm</button>
                     </div>
                   </motion.div>
                 )}
@@ -204,7 +282,7 @@ export default function DeviceRegistration() {
                     </div>
                     <div className="modern-card p-4" style={{ backgroundColor: 'var(--gray-50)' }}>
                       <div className="row g-3" style={{ fontSize: 14 }}>
-                        <div className="col-md-6"><strong>Category:</strong> {DEVICE_CATEGORIES.find(c => c.value === form.category)?.label || form.category}</div>
+                        <div className="col-md-6"><strong>Category:</strong> {form.category === 'other' ? (form.otherCategory || 'Other') : (DEVICE_CATEGORIES.find(c => c.value === form.category)?.label || form.category)}</div>
                         <div className="col-md-6"><strong>Brand:</strong> {form.brand}</div>
                         <div className="col-md-6"><strong>Model:</strong> {form.model}</div>
                         <div className="col-md-6"><strong>IMEI:</strong> {form.imei || '—'}</div>
@@ -213,7 +291,7 @@ export default function DeviceRegistration() {
                         <div className="col-md-6"><strong>Storage:</strong> {form.storage || '—'}</div>
                         <div className="col-md-6"><strong>Value:</strong> {form.estimatedValue ? `$${form.estimatedValue}` : '—'}</div>
                         <div className="col-md-6"><strong>Purchase Date:</strong> {form.purchaseDate || '—'}</div>
-                        {form.category === 'other' && <div className="col-12"><strong>Description:</strong> {form.description || '—'}</div>}
+                        {(form.category === 'other' || form.category === 'others') && <div className="col-12"><strong>Description:</strong> {form.description || '—'}</div>}
                         <div className="col-12"><strong>Notes:</strong> {form.notes || '—'}</div>
                       </div>
                     </div>

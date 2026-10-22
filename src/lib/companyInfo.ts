@@ -1,5 +1,5 @@
 export const companyInfo = {
-  name: 'Iykon Digitals International',
+  name: 'AI-Con Digitals Nigeria Limited',
   product: 'Prove Ownership',
   owner: 'Ikechukwu Izegbu',
   ownerTitle: 'Chief Executive Officer (CEO)',

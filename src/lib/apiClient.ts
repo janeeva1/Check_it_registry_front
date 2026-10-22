@@ -36,7 +36,6 @@ class ApiClient {
   constructor() {
     this.token = localStorage.getItem("auth_token");
   }
-
   private async request(endpoint: string, options: RequestInit = {}) {
     const url = `${API_BASE_URL}${endpoint}`;
     console.log("API Request:", {
@@ -47,6 +46,7 @@ class ApiClient {
 
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
+
     };
 
     // Add existing headers
@@ -58,8 +58,9 @@ class ApiClient {
       });
     }
 
-    if (this.token) {
-      headers.Authorization = `Bearer ${this.token}`;
+    const token = this.token || localStorage.getItem("auth_token");
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
     }
 
     try {
