@@ -55,18 +55,137 @@ const BRAND_OPTIONS: Record<string, string[]> = {
   other: ['Others'],
 }
 
-const SMARTPHONE_MODELS: Record<string, string[]> = {
-  Apple: ['iPhone 16 Pro Max', 'iPhone 16 Pro', 'iPhone 16', 'iPhone 15 Pro Max', 'iPhone 15 Pro', 'iPhone 15', 'iPhone 14 Pro Max', 'iPhone 14 Pro', 'iPhone 14', 'iPhone 13 Pro Max', 'iPhone 13 Pro', 'iPhone 13', 'iPhone 12', 'iPhone 11', 'Others'],
-  Samsung: ['Galaxy S25 Ultra', 'Galaxy S25+', 'Galaxy S25', 'Galaxy S24 Ultra', 'Galaxy S24+', 'Galaxy S24', 'Galaxy A55', 'Galaxy A35', 'Galaxy Z Fold6', 'Galaxy Z Flip6', 'Others'],
-  Xiaomi: ['Xiaomi 14 Ultra', 'Xiaomi 14', 'Redmi Note 14 Pro+', 'Redmi Note 14', 'POCO X7 Pro', 'Others'],
-  Redmi: ['Redmi Note 14', 'Redmi Note 13', 'Redmi 14C', 'Others'],
-  OnePlus: ['OnePlus 13', 'OnePlus 12', 'OnePlus Nord', 'Others'],
-  Others: ['Others'],
+const DEVICE_MODELS: Record<string, Record<string, string[]>> = {
+  smartphone: {
+    Apple: ['iPhone 16 Pro Max', 'iPhone 16 Pro', 'iPhone 16', 'iPhone 15 Pro Max', 'iPhone 15 Pro', 'iPhone 15', 'iPhone 14 Pro Max', 'iPhone 14 Pro', 'iPhone 14', 'iPhone 13 Pro Max', 'iPhone 13 Pro', 'iPhone 13', 'iPhone 12', 'iPhone 11', 'iPhone SE', 'Others'],
+    Samsung: ['Galaxy S25 Ultra', 'Galaxy S25+', 'Galaxy S25', 'Galaxy S24 Ultra', 'Galaxy S24+', 'Galaxy S24', 'Galaxy A56', 'Galaxy A55', 'Galaxy A35', 'Galaxy Z Fold6', 'Galaxy Z Flip6', 'Others'],
+    Xiaomi: ['Xiaomi 15', 'Xiaomi 14 Ultra', 'Xiaomi 14', 'Redmi Note 14 Pro+', 'Redmi Note 14 Pro', 'Redmi Note 14', 'POCO X7 Pro', 'POCO X7', 'Others'],
+    Redmi: ['Redmi Note 14', 'Redmi Note 13', 'Redmi 14C', 'Redmi A4', 'Others'],
+    OnePlus: ['OnePlus 13', 'OnePlus 12', 'OnePlus 11', 'OnePlus Nord CE4', 'Others'],
+    Oppo: ['Reno 13', 'Reno 12', 'A80', 'A60', 'Others'],
+    Vivo: ['V50', 'V40', 'Y300', 'Y200', 'Others'],
+    Realme: ['GT 7 Pro', 'Narzo 70', 'C75', 'Others'],
+    Tecno: ['Camon 40', 'Spark 30', 'Pova 6', 'Others'],
+    Infinix: ['Note 40 Pro', 'Hot 50 Pro', 'Smart 9', 'Others'],
+    Google: ['Pixel 9 Pro XL', 'Pixel 9 Pro', 'Pixel 9', 'Pixel 8a', 'Others'],
+    Motorola: ['Edge 50 Pro', 'Razr 50', 'Moto G85', 'Others'],
+    Huawei: ['Pura 70', 'Nova 12', 'Others'],
+    Others: ['Others'],
+  },
+  tablet: {
+    Apple: ['iPad Pro 13"', 'iPad Pro 11"', 'iPad Air', 'iPad', 'iPad mini', 'Others'],
+    Samsung: ['Galaxy Tab S10', 'Galaxy Tab S9', 'Galaxy Tab A9+', 'Others'],
+    Lenovo: ['Tab P12', 'Tab M11', 'Tab K11', 'Others'],
+    Xiaomi: ['Pad 7', 'Redmi Pad Pro', 'Others'],
+    Huawei: ['MatePad Pro', 'MatePad', 'Others'],
+    Others: ['Others'],
+  },
+  laptop: {
+    Apple: ['MacBook Air M4', 'MacBook Air M3', 'MacBook Pro M4', 'MacBook Pro M3', 'Others'],
+    Dell: ['XPS 14', 'XPS 13', 'Inspiron 15', 'Latitude', 'Alienware', 'Others'],
+    HP: ['Spectre x360', 'Envy', 'Pavilion', 'OmniBook', 'ProBook', 'Others'],
+    Lenovo: ['ThinkPad X1 Carbon', 'Yoga', 'IdeaPad', 'Legion', 'Others'],
+    Asus: ['ZenBook', 'Vivobook', 'ROG', 'TUF', 'Others'],
+    Acer: ['Swift', 'Aspire', 'Nitro', 'Predator', 'Others'],
+    MSI: ['Prestige', 'Katana', 'Raider', 'Others'],
+    Microsoft: ['Surface Laptop', 'Surface Pro', 'Others'],
+    Others: ['Others'],
+  },
+  smartwatch: {
+    Apple: ['Apple Watch Series 10', 'Apple Watch Ultra 2', 'Apple Watch SE', 'Others'],
+    Samsung: ['Galaxy Watch 7', 'Galaxy Watch Ultra', 'Galaxy Watch FE', 'Others'],
+    Garmin: ['Fenix 8', 'Venu 3', 'Forerunner 965', 'Others'],
+    Fitbit: ['Sense 2', 'Versa 4', 'Inspire 3', 'Others'],
+    Huawei: ['Watch GT 5', 'Watch Ultimate', 'Others'],
+    Xiaomi: ['Xiaomi Watch S4', 'Redmi Watch 5', 'Others'],
+    Amazfit: ['Balance', 'T-Rex 3', 'Active 2', 'Others'],
+    Others: ['Others'],
+  },
+  headphones: {
+    Apple: ['AirPods Max', 'Beats Studio Pro', 'Others'],
+    Sony: ['WH-1000XM6', 'WH-1000XM5', 'WF-1000XM5', 'Others'],
+    Bose: ['QuietComfort Ultra', 'QuietComfort 45', 'Others'],
+    JBL: ['Tune 770NC', 'Live 770NC', 'Others'],
+    Sennheiser: ['Momentum 4', 'HD 660S2', 'Others'],
+    Others: ['Others'],
+  },
+  earbuds: {
+    Apple: ['AirPods Pro 2', 'AirPods 4', 'AirPods 3', 'Others'],
+    Samsung: ['Galaxy Buds3 Pro', 'Galaxy Buds3', 'Others'],
+    Sony: ['WF-1000XM5', 'LinkBuds S', 'Others'],
+    JBL: ['Tune Buds', 'Vibe Beam', 'Others'],
+    Xiaomi: ['Redmi Buds 6 Pro', 'Bud 5 Pro', 'Others'],
+    Beats: ['Beats Fit Pro', 'Beats Studio Buds+', 'Others'],
+    Others: ['Others'],
+  },
+  speaker: {
+    JBL: ['Charge 5', 'Flip 6', 'Xtreme 4', 'PartyBox', 'Others'],
+    Bose: ['SoundLink Max', 'SoundLink Flex', 'Others'],
+    Sony: ['SRS-XG300', 'ULT Field 7', 'Others'],
+    Sonos: ['Roam 2', 'Era 100', 'Move 2', 'Others'],
+    Others: ['Others'],
+  },
+  camera: {
+    Canon: ['EOS R5', 'EOS R6 Mark II', 'EOS 90D', 'PowerShot', 'Others'],
+    Nikon: ['Z8', 'Z6 III', 'D850', 'Others'],
+    Sony: ['A7RV', 'A7C II', 'FX3', 'Others'],
+    Fujifilm: ['X-T5', 'X100VI', 'GFX100', 'Others'],
+    Others: ['Others'],
+  },
+  console: {
+    Sony: ['PlayStation 5 Pro', 'PlayStation 5', 'PlayStation 4 Pro', 'Others'],
+    Microsoft: ['Xbox Series X', 'Xbox Series S', 'Others'],
+    Nintendo: ['Switch 2', 'Switch OLED', 'Switch Lite', 'Others'],
+    Others: ['Others'],
+  },
+  tv: {
+    Samsung: ['QN90D', 'QN85D', 'CU8000', 'Crystal UHD', 'Others'],
+    LG: ['OLED C4', 'OLED G4', 'QNED80', 'Others'],
+    Sony: ['Bravia 9', 'Bravia 7', 'Bravia 3', 'Others'],
+    TCL: ['QM8', 'Q6', 'Others'],
+    Hisense: ['U8N', 'U7N', 'Others'],
+    Others: ['Others'],
+  },
+  vehicle: {
+    Toyota: ['Camry', 'Corolla', 'Hilux', 'Land Cruiser', 'RAV4', 'Others'],
+    Honda: ['Accord', 'Civic', 'CR-V', 'Pilot', 'Others'],
+    Nissan: ['Altima', 'Pathfinder', 'X-Trail', 'Others'],
+    Hyundai: ['Elantra', 'Tucson', 'Santa Fe', 'Others'],
+    Kia: ['Sportage', 'Sorento', 'Rio', 'Others'],
+    Ford: ['F-150', 'Explorer', 'Focus', 'Others'],
+    'Mercedes-Benz': ['C-Class', 'E-Class', 'GLE', 'Others'],
+    BMW: ['3 Series', '5 Series', 'X5', 'Others'],
+    Lexus: ['RX', 'ES', 'NX', 'Others'],
+    Others: ['Others'],
+  },
+  motorcycle: {
+    Honda: ['CB500X', 'CBR600RR', 'Africa Twin', 'Others'],
+    Yamaha: ['YZF-R7', 'MT-09', 'Tenere 700', 'Others'],
+    Suzuki: ['GSX-R750', 'V-Strom 650', 'Others'],
+    Kawasaki: ['Ninja 650', 'Z900', 'Versys 650', 'Others'],
+    Bajaj: ['Pulsar NS200', 'Dominar 400', 'Others'],
+    TVS: ['Apache RTR 160', 'NTorq', 'Others'],
+    Others: ['Others'],
+  },
+  appliance: {
+    LG: ['Refrigerator', 'Washing Machine', 'Air Conditioner', 'Microwave', 'Others'],
+    Samsung: ['Refrigerator', 'Washing Machine', 'Air Conditioner', 'Others'],
+    Hisense: ['Refrigerator', 'Air Conditioner', 'Freezer', 'Others'],
+    Panasonic: ['Microwave', 'Air Conditioner', 'Others'],
+    Nexus: ['Gas Cooker', 'Fan', 'Blender', 'Others'],
+    Scanfrost: ['Gas Cooker', 'Refrigerator', 'Freezer', 'Others'],
+    Others: ['Others'],
+  },
+  other: {
+    Others: ['Others'],
+  },
 }
 
 const getBrands = (cat: string) => BRAND_OPTIONS[cat] || ['Others']
 const getModels = (cat: string, brand: string) => {
-  if (cat === 'smartphone' && SMARTPHONE_MODELS[brand]) return SMARTPHONE_MODELS[brand]
+  if (!brand) return ['Others']
+  const catModels = DEVICE_MODELS[cat]
+  if (catModels && catModels[brand]) return catModels[brand]
   return ['Others']
 }
 
