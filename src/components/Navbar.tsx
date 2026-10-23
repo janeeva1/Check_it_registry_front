@@ -42,9 +42,10 @@ interface NavbarProps {
 }
 
 const NAV_LINKS = [
-  { path: '/device-check', label: 'Check an item', icon: Search },
+  // Checking items is for signed-in people only, so visitors don't see it
+  { path: '/device-check', label: 'Check an item', icon: Search, signedIn: true },
   { path: '/marketplace/browse', label: 'Marketplace', icon: Store },
-  { path: '/found-device', label: 'Report Found', icon: Flag },
+  { path: '/found-device', label: 'Report Found', icon: Flag, signedIn: true },
 ];
 
 const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onMenuClick, sidebarOpen }) => {
@@ -131,7 +132,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onMenuClick, sidebarOpe
 
         {/* Center: Desktop nav links - ALWAYS visible for ALL users */}
         <div className="d-none d-lg-flex align-items-center gap-1">
-          {NAV_LINKS.map(link => (
+          {NAV_LINKS.filter(link => user || !link.signedIn).map(link => (
             <NavLink
               key={link.path}
               to={link.path}
@@ -321,7 +322,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onMenuClick, sidebarOpe
                 <div className="px-3 pt-1 pb-2 text-uppercase fw-semibold" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', letterSpacing: '0.08em' }}>
                   Quick Actions
                 </div>
-                {NAV_LINKS.map(link => (
+                {NAV_LINKS.filter(link => user || !link.signedIn).map(link => (
                   <NavLink
                     key={link.path}
                     to={link.path}

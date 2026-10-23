@@ -60,3 +60,20 @@ test('people cannot open pages for other roles', async ({ page }) => {
     await expect(page, `${path} must not open for a normal user`).not.toHaveURL(new RegExp(`${path}$`))
   }
 })
+
+test('visitors see no way to check an item', async ({ page }) => {
+  await page.goto('/')
+  for (let y = 0; y < 12000; y += 600) { await page.mouse.wheel(0, 600); await page.waitForTimeout(80) }
+  await expect(page.getByRole('button', { name: /check a device/i })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: /check an item|check a device/i })).toHaveCount(0)
+  await expect(page.getByText(/verify device status/i)).toHaveCount(0)
+  await expect(page.locator('input[placeholder*="IMEI" i]')).toHaveCount(0)
+})
+
+test('signed-in people do see the check button on the landing page', async ({ page }) => {
+  await signIn(page, 'user')
+  await page.goto('/')
+  await page.getByRole('button', { name: /check a device status/i }).scrollIntoViewIfNeeded()
+  await page.getByRole('button', { name: /check a device status/i }).click()
+  await expect(page).toHaveURL(/\/device-check/)
+})
