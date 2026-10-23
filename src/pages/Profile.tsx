@@ -658,13 +658,19 @@ export default function Profile() {
                       <div className="row g-4">
                         <div className="col-md-6">
                           <label className="form-label text-muted small fw-bold text-uppercase">Full Name</label>
-                          {editing ? (
+                          {editing && profile.kyc_status !== 'verified' ? (
                             <input
                               type="text"
                               className="form-control form-control-lg bg-light border-0"
                               value={formData.name}
                               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                             />
+                          ) : editing ? (
+                            // Locked once identity is confirmed (the NIN must keep matching)
+                            <div className="p-3 bg-light rounded-3">
+                              <span className="fw-medium text-dark">{getDisplayName(profile)}</span>
+                              <div className="small text-muted mt-1">Locked because your identity is confirmed. Contact support to correct it.</div>
+                            </div>
                           ) : (
                             <div className="d-flex align-items-center p-3 bg-light rounded-3">
                               <User size={20} className="text-muted me-3" />

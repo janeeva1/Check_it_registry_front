@@ -7,6 +7,7 @@ import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { apiClient } from '../lib/apiClient'
 import { CategoryIcon, categoryLabel, formatNaira, storedCategory } from '../utils/categories'
 import OwnershipPanel from '../components/ownership/OwnershipPanel'
+import CustodyPanel from '../components/custody/CustodyPanel'
 
 type Device = {
   id: string
@@ -182,7 +183,7 @@ export default function DeviceDetails() {
     ['Registered', new Date(device.created_at).toLocaleDateString()],
   ]
   const editFields = [...EDIT_FIELDS.common, ...(EDIT_FIELDS[cat] || [])]
-  const blocked = ['stolen', 'lost', 'released'].includes(device.status)
+  const blocked = ['stolen', 'lost', 'found', 'released'].includes(device.status)
   const canSell = level === 'verified_owner' && device.status === 'verified'
 
   const checkLink = device.imei ? `/device-check?imei=${encodeURIComponent(device.imei)}` : `/device-check?serial=${encodeURIComponent(device.serial || device.vin || '')}`
@@ -222,6 +223,7 @@ export default function DeviceDetails() {
           </section>
         )}
 
+        <CustodyPanel deviceId={device.id} onReleased={() => window.location.reload()} />
         <OwnershipPanel deviceId={device.id} highlight={isNew} onLevelChange={setLevel} />
 
         <ul className="po-simple-list po-mb">

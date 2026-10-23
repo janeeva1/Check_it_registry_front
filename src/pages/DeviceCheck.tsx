@@ -321,6 +321,9 @@ export default function DeviceCheck() {
             <h2>{advice.title}</h2>
             <p>{advice.message}</p>
             {result.status !== 'not_found' && result.status !== 'unknown' && <OwnershipBadge level={ownershipLevel} />}
+            {enhancedData?.custody?.held && (
+              <p className="po-result-action" data-testid="custody-note"><strong>Held by Prove Ownership.</strong> Since it was reported, Prove Ownership is its temporary holder. It can't be bought, sold or transferred until it is released to its owner. If you have this item, contact the police or Prove Ownership.</p>
+            )}
             <p className="po-result-action">{advice.action}</p>
 
             {(result.case_id || result.report_type || result.occurred_at) && (

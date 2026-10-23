@@ -990,6 +990,8 @@ class ApiClient {
       }),
     getCACHistory: () => this.request('/security/cac/history'),
     getVerificationStatus: () => this.request('/security/cac/status'),
+    // Whether this person's identity (and business) are confirmed
+    identityStatus: () => this.request('/security/verification-status'),
     getVerificationQueue: (status: string = 'pending', page: number = 1) =>
       this.request(`/security/admin/verification-queue?status=${status}&page=${page}`),
     updateQueueItem: (id: string, status: string) =>

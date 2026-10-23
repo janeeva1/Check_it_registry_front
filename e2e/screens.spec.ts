@@ -18,8 +18,8 @@ const USER = ['/dashboard', '/my-devices', '/register-device', '/device-check', 
 const BUSINESS = ['/business', '/business/my-listings', '/business/onboard', '/business/onboardings', '/business/payouts', '/business/payout-settings', '/business-verification']
 const ADMIN = ['/admin', '/admin/alerts', '/admin/device-management', '/admin/lea-management', '/admin/report-management', '/admin/system-settings',
   '/admin/transfers', '/admin/verification-queue', '/admin/archive', '/admin/ownership-review', '/admin/device-categories', '/admin/landing-content',
-  '/admin/marketplace', '/admin/revenue', '/admin/fraud-alerts', '/admin/recovery', '/user-management', '/analytics', '/audit-trail']
-const LEA = ['/lea', '/lea/alerts', '/lea/cases', '/lea/communication', '/lea/device-search', '/lea/recovery', '/lea/settings', '/lea/transfers']
+  '/admin/marketplace', '/admin/revenue', '/admin/fraud-alerts', '/admin/recovery', '/user-management', '/analytics', '/audit-trail', '/admin/custody']
+const LEA = ['/lea', '/lea/alerts', '/lea/cases', '/lea/communication', '/lea/device-search', '/lea/recovery', '/lea/settings', '/lea/transfers', '/lea/custody']
 
 async function dynamicPages(): Promise<Record<string, string[]>> {
   const out: Record<string, string[]> = { user: [], admin: [] }

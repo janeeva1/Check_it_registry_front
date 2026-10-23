@@ -3,245 +3,112 @@ import { Shield, Scale, Lock, Eye, Database, Mail, ArrowLeft, Globe, UserCheck, 
 import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 
-const lastUpdated = 'July 21, 2026'
+const lastUpdated = 'October 23, 2026'
 
+// Plain-language privacy notice under the Nigeria Data Protection Act 2023.
 const sections = [
   {
     icon: FileText,
-    title: '1. Introduction & Scope',
-    content: `This Privacy Policy describes how Prove Ownership — Smart Device Registry & Recovery System ("Prove Ownership," "we," "us," or "our") collects, uses, stores, shares, and protects your personal information when you use our website, mobile application, APIs, and related services (collectively, the "Platform").
+    title: '1. Who is responsible for your data',
+    content: `AI-Con Digitals Nigeria Limited, B96, Along Law School Road, Opp. JAMB Office, Bwari, Abuja, operates Prove Ownership and is the data controller for the personal data described here. We process personal data in line with the Nigeria Data Protection Act 2023 (NDPA) and the rules of the Nigeria Data Protection Commission (NDPC).
 
-By using the Platform, you consent to the practices described in this Privacy Policy. If you do not agree, please do not use the Platform.
-
-This Privacy Policy applies to all users, including visitors, registered users, business accounts, law enforcement agencies, and administrators.`
+Questions or requests: support@proveownership.com (subject "Data protection").`
   },
   {
-    icon: Shield,
-    title: '2. Information We Collect',
-    content: `2.1 INFORMATION YOU PROVIDE DIRECTLY:
-• Account Registration: name, email address, password (hashed), phone number, region/country
-• Device Registration: IMEI, serial number, brand, model, color, device images, proof of ownership documents
-• KYC Verification: National Identification Number (NIN), selfie photograph, face comparison data
-• Reports: stolen/lost/found device reports including descriptions, locations, evidence, police report numbers
-• Marketplace: listing titles, descriptions, prices, device conditions, bank account details for payouts
-• Payments: payment method details (processed by Paystack — we do not store card numbers)
-• Profile: profile image, business registration details, LEA agency information
-• Communications: messages sent through the marketplace inbox, support inquiries
-• Device Checks: IMEI/serial numbers you search, device fingerprint data, GPS location, IP address
+    icon: Database,
+    title: '2. What we collect',
+    content: `Account: your name, email, phone number, region, password (stored only as a secure hash) and account type.
 
-2.2 INFORMATION COLLECTED AUTOMATICALLY:
-• Log Data: IP address, browser type, operating system, referring URLs, pages visited, time spent
-• Device Information: device type, screen resolution, browser plugins, platform
-• Device Fingerprints: canvas fingerprint, WebGL renderer, font list, timezone, language (collected during device checks for fraud prevention)
-• Cookies: session tokens, authentication tokens, preference cookies, analytics cookies (see Cookie Policy)
-• Location Data: approximate location derived from IP address; precise GPS location when voluntarily provided during device checks
+Identity: your National Identification Number (NIN) and, when we look it up, the details our identity partner returns from your NIMC record: names, date of birth, gender, photo and address. For businesses: the registration (RC/BN) number and the CAC details returned, including company name, status, address and directors. Your NIN is stored encrypted, together with a one-way fingerprint so we can recognise it again without decrypting it. The returned details are also stored encrypted. We never show your NIN back to you or to anyone else.
 
-2.3 INFORMATION FROM THIRD PARTIES:
-• Verification Providers (Prembly, Dojah, VerifyNG): NIN verification results, face match scores
-• Payment Provider (Paystack): transaction confirmations, payment status
-• Law Enforcement Agencies: case updates, investigation information`
+Your items: descriptions and identifying numbers (IMEI, serial, VIN, certificate numbers), proof-of-ownership documents and photos, reports, claims, transfers and listings.
+
+Checks: when you check an item we record who checked, when, your approximate location (your browser asks your permission to share it) and technical details of your device and connection (browser, device identifiers, IP address), to prevent fraud.
+
+Payments: amount, purpose, payment reference and status. Card details are handled by Paystack; we never see or store them.
+
+Security: sign-in history, the device id your browser keeps for "remember this device", and security events.`
   },
   {
     icon: Eye,
-    title: '3. How We Use Your Information',
-    content: `We use your information for the following purposes:
+    title: '3. Why we use it, and our legal basis',
+    content: `(a) To run your account and provide the Platform: registering items, checks, reports, holds, releases, transfers and the marketplace. Basis: contract.
 
-3.1 SERVICE PROVISION:
-• Creating and managing your account
-• Registering and maintaining device records
-• Processing device checks and providing status results
-• Facilitating device ownership transfers
-• Operating the peer-to-peer marketplace
-• Processing payments and escrow transactions
-• Coordinating with law enforcement on device recovery cases
+(b) To confirm your identity on reports, claims and business verification, and to stop one NIN or business being used on several accounts. Basis: contract, and our legitimate interest in preventing fraud.
 
-3.2 COMMUNICATIONS:
-• Sending account verification emails (registration, password reset)
-• Sending device status notifications (verified, rejected, stolen, found)
-• Sending marketplace notifications (new messages, order updates, payment confirmations)
-• Sending transfer request notifications (OTP codes, transfer confirmations)
-• Sending system alerts and security notifications
-• Responding to your support inquiries
+(c) To show item owners who checked their items and when, and to help the police with reported items. Basis: legitimate interest in preventing theft and the trade in stolen items, and legal obligation where the police make a lawful request.
 
-3.3 SECURITY & FRAUD PREVENTION:
-• Authenticating your identity and securing your account
-• Detecting and preventing fraud, abuse, and unauthorized access
-• Analyzing device check patterns to identify suspicious activity
-• Maintaining audit logs of platform activity
-• Generating risk scores for device checks and user behavior
+(d) To take payments and keep financial records. Basis: contract and legal obligation (tax and accounting).
 
-3.4 LEGAL COMPLIANCE:
-• Complying with applicable laws and regulations
-• Responding to lawful requests from law enforcement
-• Cooperating with legal proceedings and court orders
-• Maintaining records as required by Nigerian law
+(e) To keep the Platform secure, investigate abuse and enforce our Terms. Basis: legitimate interest.
 
-3.5 PLATFORM IMPROVEMENT:
-• Analyzing usage patterns to improve our services
-• Conducting research and analytics (using anonymized/aggregated data)
-• Developing new features and functionality
-• Testing and debugging platform functionality`
-  },
-  {
-    icon: Database,
-    title: '4. How We Share Your Information',
-    content: `We do NOT sell your personal information. We may share your information in the following circumstances:
+(f) To send service messages, for example sign-in codes, report updates and "your item has been found". Basis: contract. We send marketing only if you agree, and you can stop it at any time.
 
-4.1 WITH OTHER USERS:
-• Your name and device status are visible when you register devices or create marketplace listings
-• When you report a device, relevant information is shared with administrators and may be shared with law enforcement
-• Marketplace participants can see each other's names and listing information
-
-4.2 WITH LAW ENFORCEMENT:
-• Device reports (stolen/lost/found) may be automatically shared with registered law enforcement agencies in your region
-• We may share information in response to valid legal process (subpoenas, court orders, warrants)
-• We may proactively share information to assist in criminal investigations involving stolen devices
-
-4.3 WITH SERVICE PROVIDERS:
-• Paystack: payment processing (transaction data only)
-• Prembly/Dojah/VerifyNG: identity verification (NIN and selfie data)
-• Resend: email delivery (email address, email content)
-• Twilio: SMS delivery (phone number, message content)
-• Hosting providers: data storage and platform infrastructure
-
-All service providers are contractually obligated to protect your information and use it only for the services they provide to us.
-
-4.4 FOR BUSINESS TRANSFERS:
-In the event of a merger, acquisition, bankruptcy, or sale of assets, your information may be transferred as part of that transaction. We will notify you of any change in ownership or use of your personal information.
-
-4.5 WITH YOUR CONSENT:
-We may share information for purposes not described in this policy with your explicit consent.`
-  },
-  {
-    icon: Lock,
-    title: '5. Data Security',
-    content: `5.1 SECURITY MEASURES:
-We implement industry-standard security measures to protect your information:
-• Data encryption in transit (TLS/SSL) and at rest (AES-256)
-• Secure password hashing (bcrypt)
-• JWT-based authentication with configurable session expiry
-• Role-based access control (user, business, admin, LEA)
-• Rate limiting and brute-force protection on authentication endpoints
-• Input validation and sanitization on all API endpoints
-• Regular security audits and vulnerability assessments
-• Audit logging of all administrative and sensitive actions
-
-5.2 DATA STORAGE:
-Your data is stored on secure cloud servers with:
-• Automated daily backups
-• Redundant storage across multiple availability zones
-• Firewall protection and intrusion detection systems
-• Physical security controls at data center facilities
-
-5.3 LIMITATIONS:
-While we implement strong security measures, no method of electronic transmission or storage is 100% secure. We cannot guarantee absolute security of your data. You are responsible for maintaining the confidentiality of your account credentials.
-
-5.4 BREACH NOTIFICATION:
-In the event of a data breach that affects your personal information, we will notify you via email within 72 hours of discovering the breach, as required by applicable data protection laws.`
-  },
-  {
-    icon: Scale,
-    title: '6. Your Rights',
-    content: `You have the following rights regarding your personal information:
-
-6.1 ACCESS: You can request a copy of all personal information we hold about you. We will provide this within 30 days of your request.
-
-6.2 RECTIFICATION: You can update or correct your personal information through your account settings or by contacting us.
-
-6.3 DELETION: You can request deletion of your account and personal information. We will process deletion requests within 30 days, except where retention is required by law.
-
-6.4 DATA PORTABILITY: You can request your data in a structured, commonly used, machine-readable format (JSON/CSV).
-
-6.5 RESTRICTION: You can request that we restrict processing of your personal information in certain circumstances.
-
-6.6 OBJECTION: You can object to processing of your personal information for direct marketing purposes.
-
-6.7 WITHDRAW CONSENT: Where processing is based on your consent, you can withdraw consent at any time without affecting the lawfulness of prior processing.
-
-TO EXERCISE THESE RIGHTS:
-Email: privacy@proveownership.com
-Include: Your full name, email address, and specific request.
-We will respond within 30 business days.
-
-Note: Some information may be retained after account deletion as required by law (e.g., financial records for tax compliance, audit logs for security).`
+We do not sell your personal data, and we do not use it for automated decisions with legal effects without a person able to review them. Identity mismatches and ownership disputes are reviewed by our team.`
   },
   {
     icon: Globe,
-    title: '7. International Data Transfers',
-    content: `Your information may be transferred to and processed in countries other than your country of residence. These countries may have different data protection laws.
-
-When we transfer data internationally, we ensure appropriate safeguards are in place, including:
-• Standard contractual clauses with service providers
-• Adequacy decisions by relevant data protection authorities
-• Your explicit consent where required
-
-Our primary data processing occurs in Nigeria and the United States. By using the Platform, you consent to the transfer of your information to these locations.`
-  },
-  {
-    icon: Database,
-    title: '8. Data Retention',
-    content: `We retain your personal information for as long as necessary to provide our services and fulfill the purposes described in this policy:
-
-• Active accounts: Data retained while account is active
-• Device records: Retained for the lifetime of the platform for device history
-• Transaction records: Retained for 7 years (financial compliance)
-• Audit logs: Retained for 5 years (security and compliance)
-• Device check logs: Retained for 1 year (fraud prevention)
-• Notification records: Retained for 90 days
-• KYC data: Raw biometric data deleted after verification; verification result retained for account lifetime
-• Support communications: Retained for 3 years
-
-After the applicable retention period, data is securely deleted or anonymized so that it can no longer be associated with you.`
-  },
-  {
-    icon: UserCheck,
-    title: '9. Children\'s Privacy',
-    content: `The Platform is not intended for use by children under the age of 18. We do not knowingly collect personal information from children under 18. If we become aware that we have collected personal information from a child under 18, we will take steps to delete such information promptly.
-
-If you are a parent or guardian and believe your child has provided us with personal information, please contact us at privacy@proveownership.com.`
+    title: '4. Who we share it with',
+    content: `• Prembly (identity verification): your NIN or business number, to look up your NIMC or CAC record. This happens only the first time a number is checked.
+• Paystack (payments).
+• Our email and SMS providers, to send you messages.
+• The police and law enforcement agencies: details of reported items, holds, finds, owners and check history needed for a case, and anything we are lawfully required to provide.
+• Owners of items you check: your name and the time and approximate place of the check.
+• Buyers and sellers on the marketplace: the details needed to complete a sale.
+• Our hosting and technical providers, under contracts that require them to protect your data.
+• A buyer or successor of our business, under the same protections.`
   },
   {
     icon: Lock,
-    title: '10. Cookie Policy',
-    content: `We use cookies and similar technologies as described in our Cookie Policy. In summary:
-
-• Essential cookies: Required for the Platform to function (authentication, security, session management)
-• Functional cookies: Remember your preferences (theme, language, notification settings)
-• Analytics cookies: Help us understand usage patterns (Google Analytics — anonymized)
-• Device fingerprints: Collected during device checks for fraud prevention
-
-You can manage cookie preferences through your browser settings or our in-app cookie settings. See our full Cookie Policy for details.
-
-Note: Device fingerprint data collected during device checks is used exclusively for fraud prevention and is not linked to your account data.`
+    title: '5. How we protect it',
+    content: `NINs and identity details are encrypted at rest. Data is sent over encrypted connections, access is limited to staff who need it, and administrator and police accounts use two-step sign-in. Proof documents are private and can only be opened by you and our reviewers. No system is perfectly secure. If a breach is likely to put you at risk, we will tell you and the NDPC as the law requires.`
+  },
+  {
+    icon: Database,
+    title: '6. How long we keep it',
+    content: `• Account and item records: while your account is open, then for up to 2 years so ownership history and disputes can still be resolved.
+• Identity records (NIN or CAC details): while your account is open, then 2 years, so the same number cannot be used to create new accounts straight away.
+• Reports, holds, releases and check history: 6 years, as they may be needed by the police or the courts.
+• Payment records: 6 years, as required for tax and accounting.
+• Security logs: up to 12 months.
+After these periods data is deleted or anonymised.`
   },
   {
     icon: Scale,
-    title: '11. Legal Basis for Processing (GDPR)',
-    content: `For users in jurisdictions covered by the General Data Protection Regulation (GDPR), we process your personal data based on the following legal grounds:
+    title: '7. Your rights',
+    content: `Under the NDPA you can ask us to:
+• give you a copy of your personal data;
+• correct inaccurate data (a locked name can be corrected by support with proof);
+• delete your data, where we no longer need to keep it;
+• restrict or object to certain uses;
+• give you your data in a portable format;
+• withdraw consent, where we rely on it.
 
-• Consent: When you create an account, register devices, or use optional features (KYC, marketplace)
-• Contract: When processing is necessary for the performance of our Terms of Service
-• Legal Obligation: When we must retain data for tax, financial, or regulatory compliance
-• Legitimate Interest: For fraud prevention, security monitoring, and platform improvement
-
-You may withdraw consent at any time where consent is the basis for processing. Withdrawal does not affect the lawfulness of processing prior to withdrawal.`
+Email support@proveownership.com and we will respond within 30 days. Some data, such as reports and payment records, may have to be kept for the periods above even after a request. You can also complain to the Nigeria Data Protection Commission (ndpc.gov.ng).`
+  },
+  {
+    icon: Globe,
+    title: '8. Transfers outside Nigeria',
+    content: `Some of our providers may store or process data outside Nigeria. When they do, we make sure there is adequate protection as the NDPA requires, for example contractual safeguards.`
+  },
+  {
+    icon: UserCheck,
+    title: '9. Children',
+    content: `Prove Ownership is for people aged 18 and over. We do not knowingly collect data from children. If you think a child has an account, contact us and we will delete it.`
+  },
+  {
+    icon: Shield,
+    title: '10. Cookies and browser storage',
+    content: `We use only what is needed to run the Platform, such as keeping you signed in, remembering your browser and your cart. We do not use advertising or tracking cookies. Details are in our Cookie Policy.`
   },
   {
     icon: Mail,
-    title: '12. Contact Us',
-    content: `For questions, concerns, or requests regarding this Privacy Policy or your personal data:
+    title: '11. Changes and contact',
+    content: `We will post any changes here with a new date and tell you about important ones.
 
-Data Controller: Prove Ownership — Smart Device Registry & Recovery System
-Email: privacy@proveownership.com
-Legal: legal@proveownership.com
-Support: support@proveownership.com
-Website: https://dev.proveownership.com
-
-For data protection inquiries, please include "Privacy Request" in your email subject line.
-
-We will respond to privacy-related inquiries within 30 business days.
-
-If you are not satisfied with our response, you have the right to lodge a complaint with the relevant data protection authority in your jurisdiction.`
+AI-Con Digitals Nigeria Limited (Prove Ownership)
+B96, Along Law School Road, Opp. JAMB Office, Bwari, Abuja, Nigeria
+Email: support@proveownership.com · Phone: 08034875647, 08120212639`
   },
 ]
 

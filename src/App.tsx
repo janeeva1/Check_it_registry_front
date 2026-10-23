@@ -88,6 +88,7 @@ const HelpPage = lazy(() => import('./pages/HelpPage'))
 const Settings = lazy(() => import('./pages/Settings'))
 const Checkout = lazy(() => import('./pages/Checkout'))
 const Cart = lazy(() => import('./pages/Cart'))
+const CustodyDesk = lazy(() => import('./pages/CustodyDesk'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 const AdminMarketplaceManagement = lazy(() => import('./pages/AdminMarketplaceManagement'))
 const LandingContentManager = lazy(() => import('./pages/admin/LandingContentManager'))
@@ -228,6 +229,8 @@ function AppRoutes() {
         <Route path="/admin/fraud-alerts" element={<ProtectedRoute allowedRoles={['admin']}><ErrorBoundary><FraudAlerts /></ErrorBoundary></ProtectedRoute>} />
         <Route path="/admin/recovery" element={<ProtectedRoute allowedRoles={['admin']}><ErrorBoundary><RecoveryServiceDashboard /></ErrorBoundary></ProtectedRoute>} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/admin/custody" element={<ProtectedRoute allowedRoles={['admin']}><CustodyDesk /></ProtectedRoute>} />
+        <Route path="/lea/custody" element={<ProtectedRoute allowedRoles={['lea','admin']}><CustodyDesk /></ProtectedRoute>} />
         <Route path="/checkout" element={user ? <Checkout /> : <Navigate to="/login" />} />
         {/* Catch-all route: send all unknown links to NotFound with back to dashboard */}
         <Route path="*" element={<NotFound />} />
