@@ -41,7 +41,7 @@ export default function Checkout() {
         setLoading(true)
         if (!listingId) return
         const token = localStorage.getItem('auth_token')
-        const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/marketplace/listings/${listingId}`, { headers: { Authorization: `Bearer ${token}` } })
+        const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/marketplace/${listingId}`, { headers: { Authorization: `Bearer ${token}` } })
         if (!res.ok) throw new Error('Listing not found')
         const data = await res.json()
         setListing(data.data || data)

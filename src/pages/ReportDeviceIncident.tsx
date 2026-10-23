@@ -27,7 +27,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useToast, ToastContainer } from '../components/Toast'
 import { PaymentGate } from '../components/PaymentGate'
 import { apiClient } from '../lib/apiClient'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 type WizardStep = 'device' | 'details' | 'kyc_payment' | 'confirmation'
 type ReportType = 'stolen' | 'lost'
@@ -92,6 +92,7 @@ export default function ReportDeviceIncident() {
   const [devicesError, setDevicesError] = useState<string | null>(null)
 
   const [selectedDevice, setSelectedDevice] = useState<RegisteredDevice | null>(null)
+  const [searchParams] = useSearchParams()
   const [reportType, setReportType] = useState<ReportType | null>(null)
 
   const [form, setForm] = useState<ReportForm>({
@@ -140,6 +141,10 @@ export default function ReportDeviceIncident() {
       const data = await apiClient.reportManagement.myDevices()
       const list = Array.isArray(data) ? data : data?.devices || data?.data || []
       setDevices(list)
+      // Coming from an item page (?device=...): skip straight to the details
+      const pre = searchParams.get('device')
+      const match = pre && list.find((d: RegisteredDevice) => d.id === pre)
+      if (match) { setSelectedDevice(match); setStep('details') }
     } catch (err: any) {
       setDevicesError(err.message || 'Failed to load devices')
     } finally {

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Layout } from '../components/Layout'
 import { Settings, Shield, Bell, Smartphone, Globe, Clock, Save, RefreshCw, Lock, Key, Users, DollarSign, TrendingUp } from 'lucide-react'
 import { useToast, ToastContainer } from '../components/Toast'
+import { useConfirm } from '../components/ConfirmDialog'
 import { apiClient } from '../lib/apiClient'
 
 const containerVariants = {
@@ -30,6 +31,8 @@ export default function AdminSystemSettings() {
   const [loadingFee, setLoadingFee] = useState(true)
 
   const { toasts, removeToast, showSuccess, showError } = useToast()
+
+  const confirm = useConfirm()
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -326,7 +329,7 @@ export default function AdminSystemSettings() {
                     <small style={{ color: 'var(--text-tertiary)' }}>Download</small>
                   </button>
                   <button className="btn-ghost w-100 justify-content-between text-start p-3" style={{ borderRadius: 12, background: 'rgba(239, 68, 68, 0.05)', color: 'var(--danger-500)' }} onClick={async () => {
-                    if (!confirm('Run database cleanup? This will remove old notifications, expired transfers, and stale audit logs.')) return
+                    if (!await confirm({ title: 'Run database cleanup?', message: 'This removes old notifications, expired transfers and stale audit logs.', confirmLabel: 'Run cleanup', danger: true })) return
                     try {
                       await apiClient.files.cleanup()
                       showSuccess('Cleanup Complete', 'Database maintenance completed successfully')

@@ -343,7 +343,7 @@ export default function Profile() {
            </div>
         )}
 
-        {profile.caution_flag && (
+        {!!profile.caution_flag && (
            <div className="alert alert-warning d-flex align-items-center gap-3 rounded-4 shadow-sm border-0 mb-4 px-4 py-3">
              <AlertCircle size={24} className="flex-shrink-0" />
              <div>
@@ -396,7 +396,7 @@ export default function Profile() {
                       </div>
                     )}
                     {/* Verified Checkmark */}
-                    {profile.is_verified && (
+                    {!!profile.is_verified && (
                       <div 
                         className="position-absolute bottom-0 end-0 bg-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" 
                         style={{ width: '32px', height: '32px', zIndex: 10 }}
@@ -434,7 +434,7 @@ export default function Profile() {
                 <h3 className="h4 fw-bold mb-1" style={{ color: 'var(--text-primary)' }}>
                   {getDisplayName(profile)}
                 </h3>
-                <p className="text-muted mb-3">{profile.email}</p>
+                <p className="text-muted mb-3 text-break">{profile.email}</p>
                 
                 {/* Two-image display: profile photo + KYC verification photo */}
                 {profile.verified_photo_url && (
@@ -497,7 +497,7 @@ export default function Profile() {
                   <div className="col-6 border-end">
                     <p className="mb-0 text-muted small fw-medium">Member Since</p>
                     <p className="mb-0 fw-bold" style={{ color: 'var(--text-primary)' }}>
-                      {new Date(profile.created_at).toLocaleDateString('en-US', { 
+                      {!profile.created_at || isNaN(new Date(profile.created_at).getTime()) ? '—' : new Date(profile.created_at).toLocaleDateString('en-US', { 
                         month: 'short', 
                         year: 'numeric' 
                       })}
@@ -675,10 +675,9 @@ export default function Profile() {
 
                         <div className="col-md-6">
                           <label className="form-label text-muted small fw-bold text-uppercase">Email Address</label>
-                          <div className="d-flex align-items-center p-3 bg-light rounded-3 opacity-75">
-                            <Mail size={20} className="text-muted me-3" />
-                            <span className="fw-medium text-dark">{profile.email}</span>
-                            <span className="ms-auto badge bg-secondary-subtle text-secondary">Read-only</span>
+                          <div className="d-flex align-items-center p-3 bg-light rounded-3 opacity-75" style={{ minWidth: 0 }}>
+                            <Mail size={20} className="text-muted me-3 flex-shrink-0" />
+                            <span className="fw-medium text-dark text-truncate" style={{ minWidth: 0 }} title={profile.email}>{profile.email}</span>
                           </div>
                         </div>
 

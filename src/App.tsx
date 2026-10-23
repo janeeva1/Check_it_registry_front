@@ -6,8 +6,9 @@ import { CartProvider } from './contexts/CartContext'
 import { ToastProvider } from './components/Toast'
 import './tailwind.css'
 import './App.css'
+import './styles/ui.css'
 import ProtectedRoute from './components/ProtectedRoute'
-import CustomCursor from './components/CustomCursor'
+import { ConfirmProvider } from './components/ConfirmDialog'
 import ErrorBoundary from './components/ErrorBoundary'
 import PageLoading from './components/PageLoading'
 import { landingVariantsEnabled } from './lib/landingVariants'
@@ -57,7 +58,6 @@ const PaymentMethodSelection = lazy(() => import('./pages/PaymentMethodSelection
 const PaymentConfirmation = lazy(() => import('./pages/PaymentConfirmation'))
 const PaymentCallback = lazy(() => import('./pages/PaymentCallback'))
 const TransactionHistory = lazy(() => import('./pages/TransactionHistory'))
-const Search = lazy(() => import('./pages/Search'))
 const DeviceVerificationStatus = lazy(() => import('./pages/DeviceVerificationStatus'))
 const DeviceCheckReport = lazy(() => import('./pages/DeviceCheckReport'))
 const ReportDeviceIncident = lazy(() => import('./pages/ReportDeviceIncident'))
@@ -105,6 +105,8 @@ const AdminArchive = lazy(() => import('./pages/AdminArchive'))
 const AdminUserDetail = lazy(() => import('./pages/AdminUserDetail'))
 const AdminBusinessDetail = lazy(() => import('./pages/AdminBusinessDetail'))
 const AdminLEADetail = lazy(() => import('./pages/AdminLEADetail'))
+const ClaimOwnership = lazy(() => import('./pages/ClaimOwnership'))
+const AdminOwnershipReview = lazy(() => import('./pages/AdminOwnershipReview'))
 
 function AppRoutes() {
   const { user, loading } = useAuth()
@@ -182,6 +184,8 @@ function AppRoutes() {
         <Route path="/lea/settings" element={<ProtectedRoute allowedRoles={['lea','admin']}><LEASettings /></ProtectedRoute>} />
         <Route path="/lea/transfers" element={<ProtectedRoute allowedRoles={['lea','admin']}><LEATransferHistory /></ProtectedRoute>} />
         <Route path="/transfer" element={user ? <DeviceTransfer /> : <Navigate to="/login" />} />
+        <Route path="/claim" element={user ? <ClaimOwnership /> : <Navigate to="/login" />} />
+        <Route path="/admin/ownership-review" element={<ProtectedRoute allowedRoles={['admin']}><ErrorBoundary><AdminOwnershipReview /></ErrorBoundary></ProtectedRoute>} />
         <Route path="/found-device" element={user ? <FoundDevice /> : <Navigate to="/login" />} />
         <Route path="/verify-email" element={<EmailVerification />} />
         <Route path="/verify-device" element={<VerifyDevice />} />
@@ -197,7 +201,7 @@ function AppRoutes() {
         <Route path="/settings" element={user ? <Settings /> : <Navigate to="/login" />} />
         <Route path="/marketplace-inbox" element={user ? <MarketplaceInbox /> : <Navigate to="/login" />} />
         <Route path="/marketplace-inbox/:id" element={user ? <MarketplaceThread /> : <Navigate to="/login" />} />
-        <Route path="/search" element={<Search />} />
+        <Route path="/search" element={<Navigate to="/device-check" replace />} />
         <Route path="/payments/add-method" element={user ? <PaymentAddMethod /> : <Navigate to="/login" />} />
         <Route path="/payments/method-selection" element={user ? <PaymentMethodSelection /> : <Navigate to="/login" />} />
         <Route path="/payments/confirm" element={user ? <PaymentConfirmation /> : <Navigate to="/login" />} />
@@ -239,10 +243,11 @@ function App() {
       <AuthProvider>
         <CartProvider>
           <ToastProvider>
-            <ErrorBoundary>
-              <CustomCursor />
-              <AppRoutes />
-            </ErrorBoundary>
+            <ConfirmProvider>
+              <ErrorBoundary>
+                <AppRoutes />
+              </ErrorBoundary>
+            </ConfirmProvider>
           </ToastProvider>
         </CartProvider>
       </AuthProvider>

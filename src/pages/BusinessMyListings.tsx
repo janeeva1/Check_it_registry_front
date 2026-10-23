@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { apiClient } from '../lib/apiClient'
 import { useToast, ToastContainer } from '../components/Toast'
+import { useConfirm } from '../components/ConfirmDialog'
 
 type SellerListing = {
   id: string
@@ -29,6 +30,7 @@ export default function BusinessMyListings() {
   const [listings, setListings] = useState<SellerListing[]>([])
   const [loading, setLoading] = useState(true)
   const { toasts, removeToast, showSuccess, showError } = useToast()
+  const confirm = useConfirm()
 
   const user = JSON.parse(localStorage.getItem('user_data') || '{}')
 
@@ -72,7 +74,7 @@ export default function BusinessMyListings() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this listing?')) return
+    if (!await confirm({ title: 'Delete this listing?', message: 'Buyers will no longer see it. This cannot be undone.', confirmLabel: 'Delete', danger: true })) return
     try {
       await apiClient.marketplace.delete(id)
       showSuccess('Listing deleted successfully')

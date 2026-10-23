@@ -87,11 +87,15 @@ export default function BusinessVerification() {
   const doVerify = async (payToken: string | null) => {
     setLoading(true)
     try {
-      const res = await apiClient.security.verifyCAC({
-        rc_number: rcNumber.trim(),
-        company_name: companyName.trim() || undefined,
-        bypass_payment: payToken || bypassToken || undefined,
+      const res: any = await apiClient.security.verifyCAC({
+        rcNumber: rcNumber.trim(),
+        businessName: companyName.trim() || undefined,
+        pay_by_pass: payToken || bypassToken || undefined,
       } as any)
+      if (res && res.requiresPayment) {
+        setShowPayment(true)
+        return
+      }
       setResult(res.data || res)
       if ((res.data || res).success) {
         showSuccess('Business Verified', 'Your business has been successfully verified via CAC!')

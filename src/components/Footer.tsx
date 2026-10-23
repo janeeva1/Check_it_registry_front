@@ -2,8 +2,23 @@ import { Link } from 'react-router-dom'
 import { Shield, Building2, MapPin, Mail, Phone, UserSquare2 } from 'lucide-react'
 import { companyInfo } from '../lib/companyInfo'
 
-export default function Footer() {
+export default function Footer({ compact = false }: { compact?: boolean }) {
   const currentYear = new Date().getFullYear()
+
+  // Inside the app keep it to one quiet line; the full company details stay
+  // on public pages.
+  if (compact) {
+    return (
+      <footer className="po-footer-compact">
+        <span>&copy; {currentYear} Prove Ownership</span>
+        <nav aria-label="Legal">
+          <Link to="/help">Help</Link>
+          <Link to="/terms">Terms</Link>
+          <Link to="/privacy">Privacy</Link>
+        </nav>
+      </footer>
+    )
+  }
 
   return (
     <footer style={{

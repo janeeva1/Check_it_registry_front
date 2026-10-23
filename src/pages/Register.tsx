@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { apiClient } from '../lib/apiClient'
 import { useToast } from '../components/Toast'
+import { useAuth } from '../contexts/AuthContext'
 
 const floatingShapes = [
   { size: 240, x: '10%', y: '15%', delay: 0, duration: 8, blur: '120px', color: 'rgba(74, 222, 128, 0.15)' },
@@ -55,6 +56,7 @@ export default function Register() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState('')
   const [step, setStep] = useState(1)
+  const { login } = useAuth()
   const navigate = useNavigate()
   const { toasts: _toasts, removeToast: _removeToast, showSuccess, showError } = useToast()
 
@@ -93,6 +95,10 @@ export default function Register() {
       setError('Password must be at least 8 characters long')
       return false
     }
+    if (!/[a-z]/.test(formData.password) || !/[A-Z]/.test(formData.password) || !/\d/.test(formData.password)) {
+      setError('Password must contain an uppercase letter, a lowercase letter and a number')
+      return false
+    }
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match')
       return false
@@ -126,6 +132,8 @@ export default function Register() {
         password: formData.password,
         phone: formData.phone.trim() || undefined,
         region: formData.region.trim() || undefined,
+        // "Business account" was shown but never sent
+        role: formData.accountType === 'business' ? 'business' : 'user',
       })
 
       if (signUpError) {
@@ -133,6 +141,9 @@ export default function Register() {
       }
 
       if (data?.user) {
+        // Sign the new person in here too; otherwise the app still thought
+        // nobody was signed in and sent them back to the sign-in page.
+        if (data.token) login(data.token, data.user as any)
         showSuccess('Registration Successful', 'Welcome to Prove Ownership! You can now start protecting your devices.')
         setTimeout(() => {
           navigate('/dashboard')
@@ -216,7 +227,7 @@ export default function Register() {
           <motion.div initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }} style={{ marginBottom: 48 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
               <div style={{ width: 48, height: 48, borderRadius: 12, background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src="/logo1.png" alt="Prove Ownership Logo" style={{ height: '28px', objectFit: 'contain' }} />
+                <img src="/logo-mark.png" alt="Prove Ownership Logo" style={{ height: '28px', objectFit: 'contain' }} />
               </div>
               <span style={{ fontSize: 24, fontWeight: 700, color: 'white', letterSpacing: '-0.03em' }}>Prove Ownership</span>
             </div>
@@ -447,7 +458,7 @@ export default function Register() {
                           <Phone size={14} /> Phone Number <span style={{ color: 'var(--text-secondary)', fontSize: '0.85em' }}>(optional)</span>
                         </label>
                         <div style={{ position: 'relative' }}>
-                          <input id="phone" name="phone" type="tel" className="modern-input" placeholder="+1 (555) 000-0000"
+                          <input id="phone" name="phone" type="tel" className="modern-input" placeholder="0803 000 0000"
                             value={formData.phone} onChange={handleInputChange}
                             style={{ paddingLeft: 44 }} />
                           <Phone size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)', pointerEvents: 'none' }} />
@@ -460,7 +471,7 @@ export default function Register() {
                           <MapPin size={14} /> Region / Country <span style={{ color: 'var(--text-secondary)', fontSize: '0.85em' }}>(optional)</span>
                         </label>
                         <div style={{ position: 'relative' }}>
-                          <input id="region" name="region" type="text" className="modern-input" placeholder="e.g. United States"
+                          <input id="region" name="region" type="text" className="modern-input" placeholder="e.g. Lagos"
                             value={formData.region} onChange={handleInputChange}
                             style={{ paddingLeft: 44 }} />
                           <MapPin size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)', pointerEvents: 'none' }} />

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import {
   Shield, Search, MapPin, Clock, AlertTriangle,
   Info, Copy, ExternalLink, Eye, User, Smartphone, FileText,
-  Activity, Monitor, Globe, Signal
+  Activity, Monitor, Globe, Signal, Loader2
 } from 'lucide-react'
 import { Layout } from '../components/Layout'
 import { useToast, ToastContainer } from '../components/Toast'
@@ -31,13 +31,81 @@ type CheckRecord = {
   device?: { id?: string; brand?: string; model?: string; imei?: string; serial?: string; status?: string } | null
 }
 
+// Who checked one of my items: when, roughly where, and whether it was paid.
+// This is the owner's history tracker.
+function ItemChecks({ deviceId, onOpen }: { deviceId: string; onOpen: (id: string) => void }) {
+  const [checks, setChecks] = useState<any[] | null>(null)
+  const [err, setErr] = useState('')
+  useEffect(() => {
+    apiClient.deviceChecks.history({ device_id: deviceId, limit: 100 }).then((d: any) => setChecks(d?.checks || [])).catch((e: any) => setErr(e?.message || 'Could not load the checks'))
+  }, [deviceId])
+  if (err) return <div className="po-card"><p className="po-error">{err}</p></div>
+  if (!checks) return <div className="po-center py-5"><Loader2 size={28} className="po-spin" aria-label="Loading" /></div>
+  if (!checks.length) return <div className="po-empty-simple"><Eye size={32} aria-hidden="true" /><p>Nobody has checked this item yet. You'll get an email when someone does.</p></div>
+  return (
+    <ul className="po-simple-list" data-testid="item-checks">
+      {checks.map((c) => (
+        <li key={c.id}>
+          <button type="button" className="po-simple-row w-100 text-start" style={{ background: 'none', border: 0 }} onClick={() => onOpen(c.id)}>
+            <span className="po-dot is-warning" aria-hidden="true" />
+            <span className="po-simple-main">
+              <strong>{getDisplayName({ name: c.checker_name, first_name: c.checker_first_name, middle_name: c.checker_middle_name, last_name: c.checker_last_name } as any) || 'Someone'}</strong>
+              <span>{new Date(c.created_at).toLocaleString()}{c.latitude != null ? ` · near ${Number(c.latitude).toFixed(2)}, ${Number(c.longitude).toFixed(2)}` : ''}</span>
+            </span>
+            <MapPin size={16} aria-hidden="true" />
+          </button>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+// The checks I made, newest first. Tap one for the full report.
+function MyChecks({ onOpen }: { onOpen: (id: string) => void }) {
+  const [checks, setChecks] = useState<any[] | null>(null)
+  const [err, setErr] = useState('')
+  useEffect(() => {
+    apiClient.deviceChecks.mine().then((d: any) => setChecks(d?.checks || [])).catch((e: any) => setErr(e?.message || 'Could not load your checks'))
+  }, [])
+  const label = (c: any) => {
+    const r = String(c.check_result || '').toLowerCase()
+    if (!c.device_id || r === 'not_found') return ['Not registered', 'neutral']
+    if (r === 'stolen' || r === 'lost' || c.device_status === 'stolen' || c.device_status === 'lost') return ['Reported ' + (c.device_status || r), 'danger']
+    return ['No theft reports', 'success']
+  }
+  if (err) return <div className="po-card"><p className="po-error">{err}</p></div>
+  if (!checks) return <div className="po-center py-5"><Loader2 size={28} className="po-spin" aria-label="Loading" /></div>
+  if (!checks.length) return (
+    <div className="po-empty-simple"><Search size={32} aria-hidden="true" /><p>You haven't checked any items yet.</p><Link to="/device-check" className="po-btn po-btn-primary">Check an item</Link></div>
+  )
+  return (
+    <ul className="po-simple-list" data-testid="my-checks">
+      {checks.map((c) => {
+        const [text, tone] = label(c)
+        return (
+          <li key={c.id}>
+            <button type="button" className="po-simple-row w-100 text-start" style={{ background: 'none', border: 0 }} onClick={() => onOpen(c.id)}>
+              <span className={`po-dot is-${tone === 'danger' ? 'danger' : tone === 'success' ? 'success' : 'warning'}`} aria-hidden="true" />
+              <span className="po-simple-main">
+                <strong>{[c.brand, c.model].filter(Boolean).join(' ') || 'Unregistered item'}</strong>
+                <span>{new Date(c.created_at).toLocaleString()}</span>
+              </span>
+              <span className={`po-badge po-badge-${tone}`}>{text}</span>
+            </button>
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
+
 export default function DeviceCheckReport() {
   const [searchParams, setSearchParams] = useSearchParams()
   const checkId = searchParams.get('checkId') || searchParams.get('id') || ''
+  const deviceId = searchParams.get('deviceId') || ''
   const [record, setRecord] = useState<CheckRecord | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [manualCheckId, setManualCheckId] = useState('')
   const [showFonts, setShowFonts] = useState(false)
   const [showPlugins, setShowPlugins] = useState(false)
   const { toasts, removeToast, showError: _showError } = useToast()
@@ -161,8 +229,8 @@ export default function DeviceCheckReport() {
                   <FileText size={24} className="text-white" />
                 </div>
                 <div>
-                  <h1>Device Check Report</h1>
-                  <p>Detailed verification report and risk assessment</p>
+                  <h1>{checkId ? 'Check report' : deviceId ? 'Who checked this item' : 'Check history'}</h1>
+                  <p>{checkId ? 'The full result of one check' : deviceId ? 'Everyone who checked your item, newest first' : 'Every item you have checked'}</p>
                 </div>
               </div>
             </div>
@@ -189,40 +257,12 @@ export default function DeviceCheckReport() {
               </motion.div>
             )}
 
-            {!loading && !record && !error && (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="modern-card p-5">
-                <div className="empty-state">
-                  <div className="empty-state-icon">
-                    <Search size={48} />
-                  </div>
-                  <h3>Enter a Check ID</h3>
-                  <p>Paste a check ID to view the detailed report</p>
-                  <div className="d-flex gap-2 w-100" style={{ maxWidth: 500 }}>
-                    <input
-                      type="text"
-                      className="modern-input flex-grow-1"
-                      placeholder="e.g. 7f8e2b54-..."
-                      value={manualCheckId}
-                      onChange={(e) => setManualCheckId(e.target.value)}
-                    />
-                    <button
-                      className="btn-gradient-primary"
-                      onClick={() => {
-                        const id = manualCheckId.trim()
-                        if (!id) return
-                        const params = new URLSearchParams(searchParams)
-                        params.set('checkId', id); params.delete('id')
-                        setSearchParams(params)
-                      }}
-                    >
-                      Load Report
-                    </button>
-                  </div>
-                  <p className="mt-3" style={{ color: 'var(--text-secondary)', fontSize: 13 }}>
-                    Tip: Copy the Check ID from the Alerts page or your check history
-                  </p>
-                </div>
-              </motion.div>
+            {!loading && !record && !error && !checkId && deviceId && (
+              <ItemChecks deviceId={deviceId} onOpen={(id) => { const params = new URLSearchParams(searchParams); params.set('checkId', id); setSearchParams(params) }} />
+            )}
+
+            {!loading && !record && !error && !checkId && !deviceId && (
+              <MyChecks onOpen={(id) => { const params = new URLSearchParams(searchParams); params.set('checkId', id); params.delete('id'); setSearchParams(params) }} />
             )}
 
             {record && (

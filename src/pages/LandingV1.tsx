@@ -40,22 +40,16 @@ export default function LandingV1() {
   const API_BASE = (import.meta.env.VITE_API_BASE_URL as string) || "";
   const API_URL = API_BASE ? `${API_BASE}/api` : (import.meta.env.VITE_API_URL || "/api");
 
+  // Device checks are for registered users: go to the logged-in check page
   const handleSearch = async () => {
     setSearchError(null);
     setSearchResult(null);
     if (!imei.trim()) return;
-    try {
-      setSearchLoading(true);
-      const res = await fetch(`${API_URL}/public-check?imei=${encodeURIComponent(imei.trim())}`);
-      if (!res.ok) throw new Error("Check failed");
-      const data = await res.json();
-      setSearchResult(data);
-    } catch {
-      setSearchError("Failed to verify device. Please try again.");
-    } finally {
-      setSearchLoading(false);
-    }
+    const target = `/device-check?imei=${encodeURIComponent(imei.trim())}`;
+    try { sessionStorage.setItem("post_login_redirect", target); } catch { /* storage unavailable */ }
+    window.location.assign(target);
   };
+
 
   return (
     <div className="landing-v1 min-h-screen bg-background text-foreground font-sans antialiased">

@@ -56,6 +56,7 @@ export default function PasswordReset() {
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault()
     if (password.length < 8) { showError('Password must be at least 8 characters'); return }
+    if (!/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/\d/.test(password)) { showError('Password must contain an uppercase letter, a lowercase letter and a number'); return }
     if (password !== confirmPassword) { showError('Passwords do not match'); return }
     try {
       setLoading(true)

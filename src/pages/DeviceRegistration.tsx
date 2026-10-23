@@ -1,44 +1,47 @@
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { Smartphone, Monitor, Headphones, Gamepad, Watch, Camera, Tv, Speaker, Package, Plus, Shield, Loader2, Car, Bike, Fan } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { Smartphone, Tablet, Laptop, Headphones, Gamepad2, Watch, Camera, Tv, Speaker, Package, Plus, Loader2, Car, Bike, Refrigerator, Gem, ArrowLeft, ArrowRight, Scale, ShieldCheck, type LucideIcon } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
 import { Layout } from '../components/Layout'
-import { useAuth } from '../contexts/AuthContext'
-import { useToast, ToastContainer } from '../components/Toast'
-import { apiClient } from '../lib/apiClient'
+import { useToast } from '../components/Toast'
+import { apiClient, type ProofType } from '../lib/apiClient'
+import ProofPicker, { type ProofSubmission } from '../components/ownership/ProofPicker'
 
-const DEVICE_CATEGORIES = [
-  { value: 'smartphone', label: 'Smartphone', icon: Smartphone },
-  { value: 'tablet', label: 'Tablet', icon: Monitor },
-  { value: 'laptop', label: 'Laptop', icon: Monitor },
-  { value: 'headphones', label: 'Headphones', icon: Headphones },
-  { value: 'earbuds', label: 'Earbuds', icon: Headphones },
-  { value: 'speaker', label: 'Speaker', icon: Speaker },
-  { value: 'smartwatch', label: 'Smartwatch/Watch', icon: Watch },
-  { value: 'camera', label: 'Camera', icon: Camera },
-  { value: 'console', label: 'Gaming Console', icon: Gamepad },
-  { value: 'tv', label: 'TV/Smart TV', icon: Tv },
-  { value: 'vehicle', label: 'Car/Vehicle', icon: Car },
-  { value: 'motorcycle', label: 'Motorcycle/Bike', icon: Bike },
-  { value: 'appliance', label: 'Home Appliance (Fan, AC, Fridge)', icon: Fan },
-  { value: 'other', label: 'Other (Type Manually)', icon: Package },
+type IdKind = 'imei' | 'serial' | 'vin' | 'description'
+
+type Category = { value: string; label: string; icon: LucideIcon; id: IdKind; storage?: boolean }
+
+// What people register, and which number identifies each kind of item
+const DEVICE_CATEGORIES: Category[] = [
+  { value: 'smartphone', label: 'Phone', icon: Smartphone, id: 'imei', storage: true },
+  { value: 'tablet', label: 'Tablet', icon: Tablet, id: 'imei', storage: true },
+  { value: 'laptop', label: 'Laptop', icon: Laptop, id: 'serial', storage: true },
+  { value: 'smartwatch', label: 'Watch', icon: Watch, id: 'serial' },
+  { value: 'headphones', label: 'Headphones', icon: Headphones, id: 'serial' },
+  { value: 'earbuds', label: 'Earbuds', icon: Headphones, id: 'serial' },
+  { value: 'speaker', label: 'Speaker', icon: Speaker, id: 'serial' },
+  { value: 'camera', label: 'Camera', icon: Camera, id: 'serial' },
+  { value: 'console', label: 'Game console', icon: Gamepad2, id: 'serial', storage: true },
+  { value: 'tv', label: 'TV', icon: Tv, id: 'serial' },
+  { value: 'appliance', label: 'Appliance', icon: Refrigerator, id: 'serial' },
+  { value: 'vehicle', label: 'Car', icon: Car, id: 'vin' },
+  { value: 'motorcycle', label: 'Motorcycle', icon: Bike, id: 'vin' },
+  { value: 'jewelry', label: 'Jewellery', icon: Gem, id: 'description' },
+  { value: 'other', label: 'Something else', icon: Package, id: 'description' },
 ]
 
-type FormData = {
-  brand: string
-  model: string
-  imei: string
-  serial: string
-  category: string
-  otherCategory: string
-  brandCustom?: string
-  modelCustom?: string
-  color: string
-  storage: string
-  description: string
-  notes: string
-  purchaseDate: string
-  estimatedValue: string
+const ID_HELP: Record<string, string> = {
+  smartphone: 'Dial *#06# on the phone, or look in Settings → About. It is 15 digits.',
+  tablet: 'Settings → About (cellular tablets only). No IMEI? Choose "Something else" and use the serial number.',
+  laptop: 'On the sticker underneath, or Settings → About (Windows) / Apple menu → About This Mac.',
+  smartwatch: 'Settings → About on the watch, or engraved on the back.',
+  console: 'On the label on the back or bottom of the console.',
+  vehicle: 'On the windscreen (driver side), the driver door frame, or your vehicle papers. 17 characters.',
+  motorcycle: 'Stamped on the frame near the steering head, and on your papers. 17 characters.',
 }
+// The common types shown first; the rest sit behind "More types"
+const MAIN_CATS = ['smartphone', 'laptop', 'tablet', 'smartwatch', 'vehicle', 'motorcycle', 'tv']
+
+const DEFAULT_SERIAL_HELP = 'On a label on the back or bottom of the item, or on the box.'
 
 const BRAND_OPTIONS: Record<string, string[]> = {
   smartphone: ['Apple', 'Samsung', 'Xiaomi', 'Redmi', 'OnePlus', 'Oppo', 'Vivo', 'Realme', 'Huawei', 'Nokia', 'Tecno', 'Infinix', 'Itel', 'Google', 'Motorola', 'Sony', 'Others'],
@@ -183,255 +186,357 @@ const DEVICE_MODELS: Record<string, Record<string, string[]>> = {
   },
 }
 
-const getBrands = (cat: string) => BRAND_OPTIONS[cat] || ['Others']
-const getModels = (cat: string, brand: string) => {
-  if (!brand) return ['Others']
-  const catModels = DEVICE_MODELS[cat]
-  if (catModels && catModels[brand]) return catModels[brand]
-  return ['Others']
+const getBrands = (cat: string) => BRAND_OPTIONS[cat] || []
+const getModels = (cat: string, brand: string) => (DEVICE_MODELS[cat] && DEVICE_MODELS[cat][brand]) || []
+
+function luhnOk(imei: string) {
+  if (!/^\d{15}$/.test(imei)) return false
+  let sum = 0
+  for (let i = 0; i < 14; i++) {
+    let d = Number(imei[i])
+    if (i % 2 === 1) { d *= 2; if (d > 9) d -= 9 }
+    sum += d
+  }
+  return (10 - (sum % 10)) % 10 === Number(imei[14])
 }
 
-const initialState: FormData = {
-  brand: '', model: '', imei: '', serial: '', category: 'smartphone', otherCategory: '',
-  color: '', storage: '', description: '', notes: '', purchaseDate: '', estimatedValue: '',
+type Form = {
+  category: string; otherCategory: string
+  brand: string; brandCustom: string; model: string; modelCustom: string
+  imei: string; serial: string; vin: string; licensePlate: string; engineNumber: string; year: string
+  certificateNumber: string; material: string
+  color: string; storage: string; estimatedValue: string; description: string; notes: string
 }
+
+const initial: Form = {
+  category: '', otherCategory: '', brand: '', brandCustom: '', model: '', modelCustom: '',
+  imei: '', serial: '', vin: '', licensePlate: '', engineNumber: '', year: '',
+  certificateNumber: '', material: '', color: '', storage: '', estimatedValue: '', description: '', notes: '',
+}
+
+const cleanId = (v: string) => v.replace(/\s+/g, '').toUpperCase()
+const STEPS = ['Type', 'Details', 'Proof', 'Confirm']
 
 export default function DeviceRegistration() {
-  const { user } = useAuth()
-  const { toasts, removeToast, showSuccess, showError } = useToast()
-  const [form, setForm] = useState<FormData>(initialState)
+  const navigate = useNavigate()
+  const { showSuccess, showError } = useToast()
+  const [form, setForm] = useState<Form>(initial)
   const [step, setStep] = useState(1)
+  const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
+  const [taken, setTaken] = useState<string | null>(null)
+  const [proofTypes, setProofTypes] = useState<ProofType[]>([])
+  const [proof, setProof] = useState<ProofSubmission | null>(null)
+  const [showAllCats, setShowAllCats] = useState(false)
+  const [moreDetails, setMoreDetails] = useState(false)
 
-  const update = (k: keyof FormData, v: string) => setForm(p => ({ ...p, [k]: v }))
- 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const cat = DEVICE_CATEGORIES.find((c) => c.value === form.category)
+  const set = (k: keyof Form, v: string) => { setForm((p) => ({ ...p, [k]: v })); setErrors((e) => ({ ...e, [k]: '' })); setTaken(null) }
+  const brands = getBrands(form.category)
+  const models = getModels(form.category, form.brand)
+  const brand = form.brand === 'Others' ? form.brandCustom.trim() : form.brand.trim()
+  const model = form.model === 'Others' || !models.length ? (form.model === 'Others' ? form.modelCustom.trim() : form.model.trim()) : form.model.trim()
+
+  useEffect(() => {
+    if (!form.category) return
+    apiClient.ownership.proofTypes(form.category).then((r) => setProofTypes(r.types || [])).catch(() => setProofTypes([]))
+  }, [form.category])
+
+  const identifier = useMemo(() => {
+    if (!cat) return ''
+    if (cat.id === 'imei') return cleanId(form.imei)
+    if (cat.id === 'vin') return cleanId(form.vin)
+    if (cat.id === 'serial') return cleanId(form.serial)
+    return cleanId(form.certificateNumber || form.serial)
+  }, [cat, form])
+
+  const validateDetails = () => {
+    const e: Record<string, string> = {}
+    if (!brand) e.brand = 'Enter the brand'
+    if (!model) e.model = 'Enter the model'
+    if (cat?.id === 'imei') {
+      const v = cleanId(form.imei)
+      if (!v) e.imei = 'The IMEI is needed so anyone can check this phone'
+      else if (!/^\d{15}$/.test(v)) e.imei = 'An IMEI is exactly 15 digits'
+      else if (!luhnOk(v)) e.imei = "That IMEI doesn't look right — check each digit"
+    }
+    if (cat?.id === 'serial') {
+      const v = cleanId(form.serial)
+      if (!v) e.serial = 'The serial number is needed so anyone can check this item'
+      else if (!/^[A-Z0-9][A-Z0-9-]{3,29}$/.test(v)) e.serial = 'Use 4–30 letters and numbers'
+    }
+    if (cat?.id === 'vin') {
+      const v = cleanId(form.vin)
+      if (!v) e.vin = 'The VIN (chassis number) is needed so anyone can check this vehicle'
+      else if (!/^[A-HJ-NPR-Z0-9]{17}$/.test(v)) e.vin = 'A VIN is 17 letters and numbers (never I, O or Q)'
+      if (form.year && !/^(19|20)\d{2}$/.test(form.year)) e.year = 'Enter a 4-digit year'
+    }
+    if (cat?.id === 'description' && form.description.trim().length < 10) e.description = 'Describe it so it can be recognised (at least 10 characters)'
+    if (form.category === 'other' && !form.otherCategory.trim()) e.otherCategory = 'Say what kind of item it is'
+    if (form.serial && cat?.id !== 'serial' && !/^[A-Z0-9][A-Z0-9-]{3,29}$/.test(cleanId(form.serial))) e.serial = 'Use 4–30 letters and numbers'
+    setErrors(e)
+    return Object.keys(e).length === 0
+  }
+
+  const submit = async () => {
+    if (!cat) return
+    setSubmitting(true)
+    setTaken(null)
     try {
-      setSubmitting(true)
-      const categoryToSend = (form.category === 'other' && form.otherCategory.trim())
-        ? form.otherCategory.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '')
-        : form.category
-      let brandToSend = form.brand === 'Others' ? (form.brandCustom || '') : form.brand
-      let modelToSend = form.model === 'Others' ? (form.modelCustom || '') : form.model
-      const payload = {
-        ...form,
-        category: categoryToSend === 'other' ? 'others' : categoryToSend,
-        brand: brandToSend || form.brand,
-        model: modelToSend || form.model,
-        estimatedValue: form.estimatedValue ? parseFloat(form.estimatedValue) : null,
-        purchaseDate: form.purchaseDate || null,
-        userId: user?.id,
+      const payload: Record<string, unknown> = {
+        category: form.category === 'other' ? 'others' : form.category,
+        brand, model,
+        imei: cat.id === 'imei' ? cleanId(form.imei) : undefined,
+        serial: form.serial ? cleanId(form.serial) : undefined,
+        vin: cat.id === 'vin' ? cleanId(form.vin) : undefined,
+        licensePlate: form.licensePlate.trim() || undefined,
+        engineNumber: form.engineNumber.trim() || undefined,
+        year: form.year || undefined,
+        certificateNumber: form.certificateNumber ? cleanId(form.certificateNumber) : undefined,
+        material: form.material.trim() || undefined,
+        color: form.color.trim() || undefined,
+        storageCapacity: form.storage || undefined,
+        estimatedValue: form.estimatedValue ? Number(form.estimatedValue) : undefined,
+        description: [form.category === 'other' ? form.otherCategory.trim() : '', form.description.trim()].filter(Boolean).join(': ') || undefined,
+        notes: form.notes.trim() || undefined,
       }
-      await apiClient.devices.create(payload)
-      showSuccess('Device registered successfully')
-      setForm(initialState); setStep(1)
+      const created = await apiClient.devices.create(payload)
+      const deviceId = created?.id || created?.data?.id
+      if (proof && deviceId) {
+        try {
+          await apiClient.ownership.submitProof(deviceId, proof)
+        } catch (e: any) {
+          showError('Item registered, but the proof did not upload', e?.message || 'You can add it from the item page.')
+        }
+      }
+      showSuccess('Item registered', 'Check your email to confirm it.')
+      navigate(deviceId ? `/device/${deviceId}?new=1` : '/my-devices')
     } catch (err: any) {
-      showError(err?.message || 'Registration failed')
+      if (err?.status === 409 && err?.data?.canClaim) {
+        setTaken(identifier)
+        setStep(2)
+      } else {
+        showError('Could not register', err?.message)
+        if (/IMEI/i.test(err?.message || '')) { setErrors({ imei: err.message }); setStep(2) }
+        else if (/VIN/i.test(err?.message || '')) { setErrors({ vin: err.message }); setStep(2) }
+        else if (/serial/i.test(err?.message || '')) { setErrors({ serial: err.message }); setStep(2) }
+      }
     } finally { setSubmitting(false) }
   }
 
+  const field = (k: keyof Form, label: string, opts: { required?: boolean; help?: string; placeholder?: string; mono?: boolean; inputMode?: 'numeric' | 'text'; maxLength?: number; span?: boolean; upper?: boolean } = {}) => (
+    <div className={`po-field ${opts.span ? 'po-span-2' : ''}`}>
+      <label className="po-label" htmlFor={`reg-${k}`}>{label}{opts.required ? '' : <span className="po-optional"> (optional)</span>}</label>
+      <input id={`reg-${k}`} className={`modern-input ${opts.mono ? 'po-mono' : ''} ${errors[k] ? 'is-invalid' : ''}`} value={form[k]}
+        inputMode={opts.inputMode} maxLength={opts.maxLength} placeholder={opts.placeholder} autoComplete="off"
+        aria-invalid={!!errors[k]} aria-describedby={`reg-${k}-help`}
+        onChange={(e) => set(k, opts.upper ? e.target.value.toUpperCase() : e.target.value)} />
+      <p id={`reg-${k}-help`} className={errors[k] ? 'po-error' : 'po-help'}>{errors[k] || opts.help || ''}</p>
+    </div>
+  )
+
   return (
     <Layout requireAuth>
-      <div className="container-fluid">
-        <div className="row mb-4">
-          <div className="col-12">
-            <div className="page-header">
-              <div className="d-flex align-items-center gap-3">
-                <div className="d-flex align-items-center justify-content-center rounded-circle" style={{ width: 48, height: 48, background: 'linear-gradient(135deg, var(--primary-500), var(--primary-700))' }}>
-                  <Plus size={24} className="text-white" />
+      <div className="po-page po-narrow">
+        <h1 className="po-hello">Register an item</h1>
+
+        <ol className="po-stepper" aria-label="Registration steps">
+          {STEPS.map((s, i) => (
+            <li key={s} className={step > i + 1 ? 'is-done' : step === i + 1 ? 'is-current' : ''} aria-current={step === i + 1 ? 'step' : undefined}>
+              <span className="po-step-dot">{i + 1}</span><span className="po-step-label">{s}</span>
+            </li>
+          ))}
+        </ol>
+
+        <section className="po-card po-reg">
+          {step === 1 && (
+            <>
+              <h2 className="po-panel-title">What are you registering?</h2>
+              <div className="po-cat-grid" role="radiogroup" aria-label="Item type">
+                {(showAllCats ? DEVICE_CATEGORIES : DEVICE_CATEGORIES.filter((c) => MAIN_CATS.includes(c.value))).map((c) => {
+                  const Icon = c.icon
+                  const active = form.category === c.value
+                  return (
+                    <button key={c.value} type="button" role="radio" aria-checked={active} className={`po-cat ${active ? 'is-selected' : ''}`}
+                      onClick={() => { setForm({ ...initial, category: c.value }); setErrors({}); setProof(null); setStep(2) }}>
+                      <Icon size={26} aria-hidden="true" />
+                      <span>{c.label}</span>
+                    </button>
+                  )
+                })}
+                {!showAllCats && (
+                  <button type="button" className="po-cat po-cat-more" onClick={() => setShowAllCats(true)}>
+                    <Package size={26} aria-hidden="true" />
+                    <span>More types</span>
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+
+          {step === 2 && cat && (
+            <>
+              <div className="po-panel-head">
+                <h2 className="po-panel-title"><cat.icon size={20} aria-hidden="true" /> {cat.label} details</h2>
+                <button type="button" className="po-btn po-btn-ghost po-btn-sm" onClick={() => setStep(1)}>Change type</button>
+              </div>
+
+              {taken && (
+                <div className="po-callout po-callout-warning" role="alert">
+                  <Scale size={20} aria-hidden="true" />
+                  <div>
+                    <strong>This item is already registered to another account.</strong>
+                    <p>If it's yours, you can claim it with proof — our team reviews both sides. If you bought it second-hand, ask the seller to transfer it to you instead.</p>
+                    <div className="po-actions po-actions-start">
+                      <Link to={`/claim?identifier=${encodeURIComponent(taken)}`} className="po-btn po-btn-primary po-btn-sm">Claim this item</Link>
+                      <Link to="/transfer?tab=receive" className="po-btn po-btn-secondary po-btn-sm">I have a transfer code</Link>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <h1>Register a Device</h1>
-                  <p>Add your device to the registry</p>
+              )}
+
+              <div className="po-form-grid">
+                {form.category === 'other' && field('otherCategory', 'What kind of item?', { required: true, placeholder: 'e.g. Generator, Drone, CCTV camera', span: true })}
+
+                <div className="po-field">
+                  <label className="po-label" htmlFor="reg-brand">Brand</label>
+                  {brands.length ? (
+                    <select id="reg-brand" className={`modern-select ${errors.brand ? 'is-invalid' : ''}`} value={form.brand} onChange={(e) => { set('brand', e.target.value); set('model', '') }}>
+                      <option value="">Choose brand</option>
+                      {brands.map((b) => <option key={b} value={b}>{b === 'Others' ? 'Another brand' : b}</option>)}
+                    </select>
+                  ) : (
+                    <input id="reg-brand" className={`modern-input ${errors.brand ? 'is-invalid' : ''}`} value={form.brand} onChange={(e) => set('brand', e.target.value)} placeholder={form.category === 'jewelry' ? 'Maker or jeweller' : 'Brand'} />
+                  )}
+                  {form.brand === 'Others' && <input aria-label="Brand name" className="modern-input mt-2" value={form.brandCustom} onChange={(e) => set('brandCustom', e.target.value)} placeholder="Type the brand" />}
+                  <p className={errors.brand ? 'po-error' : 'po-help'}>{errors.brand || ''}</p>
+                </div>
+
+                <div className="po-field">
+                  <label className="po-label" htmlFor="reg-model">Model</label>
+                  {models.length && form.brand !== 'Others' ? (
+                    <select id="reg-model" className={`modern-select ${errors.model ? 'is-invalid' : ''}`} value={form.model} onChange={(e) => set('model', e.target.value)} disabled={!form.brand}>
+                      <option value="">{form.brand ? 'Choose model' : 'Choose a brand first'}</option>
+                      {models.map((m) => <option key={m} value={m}>{m === 'Others' ? 'Another model' : m}</option>)}
+                    </select>
+                  ) : (
+                    <input id="reg-model" className={`modern-input ${errors.model ? 'is-invalid' : ''}`} value={form.model === 'Others' ? '' : form.model} onChange={(e) => set('model', e.target.value)} placeholder={form.category === 'jewelry' ? 'e.g. Gold necklace' : 'Model'} />
+                  )}
+                  {form.model === 'Others' && models.length > 0 && <input aria-label="Model name" className="modern-input mt-2" value={form.modelCustom} onChange={(e) => set('modelCustom', e.target.value)} placeholder="Type the model" />}
+                  <p className={errors.model ? 'po-error' : 'po-help'}>{errors.model || ''}</p>
+                </div>
+
+                {cat.id === 'imei' && field('imei', 'IMEI', { required: true, mono: true, inputMode: 'numeric', maxLength: 17, placeholder: '15 digits', help: ID_HELP[form.category] })}
+                {cat.id === 'vin' && field('vin', 'VIN (chassis number)', { required: true, mono: true, upper: true, maxLength: 17, placeholder: '17 characters', help: ID_HELP[form.category] })}
+                {cat.id === 'serial' && field('serial', 'Serial number', { required: true, mono: true, upper: true, maxLength: 30, help: ID_HELP[form.category] || DEFAULT_SERIAL_HELP })}
+                {cat.id === 'vin' && field('licensePlate', 'Plate number', { upper: true, maxLength: 10, placeholder: 'e.g. LND 123 AB' })}
+
+                {cat.id === 'description' && <>
+                  <div className="po-field po-span-2">
+                    <label className="po-label" htmlFor="reg-description">Description</label>
+                    <textarea id="reg-description" className={`modern-textarea ${errors.description ? 'is-invalid' : ''}`} rows={3} value={form.description} onChange={(e) => set('description', e.target.value)}
+                      placeholder={form.category === 'jewelry' ? 'e.g. 18k gold ring, small sapphire, "A&T 2019" engraved inside' : 'Marks, engravings, size — anything that makes it recognisable'} />
+                    <p className={errors.description ? 'po-error' : 'po-help'}>{errors.description || 'Engravings, marks and sizes help prove it is yours.'}</p>
+                  </div>
+                  {form.category === 'jewelry'
+                    ? <>{field('certificateNumber', 'Certificate / appraisal number', { mono: true, upper: true, maxLength: 20 })}{field('material', 'Material', { placeholder: 'e.g. 18k gold' })}</>
+                    : field('serial', 'Serial number', { mono: true, upper: true, maxLength: 30, help: DEFAULT_SERIAL_HELP })}
+                </>}
+
+              </div>
+
+              {!moreDetails ? (
+                <button type="button" className="po-btn po-btn-ghost po-btn-sm po-more-toggle" onClick={() => setMoreDetails(true)}>
+                  <Plus size={16} aria-hidden="true" /> Add more details (optional)
+                </button>
+              ) : (
+              <div className="po-form-grid">
+                {cat.id === 'imei' && field('serial', 'Serial number', { mono: true, upper: true, maxLength: 30 })}
+                {cat.id === 'vin' && field('engineNumber', 'Engine number', { mono: true, upper: true, maxLength: 50 })}
+                {cat.id === 'vin' && field('year', 'Year', { inputMode: 'numeric', maxLength: 4, placeholder: 'e.g. 2018' })}
+                {field('color', 'Colour', { placeholder: 'e.g. Black' })}
+                {cat.storage && (
+                  <div className="po-field">
+                    <label className="po-label" htmlFor="reg-storage">Storage<span className="po-optional"> (optional)</span></label>
+                    <select id="reg-storage" className="modern-select" value={form.storage} onChange={(e) => set('storage', e.target.value)}>
+                      <option value="">Choose</option>
+                      {['32GB', '64GB', '128GB', '256GB', '512GB', '1TB', '2TB'].map((s) => <option key={s} value={s}>{s.replace('GB', ' GB').replace('TB', ' TB')}</option>)}
+                    </select>
+                    <p className="po-help" />
+                  </div>
+                )}
+                <div className="po-field">
+                  <label className="po-label" htmlFor="reg-value">Estimated value<span className="po-optional"> (optional)</span></label>
+                  <div className="po-input-prefix"><span aria-hidden="true">₦</span>
+                    <input id="reg-value" className="modern-input" inputMode="numeric" value={form.estimatedValue} onChange={(e) => set('estimatedValue', e.target.value.replace(/[^\d]/g, ''))} placeholder="0" />
+                  </div>
+                  <p className="po-help" />
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
+              )}
 
-        <div className="row justify-content-center">
-          <div className="col-lg-8">
-            <div className="modern-card p-4 p-md-5">
-              <div className="d-flex justify-content-between mb-5">
-                <div className="d-flex align-items-center gap-2" style={{ color: step >= 1 ? 'var(--primary-600)' : 'var(--text-secondary)' }}>
-                  <div className="d-flex align-items-center justify-content-center rounded-circle" style={{ width: 32, height: 32, background: step >= 1 ? 'var(--primary-600)' : 'var(--gray-200)', color: step >= 1 ? '#fff' : 'var(--text-secondary)' }}>1</div>
-                  <span className="fw-medium">Category</span>
-                </div>
-                <div style={{ flex: 1, height: 2, background: step >= 2 ? 'var(--primary-600)' : 'var(--gray-200)', margin: '0 12px', alignSelf: 'center' }} />
-                <div className="d-flex align-items-center gap-2" style={{ color: step >= 2 ? 'var(--primary-600)' : 'var(--text-secondary)' }}>
-                  <div className="d-flex align-items-center justify-content-center rounded-circle" style={{ width: 32, height: 32, background: step >= 2 ? 'var(--primary-600)' : 'var(--gray-200)', color: step >= 2 ? '#fff' : 'var(--text-secondary)' }}>2</div>
-                  <span className="fw-medium">Details</span>
-                </div>
-                <div style={{ flex: 1, height: 2, background: step >= 3 ? 'var(--primary-600)' : 'var(--gray-200)', margin: '0 12px', alignSelf: 'center' }} />
-                <div className="d-flex align-items-center gap-2" style={{ color: step >= 3 ? 'var(--primary-600)' : 'var(--text-secondary)' }}>
-                  <div className="d-flex align-items-center justify-content-center rounded-circle" style={{ width: 32, height: 32, background: step === 3 ? 'var(--primary-600)' : 'var(--gray-200)', color: step >= 3 ? '#fff' : 'var(--text-secondary)' }}>3</div>
-                  <span className="fw-medium">Confirm</span>
-                </div>
+              <div className="po-actions po-actions-between">
+                <button type="button" className="po-btn po-btn-secondary" onClick={() => setStep(1)}><ArrowLeft size={16} aria-hidden="true" /> Back</button>
+                <button type="button" className="po-btn po-btn-primary" onClick={() => { if (validateDetails()) setStep(3) }}>Next <ArrowRight size={16} aria-hidden="true" /></button>
               </div>
+            </>
+          )}
 
-              <form onSubmit={handleSubmit}>
-                {step === 1 && (
-                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-                    <h4 className="mb-4">What type of device are you registering?</h4>
-                    <div className="row g-3">
-                      {DEVICE_CATEGORIES.map(cat => {
-                        const Icon = cat.icon
-                        const active = form.category === cat.value
-                        return (
-                          <div className="col-6 col-md-4 col-lg-3" key={cat.value}>
-                            <button type="button" onClick={() => update('category', cat.value)}
-                              className={`d-flex flex-column align-items-center gap-2 w-100 p-4 rounded-3 border ${active ? 'border-primary' : ''}`}
-                              style={{ background: active ? 'var(--primary-50)' : 'var(--gray-50)', transition: 'all 0.2s', cursor: 'pointer', borderColor: active ? 'var(--primary-500)' : 'var(--border-color)' }}>
-                              <Icon size={32} style={{ color: active ? 'var(--primary-600)' : 'var(--text-secondary)' }} />
-                              <span className="fw-medium text-center" style={{ fontSize: 12, color: active ? 'var(--primary-700)' : 'var(--text-primary)' }}>{cat.label}</span>
-                            </button>
-                          </div>
-                        )
-                      })}
-                    </div>
-                    {form.category === 'other' && (
-                      <div className="mt-3">
-                        <label className="form-label">Specify device type *</label>
-                        <input className="modern-input" placeholder="e.g. Generator, Drone, CCTV, Power Bank, GPS Tracker" value={form.otherCategory} onChange={e => update('otherCategory', e.target.value)} />
-                      </div>
-                    )}
-                    <div className="mt-4 text-end">
-                      <button type="button" className="btn-gradient-primary" onClick={() => setStep(2)} disabled={form.category === 'other' && !form.otherCategory.trim()}>Next Step</button>
-                    </div>
-                  </motion.div>
-                )}
+          {step === 3 && cat && (
+            <>
+              <h2 className="po-panel-title"><ShieldCheck size={20} aria-hidden="true" /> Add proof of ownership <span className="po-optional">(recommended)</span></h2>
+              <p className="po-muted">Our team checks it and marks you as the <strong>verified owner</strong>. Buyers trust verified items, and only verified owners can sell on the marketplace. You can also add it later.</p>
+              {proof ? (
+                <div className="po-callout po-callout-success">
+                  <ShieldCheck size={20} aria-hidden="true" />
+                  <div>
+                    <strong>{proofTypes.find((t) => t.key === proof.proofType)?.label || 'Proof'} attached</strong>
+                    <p>{proof.file.name} will be sent with the registration.</p>
+                    <button type="button" className="po-btn po-btn-ghost po-btn-sm" onClick={() => setProof(null)}>Use a different file</button>
+                  </div>
+                </div>
+              ) : proofTypes.length > 0 ? (
+                <ProofPicker types={proofTypes} submitLabel="Attach and continue" onSubmit={(p) => { setProof(p); setStep(4) }} />
+              ) : <p className="po-muted">Loading proof options…</p>}
+              <div className="po-actions po-actions-between">
+                <button type="button" className="po-btn po-btn-secondary" onClick={() => setStep(2)}><ArrowLeft size={16} aria-hidden="true" /> Back</button>
+                <button type="button" className="po-btn po-btn-ghost" onClick={() => setStep(4)}>{proof ? 'Continue' : 'Skip for now'} <ArrowRight size={16} aria-hidden="true" /></button>
+              </div>
+            </>
+          )}
 
-                {step === 2 && (
-                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-                    <h4 className="mb-4">Device Information</h4>
-                    <div style={{fontSize:12,color:'var(--text-tertiary)',marginBottom:12}}><span style={{color:'red'}}>*</span> Required fields</div>
-                    <div className="row g-3">
-                      <div className="col-md-6">
-                        <label className="form-label">Brand *</label>
-                        {(form.category === 'other' || form.category === 'others') ? (
-                          <input className="modern-input" placeholder="Enter brand" value={form.brand} onChange={e => update('brand', e.target.value)} required />
-                        ) : (
-                          <select className="modern-select" value={form.brand} onChange={e => { update('brand', e.target.value); update('model', ''); }} required>
-                            <option value="">Select brand</option>
-                            {getBrands(form.category).map(b => <option key={b} value={b}>{b}</option>)}
-                          </select>
-                        )}
-                        {!(['other','others'].includes(form.category)) && form.brand === 'Others' && (
-                          <input className="modern-input mt-2" placeholder="Enter custom brand" value={form.brandCustom || ''} onChange={e => { setForm(p => ({ ...p, brandCustom: e.target.value, brand: e.target.value })); }} />
-                        )}
-                      </div>
-                      <div className="col-md-6">
-                        <label className="form-label">Model *</label>
-                        {(form.category === 'other' || form.category === 'others') ? (
-                          <input className="modern-input" placeholder="Enter model" value={form.model} onChange={e => update('model', e.target.value)} required />
-                        ) : (
-                          <select className="modern-select" value={form.model} onChange={e => { if (e.target.value === 'Others') { update('model', 'Others'); } else { update('model', e.target.value); } }} required disabled={!form.brand || form.brand === 'Others'}>
-                            <option value="">Select model</option>
-                            {form.brand && form.brand !== 'Others' && getModels(form.category, form.brand).map(m => <option key={m} value={m}>{m}</option>)}
-                          </select>
-                        )}
-                        {!(['other','others'].includes(form.category)) && form.model === 'Others' && (
-                          <input className="modern-input mt-2" placeholder="Enter custom model" value={form.modelCustom || ''} onChange={e => { setForm(p => ({ ...p, modelCustom: e.target.value, model: e.target.value })); }} />
-                        )}
-                      </div>
-                      <div className="col-md-6">
-                        <label className="form-label">IMEI/Serial/ID <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
-                        <input className="modern-input" placeholder="Unique identifier (IMEI, Serial, VIN, etc.)" value={form.imei} onChange={e => update('imei', e.target.value)} />
-                      </div>
-                      <div className="col-md-6">
-                        <label className="form-label">Serial Number <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
-                        <input className="modern-input" placeholder="Serial number" value={form.serial} onChange={e => update('serial', e.target.value)} />
-                      </div>
-                      <div className="col-md-4">
-                        <label className="form-label">Color <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
-                        <input className="modern-input" placeholder="e.g. Space Gray" value={form.color} onChange={e => update('color', e.target.value)} />
-                      </div>
-                      <div className="col-md-4">
-                        <label className="form-label">Storage <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
-                        <select className="modern-select" value={form.storage} onChange={e => update('storage', e.target.value)}>
-                          <option value="">Select</option>
-                          <option value="16GB">16 GB</option>
-                          <option value="32GB">32 GB</option>
-                          <option value="64GB">64 GB</option>
-                          <option value="128GB">128 GB</option>
-                          <option value="256GB">256 GB</option>
-                          <option value="512GB">512 GB</option>
-                          <option value="1TB">1 TB</option>
-                          <option value="2TB">2 TB</option>
-                        </select>
-                      </div>
-                      <div className="col-md-4">
-                        <label className="form-label">Estimated Value ($) <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
-                        <input type="number" className="modern-input" placeholder="0.00" value={form.estimatedValue} onChange={e => update('estimatedValue', e.target.value)} />
-                      </div>
-                      <div className="col-md-6">
-                        <label className="form-label">Purchase Date <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
-                        <input type="date" className="modern-input" value={form.purchaseDate} onChange={e => update('purchaseDate', e.target.value)} />
-                      </div>
-                      {(form.category === 'other' || form.category === 'others') && (
-                        <div className="col-12">
-                          <label className="form-label">Description *</label>
-                          <textarea className="modern-textarea" rows={2} placeholder="Describe your device (e.g. brand, model, physical characteristics, unique features)" value={form.description} onChange={e => update('description', e.target.value)} required />
-                        </div>
-                      )}
-                      <div className="col-12">
-                        <label className="form-label">Additional Notes <span style={{color:'var(--text-secondary)',fontSize:'0.85em'}}>(optional)</span></label>
-                        <textarea className="modern-textarea" rows={3} placeholder="Any additional details..." value={form.notes} onChange={e => update('notes', e.target.value)} />
-                      </div>
-                    </div>
-                    <div className="mt-4 d-flex justify-content-between">
-                      <button type="button" className="btn-ghost" onClick={() => setStep(1)}>Back</button>
-                      <button type="button" className="btn-gradient-primary" onClick={() => {
-                        if ((form.category === 'other' || form.category === 'others') && !form.description.trim()) {
-                          showError('Description is required for this device type')
-                          return
-                        }
-                        if (!form.brand || !form.model) {
-                          showError('Brand and model are required')
-                          return
-                        }
-                        setStep(3)
-                      }}>Review & Confirm</button>
-                    </div>
-                  </motion.div>
-                )}
-
-                {step === 3 && (
-                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-                    <div className="d-flex align-items-center gap-3 mb-4">
-                      <Shield size={24} className="text-success" />
-                      <h4 className="mb-0">Confirm Registration</h4>
-                    </div>
-                    <div className="modern-card p-4" style={{ backgroundColor: 'var(--gray-50)' }}>
-                      <div className="row g-3" style={{ fontSize: 14 }}>
-                        <div className="col-md-6"><strong>Category:</strong> {form.category === 'other' ? (form.otherCategory || 'Other') : (DEVICE_CATEGORIES.find(c => c.value === form.category)?.label || form.category)}</div>
-                        <div className="col-md-6"><strong>Brand:</strong> {form.brand}</div>
-                        <div className="col-md-6"><strong>Model:</strong> {form.model}</div>
-                        <div className="col-md-6"><strong>IMEI:</strong> {form.imei || '—'}</div>
-                        <div className="col-md-6"><strong>Serial:</strong> {form.serial || '—'}</div>
-                        <div className="col-md-6"><strong>Color:</strong> {form.color || '—'}</div>
-                        <div className="col-md-6"><strong>Storage:</strong> {form.storage || '—'}</div>
-                        <div className="col-md-6"><strong>Value:</strong> {form.estimatedValue ? `$${form.estimatedValue}` : '—'}</div>
-                        <div className="col-md-6"><strong>Purchase Date:</strong> {form.purchaseDate || '—'}</div>
-                        {(form.category === 'other' || form.category === 'others') && <div className="col-12"><strong>Description:</strong> {form.description || '—'}</div>}
-                        <div className="col-12"><strong>Notes:</strong> {form.notes || '—'}</div>
-                      </div>
-                    </div>
-                    <div className="mt-4 d-flex justify-content-between">
-                      <button type="button" className="btn-ghost" onClick={() => setStep(2)}>Back</button>
-                      <button type="submit" className="btn-gradient-primary d-flex align-items-center gap-2" disabled={submitting}>
-                        {submitting ? <Loader2 size={18} className="spinner-border" /> : <Plus size={18} />}
-                        {submitting ? 'Registering...' : 'Complete Registration'}
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-              </form>
-            </div>
-          </div>
-        </div>
-        <ToastContainer toasts={toasts} onRemove={removeToast} />
+          {step === 4 && cat && (
+            <>
+              <h2 className="po-panel-title">Check and register</h2>
+              <dl className="po-dl">
+                <div><dt>Type</dt><dd>{form.category === 'other' ? form.otherCategory : cat.label}</dd></div>
+                <div><dt>Item</dt><dd>{brand} {model}</dd></div>
+                {form.imei && <div><dt>IMEI</dt><dd className="po-mono">{cleanId(form.imei)}</dd></div>}
+                {form.vin && <div><dt>VIN</dt><dd className="po-mono">{cleanId(form.vin)}</dd></div>}
+                {form.serial && <div><dt>Serial</dt><dd className="po-mono">{cleanId(form.serial)}</dd></div>}
+                {form.licensePlate && <div><dt>Plate</dt><dd>{form.licensePlate}</dd></div>}
+                {form.certificateNumber && <div><dt>Certificate</dt><dd className="po-mono">{cleanId(form.certificateNumber)}</dd></div>}
+                {form.color && <div><dt>Colour</dt><dd>{form.color}</dd></div>}
+                {form.storage && <div><dt>Storage</dt><dd>{form.storage}</dd></div>}
+                {form.estimatedValue && <div><dt>Value</dt><dd>₦{Number(form.estimatedValue).toLocaleString('en-NG')}</dd></div>}
+                <div><dt>Proof</dt><dd>{proof ? proofTypes.find((t) => t.key === proof.proofType)?.label : 'Not added — you can add it later'}</dd></div>
+              </dl>
+              {form.description && <p className="po-muted">{form.description}</p>}
+              <div className="po-field mt-3">
+                <label className="po-label" htmlFor="reg-notes">Private notes<span className="po-optional"> (optional, only you see these)</span></label>
+                <textarea id="reg-notes" className="modern-textarea" rows={2} value={form.notes} onChange={(e) => set('notes', e.target.value)} />
+              </div>
+              <p className="po-help">By registering you confirm this item is yours. False registrations are logged.</p>
+              <div className="po-actions po-actions-between">
+                <button type="button" className="po-btn po-btn-secondary" onClick={() => setStep(3)}><ArrowLeft size={16} aria-hidden="true" /> Back</button>
+                <button type="button" className="po-btn po-btn-primary" onClick={submit} disabled={submitting}>
+                  {submitting ? <Loader2 size={18} className="po-spin" aria-hidden="true" /> : <Plus size={18} aria-hidden="true" />}
+                  {submitting ? 'Registering…' : 'Register item'}
+                </button>
+              </div>
+            </>
+          )}
+        </section>
       </div>
     </Layout>
   )

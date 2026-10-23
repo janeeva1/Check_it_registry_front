@@ -98,6 +98,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = () => {
+    // Tell the server so the token stops working everywhere (fire-and-forget)
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      fetch(`${API_URL}/auth/logout`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+    }
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user_data');
     setUser(null);

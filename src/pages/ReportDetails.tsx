@@ -1,194 +1,83 @@
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { AlertTriangle, Smartphone, MapPin, Clock, User, FileText, ArrowLeft, Loader2, ExternalLink, Shield } from 'lucide-react'
+// One theft / loss report: status, item, police contact, history.
+import { useEffect, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ArrowLeft, Loader2, Phone, Mail } from 'lucide-react'
 import { Layout } from '../components/Layout'
-import { useAuth } from '../contexts/AuthContext'
-import { useToast, ToastContainer } from '../components/Toast'
-import { useParams, useNavigate, Link } from 'react-router-dom'
-import { getDisplayName, getUserInitials } from '../utils/userHelpers'
+import { REPORT_STATUS } from './ReportsV2'
 
-type Report = {
-  id: string
-  type: string
-  status: string
-  description: string
-  location: string
-  created_at: string
-  updated_at: string
-  device?: { id: string; brand: string; model: string; imei: string; serial: string }
-  reporter?: { id: string; name: string; email: string; first_name?: string; middle_name?: string; last_name?: string }
-}
+const API = import.meta.env.VITE_API_URL || '/api'
 
 export default function ReportDetails() {
-  const { id } = useParams<{ id: string }>()
+  const { caseId } = useParams<{ caseId: string }>()
   const navigate = useNavigate()
-  const { user: _user } = useAuth()
-  const { toasts, removeToast, showError: _showError } = useToast()
-  const [report, setReport] = useState<Report | null>(null)
+  const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    const fetchReport = async () => {
-      if (!id) return
-      try {
-        setLoading(true)
-        const token = localStorage.getItem('auth_token')
-        const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/reports/${id}`, { headers: { Authorization: `Bearer ${token}` } })
-        if (!res.ok) throw new Error('Report not found')
-        const data = await res.json()
-        setReport(data.data || data)
-      } catch { setReport(null) }
-      finally { setLoading(false) }
-    }
-    fetchReport()
-  }, [id])
+    if (!caseId) return
+    fetch(`${API}/user-portal/reports/${encodeURIComponent(caseId)}`, { headers: { Authorization: `Bearer ${localStorage.getItem('auth_token') || ''}` } })
+      .then(async (r) => { const b = await r.json().catch(() => ({})); if (!r.ok) throw new Error(b.error || 'Report not found'); return b })
+      .then((b) => setData(b?.data || null))
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false))
+  }, [caseId])
 
-  const statusBadge = (s?: string) => {
-    const map: Record<string, string> = { open: 'status-pending', investigating: 'status-unverified', resolved: 'status-verified', closed: 'status-found', dismissed: 'status-stolen' }
-    return <span className={`status-badge ${map[(s || '').toLowerCase()] || ''}`}>{(s || 'Unknown').charAt(0).toUpperCase() + (s || 'Unknown').slice(1)}</span>
-  }
-
-  const typeIcon = (t?: string) => {
-    const tl = (t || '').toLowerCase()
-    if (tl === 'stolen') return { icon: AlertTriangle, color: 'var(--danger-500)', bg: 'var(--danger-50)' }
-    if (tl === 'lost') return { icon: AlertTriangle, color: 'var(--warning-500)', bg: 'var(--warning-50)' }
-    if (tl === 'found') return { icon: Shield, color: 'var(--success-500)', bg: 'var(--success-50)' }
-    return { icon: FileText, color: 'var(--primary-600)', bg: 'var(--primary-50)' }
-  }
-
-  if (loading) {
-    return (
-      <Layout requireAuth>
-        <div className="container-fluid">
-          <div className="row justify-content-center py-4">
-            <div className="col-lg-8"><div className="modern-card p-5 text-center"><Loader2 size={32} className="spinner-border" style={{ color: 'var(--primary-600)' }} /></div></div>
-          </div>
-        </div>
-      </Layout>
-    )
-  }
-
-  if (!report) {
-    return (
-      <Layout requireAuth>
-        <div className="container-fluid">
-          <div className="row justify-content-center py-4">
-            <div className="col-lg-8">
-              <div className="modern-card p-5 text-center">
-                <div className="empty-state"><div className="empty-state-icon"><AlertTriangle size={48} /></div><h3>Report Not Found</h3><p>The report you're looking for doesn't exist</p><Link to="/reports" className="btn-gradient-primary mt-3">View All Reports</Link></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Layout>
-    )
-  }
-
-  const ti = typeIcon(report.type)
+  const r = data?.report
+  const [label, tone] = r ? (REPORT_STATUS[r.status] || [r.status, 'neutral']) : ['', 'neutral']
 
   return (
     <Layout requireAuth>
-      <div className="container-fluid">
-        <div className="row mb-4">
-          <div className="col-12">
-            <div className="page-header">
-              <div className="d-flex align-items-center gap-3">
-                <button className="btn-ghost d-inline-flex align-items-center gap-2" onClick={() => navigate(-1)}><ArrowLeft size={18} /> Back</button>
-                <div className="d-flex align-items-center justify-content-center rounded-circle" style={{ width: 48, height: 48, background: ti.bg }}>
-                  <ti.icon size={24} style={{ color: ti.color }} />
-                </div>
-                <div>
-                  <h1>Report Details</h1>
-                  <p style={{ textTransform: 'capitalize' }}>{report.type} Report &middot; {report.id.slice(0, 8)}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="po-page po-single">
+        <button className="po-back" onClick={() => navigate(-1)}><ArrowLeft size={18} aria-hidden="true" /> Back</button>
+        {loading ? <div className="po-center py-5"><Loader2 size={28} className="po-spin" aria-label="Loading" /></div>
+          : error || !r ? (
+            <div className="po-card"><p className="po-error">{error || 'Report not found'}</p><Link to="/reports" className="po-link">All my reports</Link></div>
+          ) : (
+            <>
+              <h1 className="po-hello" style={{ marginBottom: 6 }}>{[r.brand, r.model].filter(Boolean).join(' ') || 'Item'} — {r.report_type}</h1>
+              <p className="mb-3"><span className={`po-badge po-badge-${tone}`}>{label}</span></p>
 
-        <div className="row g-4">
-          <div className="col-lg-7">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-              <div className="modern-card p-4 mb-4">
-                <h5 className="mb-4">Device Information</h5>
-                {report.device ? (
-                  <div className="d-flex align-items-center gap-3">
-                    <div className="avatar avatar-lg" style={{ background: 'var(--primary-50)' }}><Smartphone size={24} style={{ color: 'var(--primary-600)' }} /></div>
-                    <div>
-                      <p className="fw-semibold mb-1">{report.device.brand} {report.device.model}</p>
-                      <p style={{ color: 'var(--text-secondary)', fontSize: 13 }}>IMEI: {report.device.imei || '—'} &middot; Serial: {report.device.serial || '—'}</p>
-                      <Link to={`/device/${report.device.id}`} className="btn-ghost d-inline-flex align-items-center gap-1" style={{ fontSize: 13 }}><ExternalLink size={14} /> View Device</Link>
-                    </div>
+              <section className="po-card">
+                <dl className="po-rows">
+                  <div><dt>Case number</dt><dd className="po-mono">{r.case_id}</dd></div>
+                  {r.imei && <div><dt>IMEI</dt><dd className="po-mono">{r.imei}</dd></div>}
+                  {r.serial && <div><dt>Serial</dt><dd className="po-mono">{r.serial}</dd></div>}
+                  {r.occurred_at && <div><dt>When it happened</dt><dd>{new Date(r.occurred_at).toLocaleDateString()}</dd></div>}
+                  {r.location && <div><dt>Where</dt><dd>{r.location}</dd></div>}
+                  <div><dt>Reported</dt><dd>{new Date(r.created_at).toLocaleString()}</dd></div>
+                </dl>
+                {r.description && <p className="po-card-text">{r.description}</p>}
+              </section>
+
+              {r.agency_name && (
+                <section className="po-card">
+                  <h2 className="po-card-title">Police handling this</h2>
+                  <p className="po-card-text"><strong>{r.agency_name}</strong>{r.lea_address ? <><br />{r.lea_address}</> : null}</p>
+                  <div className="po-quiet-links">
+                    {r.lea_phone && <a href={`tel:${r.lea_phone}`}><Phone size={15} aria-hidden="true" /> {r.lea_phone}</a>}
+                    {r.lea_email && <a href={`mailto:${r.lea_email}`}><Mail size={15} aria-hidden="true" /> {r.lea_email}</a>}
                   </div>
-                ) : <p style={{ color: 'var(--text-secondary)' }}>No device information</p>}
-              </div>
-
-              <div className="modern-card p-4 mb-4">
-                <h5 className="mb-3">Description</h5>
-                <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7 }}>{report.description || 'No description provided'}</p>
-              </div>
-
-              {report.location && (
-                <div className="modern-card p-4">
-                  <h5 className="mb-3 d-flex align-items-center gap-2"><MapPin size={18} style={{ color: 'var(--danger-500)' }} /> Location</h5>
-                  <p style={{ color: 'var(--text-secondary)' }}>{report.location}</p>
-                </div>
+                </section>
               )}
-            </motion.div>
-          </div>
 
-          <div className="col-lg-5">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-              <div className="modern-card p-4 mb-4">
-                <h5 className="mb-3">Status</h5>
-                <div className="d-flex justify-content-between align-items-center mb-3">
-                  <span style={{ color: 'var(--text-secondary)' }}>Current Status</span>
-                  {statusBadge(report.status)}
-                </div>
-                <div className="d-flex justify-content-between align-items-center" style={{ fontSize: 14 }}>
-                  <span style={{ color: 'var(--text-secondary)' }}>Type</span>
-                  <span className="fw-medium text-capitalize">{report.type}</span>
-                </div>
-              </div>
-
-              <div className="modern-card p-4 mb-4">
-                <h5 className="mb-3">Timeline</h5>
-                <div className="d-flex align-items-center gap-3 mb-3">
-                  <div className="d-flex align-items-center justify-content-center rounded-circle" style={{ width: 36, height: 36, background: 'var(--danger-50)' }}>
-                    <FileText size={16} style={{ color: 'var(--danger-500)' }} />
-                  </div>
-                  <div>
-                    <p className="fw-medium mb-0" style={{ fontSize: 14 }}>Reported</p>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{new Date(report.created_at).toLocaleString()}</p>
-                  </div>
-                </div>
-                <div className="d-flex align-items-center gap-3">
-                  <div className="d-flex align-items-center justify-content-center rounded-circle" style={{ width: 36, height: 36, background: 'var(--primary-50)' }}>
-                    <Clock size={16} style={{ color: 'var(--primary-600)' }} />
-                  </div>
-                  <div>
-                    <p className="fw-medium mb-0" style={{ fontSize: 14 }}>Last Updated</p>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{new Date(report.updated_at || report.created_at).toLocaleString()}</p>
-                  </div>
-                </div>
-              </div>
-
-              {report.reporter && (
-                <div className="modern-card p-4">
-                  <h5 className="mb-3 d-flex align-items-center gap-2"><User size={18} style={{ color: 'var(--primary-600)' }} /> Reporter</h5>
-                  <div className="d-flex align-items-center gap-3">
-                    <div className="avatar" style={{ background: 'linear-gradient(135deg, var(--primary-400), var(--primary-600))' }}>{getUserInitials(report.reporter) || '?'}</div>
-                    <div>
-                      <p className="fw-medium mb-0">{getDisplayName(report.reporter) || 'Anonymous'}</p>
-                      <p style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{report.reporter.email}</p>
-                    </div>
-                  </div>
-                </div>
+              {(data.timeline || []).length > 0 && (
+                <section className="po-card">
+                  <h2 className="po-card-title">History</h2>
+                  <ul className="po-list w-100">
+                    {data.timeline.map((t: any, i: number) => (
+                      <li key={i} className="po-list-row">
+                        <div className="po-list-main">
+                          <strong>{String(t.action || '').replace(/_/g, ' ').toLowerCase().replace(/^\w/, (c: string) => c.toUpperCase())}</strong>
+                          <span className="po-muted">{new Date(t.created_at).toLocaleString()}</span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
               )}
-            </motion.div>
-          </div>
-        </div>
-        <ToastContainer toasts={toasts} onRemove={removeToast} />
+            </>
+          )}
       </div>
     </Layout>
   )

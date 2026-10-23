@@ -23,7 +23,7 @@ export default function BusinessRegister() {
     const e: Record<string, string> = {}
     if (!form.name || form.name.length < 2) e.name = 'Full name is required'
     if (!form.email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email)) e.email = 'Valid email is required'
-    if (!form.password || form.password.length < 6) e.password = 'Password must be at least 6 characters'
+    if (!form.password || form.password.length < 8 || !/[a-z]/.test(form.password) || !/[A-Z]/.test(form.password) || !/\d/.test(form.password)) e.password = 'Use at least 8 characters with an uppercase letter, a lowercase letter and a number'
     if (!form.businessName) e.businessName = 'Business name is required'
     if (!form.registrationNumber) e.registrationNumber = 'Registration number is required'
     if (!form.country) e.country = 'Country is required'

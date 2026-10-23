@@ -11,7 +11,12 @@
     "setup": "node setup.js",
     "server:dev": "cd server && npm run dev",
     "server:start": "cd server && npm start",
-    "server:install": "cd server && npm install"
+    "server:install": "cd server && npm install",
+    "test:e2e": "playwright test",
+    "test:e2e:flows": "playwright test --project=flows --project=flows-phone",
+    "test:e2e:screens": "playwright test --project=screens",
+    "test:e2e:report": "playwright show-report e2e/.report",
+    "test:all": "npm --prefix ../Check_it_registry_back run test:system && playwright test"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -31,6 +36,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
+    "@playwright/test": "^1.56.1",
     "@tailwindcss/forms": "^0.5.7",
     "@tailwindcss/typography": "^0.5.10",
     "@types/node": "^25.9.4",

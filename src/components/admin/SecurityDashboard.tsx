@@ -1,5 +1,6 @@
 // Security Dashboard - Advanced security monitoring and management
 import React, { useState, useEffect } from 'react'
+import { useToast } from '../Toast'
 import { motion } from 'framer-motion'
 import { 
   Shield, 
@@ -49,6 +50,7 @@ interface SecurityStats {
 }
 
 function SecurityDashboard() {
+  const { showError: toastError } = useToast()
   const [events, setEvents] = useState<SecurityEvent[]>([])
   const [stats, setStats] = useState<SecurityStats | null>(null)
   const [loading, setLoading] = useState(true)
@@ -172,7 +174,7 @@ function SecurityDashboard() {
       a.click()
       window.URL.revokeObjectURL(url)
     } catch (err) {
-      alert(`Error generating report: ${err instanceof Error ? err.message : 'Unknown error'}`)
+      toastError('Could not generate the report', err instanceof Error ? err.message : undefined)
     }
   }
 

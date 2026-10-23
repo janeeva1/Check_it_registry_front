@@ -65,7 +65,7 @@ export const Loading: React.FC<LoadingProps> = ({
           }}
         >
           <img 
-            src="/logo1.png" 
+            src="/logo-mark.png" 
             alt="Prove Ownership Device Registry" 
             style={{ 
               width: '100%', 

@@ -5,7 +5,8 @@ import path from 'path'
 import { visualizer } from 'rollup-plugin-visualizer'
 
 const serverEnv = dotenv.config({ path: path.resolve(__dirname, '../Check_it_registry_back/.env') })
-const backendPort = serverEnv.parsed?.PORT || process.env.PORT || '3006'
+// BACKEND_PORT lets the browser tests point the app at their own test server
+const backendPort = process.env.BACKEND_PORT || serverEnv.parsed?.PORT || process.env.PORT || '3006'
 const backendUrl = `http://localhost:${backendPort}`
 
 export default defineConfig({
@@ -34,6 +35,12 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
+        target: backendUrl,
+        changeOrigin: true,
+        secure: false,
+      },
+      // Uploaded photos are served by the backend too
+      '/uploads': {
         target: backendUrl,
         changeOrigin: true,
         secure: false,

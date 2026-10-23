@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Loader2, Shield, X, CreditCard } from 'lucide-react'
 import { apiClient } from '../lib/apiClient'
@@ -12,20 +12,30 @@ interface PaymentGateProps {
   onSuccess: (bypassToken: string) => void
 }
 
+// Fee keys always end in _fee on the server ('nin_verification' -> 'nin_verification_fee')
+const toFeeKey = (feeType: string) => (feeType.endsWith('_fee') ? feeType : `${feeType}_fee`)
+
 export function PaymentGate({ isOpen, onClose, feeType, feeLabel, description, onSuccess }: PaymentGateProps) {
   const [loading, setLoading] = useState(false)
   const [fee, setFee] = useState<{ amount: number; currency: string } | null>(null)
   const [fetchingFee, setFetchingFee] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [reference, setReference] = useState<string | null>(null)
+  const [payUrl, setPayUrl] = useState<string | null>(null)
+  const [checking, setChecking] = useState(false)
+  const onSuccessRef = useRef(onSuccess)
+  onSuccessRef.current = onSuccess
 
   useEffect(() => {
     if (!isOpen) return
+    setReference(null)
+    setPayUrl(null)
     ;(async () => {
       setFetchingFee(true)
       setError(null)
       try {
-        const data = await apiClient.revenue.getFee(feeType)
-        setFee({ amount: data.amount, currency: data.currency || 'NGN' })
+        const data = await apiClient.revenue.getFee(toFeeKey(feeType))
+        setFee({ amount: Number(data.amount) || 0, currency: data.currency || 'NGN' })
       } catch {
         setError('Unable to load fee information')
       } finally {
@@ -34,21 +44,67 @@ export function PaymentGate({ isOpen, onClose, feeType, feeLabel, description, o
     })()
   }, [isOpen, feeType])
 
+  // While the Paystack tab is open, check every 5 s whether the payment landed
+  useEffect(() => {
+    if (!isOpen || !reference) return
+    let stopped = false
+    const started = Date.now()
+    const timer = window.setInterval(async () => {
+      if (stopped || Date.now() - started > 10 * 60 * 1000) { window.clearInterval(timer); return }
+      try {
+        const res = await apiClient.revenue.verifyInvoice(reference)
+        if (res && res.paid && !stopped) {
+          stopped = true
+          window.clearInterval(timer)
+          onSuccessRef.current(reference)
+        }
+      } catch { /* keep waiting */ }
+    }, 5000)
+    return () => { stopped = true; window.clearInterval(timer) }
+  }, [isOpen, reference])
+
+  // Step 1: create the invoice on the server and open Paystack in a new tab
   const handlePayProceed = async () => {
     setLoading(true)
     setError(null)
     try {
       const invoice = await apiClient.revenue.createInvoice({
-        fee_type: feeType,
-        amount: fee?.amount || 0,
-        currency: fee?.currency || 'NGN',
+        fee_type: toFeeKey(feeType),
         description: `${feeLabel} - ${description}`,
       })
-      onSuccess(invoice.invoice_id || invoice.reference || 'bypass')
+      if (invoice && invoice.requiresPayment === false) {
+        onSuccess('')
+        return
+      }
+      if (!invoice?.authorization_url || !invoice?.reference) {
+        throw new Error('Could not start the payment. Please try again.')
+      }
+      setReference(invoice.reference)
+      setPayUrl(invoice.authorization_url)
+      window.open(invoice.authorization_url, '_blank', 'noopener')
     } catch (e: any) {
-      setError(e.message || 'Failed to create invoice')
+      setError(e.message || 'Failed to start payment')
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Step 2: the user says they've paid; the server confirms with Paystack
+  const handleCheckPaid = async () => {
+    if (!reference) return
+    setChecking(true)
+    setError(null)
+    try {
+      const res = await apiClient.revenue.verifyInvoice(reference)
+      if (res && res.paid) {
+        onSuccess(reference)
+      } else {
+        setError('We have not received this payment yet. Finish paying in the Paystack tab, then try again.')
+      }
+    } catch (e: any) {
+      setError(e.message || 'Could not check the payment')
+    } finally {
+      setChecking(false)
     }
   }
 
@@ -113,6 +169,12 @@ export function PaymentGate({ isOpen, onClose, feeType, feeLabel, description, o
                 </div>
               ) : null}
 
+              {reference && (
+                <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 12 }}>
+                  Complete the payment in the Paystack tab. This window continues automatically once the payment is confirmed.
+                </p>
+              )}
+
               {error && (
                 <div
                   className="alert-banner alert-banner-danger"
@@ -126,15 +188,34 @@ export function PaymentGate({ isOpen, onClose, feeType, feeLabel, description, o
               <button onClick={onClose} className="btn-ghost">
                 Cancel
               </button>
-              <button
-                onClick={handlePayProceed}
-                disabled={loading || fetchingFee || !fee}
-                className="btn-gradient-primary"
-                style={{ display: 'flex', alignItems: 'center', gap: 8 }}
-              >
-                {loading ? <Loader2 size={16} className="spin" /> : <Shield size={16} />}
-                {loading ? 'Processing...' : `Pay ${fee?.currency || 'NGN'} ${(fee?.amount || 0).toLocaleString()}`}
-              </button>
+              {!reference ? (
+                <button
+                  onClick={handlePayProceed}
+                  disabled={loading || fetchingFee || !fee}
+                  className="btn-gradient-primary"
+                  style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+                >
+                  {loading ? <Loader2 size={16} className="spin" /> : <Shield size={16} />}
+                  {loading ? 'Opening Paystack...' : `Pay ${fee?.currency || 'NGN'} ${(fee?.amount || 0).toLocaleString()}`}
+                </button>
+              ) : (
+                <>
+                  {payUrl && (
+                    <a href={payUrl} target="_blank" rel="noopener noreferrer" className="btn-ghost">
+                      Open payment page
+                    </a>
+                  )}
+                  <button
+                    onClick={handleCheckPaid}
+                    disabled={checking}
+                    className="btn-gradient-primary"
+                    style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+                  >
+                    {checking ? <Loader2 size={16} className="spin" /> : <Shield size={16} />}
+                    {checking ? 'Checking...' : "I've paid"}
+                  </button>
+                </>
+              )}
             </div>
           </motion.div>
         </motion.div>

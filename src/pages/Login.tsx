@@ -5,11 +5,22 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Mail, Lock, Eye, EyeOff, LogIn,
   AlertCircle, Shield,
-  Search, RefreshCw, Github, Chrome, ArrowLeft
+  Search, RefreshCw, ArrowLeft
 } from 'lucide-react'
 import { useToast } from '../components/Toast'
 import { getDisplayName } from '../utils/userHelpers'
 import OTPVerification from '../components/OTPVerification'
+
+// Where to go after login: a page the visitor tried to reach (e.g. a device
+// check from the landing page), else the dashboard. Only internal paths.
+function takePostLoginRedirect(): string {
+  try {
+    const target = sessionStorage.getItem('post_login_redirect')
+    sessionStorage.removeItem('post_login_redirect')
+    if (target && target.startsWith('/') && !target.startsWith('//')) return target
+  } catch { /* storage unavailable */ }
+  return '/dashboard'
+}
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL as string) || ''
 const API_URL = API_BASE ? `${API_BASE}/api` : (import.meta.env.VITE_API_URL || '/api')
@@ -77,8 +88,8 @@ export default function Login() {
       return
     }
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters')
+    if (password.length < 1) {
+      setError('Please enter your password')
       setLoading(false)
       return
     }
@@ -116,7 +127,7 @@ export default function Login() {
       } else {
         login(data.token, data.user)
         showSuccess('Login Successful', `Welcome back, ${getDisplayName(data.user) || 'User'}!`)
-        navigate('/dashboard', { replace: true })
+        navigate(takePostLoginRedirect(), { replace: true })
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Login failed. Please try again.'
@@ -162,7 +173,7 @@ export default function Login() {
       login(data.token, data.user)
       setShowOTPModal(false)
       showSuccess('Login Successful', `Welcome back, ${getDisplayName(data.user) || 'User'}!`)
-      navigate('/dashboard', { replace: true })
+      navigate(takePostLoginRedirect(), { replace: true })
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Verification failed. Please try again.'
       setOtpError(errorMessage)
@@ -245,7 +256,7 @@ export default function Login() {
           <motion.div initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }} style={{ marginBottom: 48 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
               <div style={{ width: 48, height: 48, borderRadius: 12, background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src="/logo1.png" alt="Prove Ownership Logo" style={{ height: '28px', objectFit: 'contain' }} />
+                <img src="/logo-mark.png" alt="Prove Ownership Logo" style={{ height: '28px', objectFit: 'contain' }} />
               </div>
               <span style={{ fontSize: 24, fontWeight: 700, color: 'white', letterSpacing: '-0.03em' }}>Prove Ownership</span>
             </div>
@@ -282,7 +293,7 @@ export default function Login() {
             Back to home
           </Link>
           <div className="d-lg-none" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <img src="/logo1.png" alt="Prove Ownership Logo" style={{ height: '24px', objectFit: 'contain' }} />
+            <img src="/logo-mark.png" alt="Prove Ownership Logo" style={{ height: '24px', objectFit: 'contain' }} />
             <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>Prove Ownership</span>
           </div>
         </motion.div>
@@ -385,23 +396,6 @@ export default function Login() {
                   </button>
                 </motion.div>
               </form>
-
-              {/* Social Login */}
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}>
-                <div className="divider-text" style={{ marginBottom: 20, fontSize: 12 }}>
-                  or continue with
-                </div>
-                <div style={{ display: 'flex', gap: 12 }}>
-                  <button type="button" className="btn-ghost" style={{ flex: 1, height: 44, fontSize: 14, fontWeight: 600, border: '1px solid var(--border-color)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                    <Chrome size={18} />
-                    Google
-                  </button>
-                  <button type="button" className="btn-ghost" style={{ flex: 1, height: 44, fontSize: 14, fontWeight: 600, border: '1px solid var(--border-color)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                    <Github size={18} />
-                    GitHub
-                  </button>
-                </div>
-              </motion.div>
 
               {/* Register Link */}
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9 }} style={{ textAlign: 'center', marginTop: 24 }}>

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, useCallback } from 'react'
 import { Layout } from '../components/Layout'
 import { useToast, ToastContainer } from '../components/Toast'
+import { useConfirm } from '../components/ConfirmDialog'
 import { motion } from 'framer-motion'
 import {
   Receipt, Smartphone, Search, RefreshCw, Truck,
@@ -26,6 +27,7 @@ export default function SellerOrders() {
   const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(true)
   const { toasts, removeToast, showSuccess, showError } = useToast()
+  const confirm = useConfirm()
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -71,7 +73,7 @@ export default function SellerOrders() {
 
   const updateStatus = async (id: string, newStatus: string) => {
     try {
-      if (!window.confirm(`Mark this order as "${newStatus}"?`)) return
+      if (!await confirm({ title: `Mark this order as "${newStatus}"?`, confirmLabel: 'Update order' })) return
       await apiClient.marketplace.update(id, { status: newStatus })
       showSuccess(`Order updated to ${newStatus}`)
       fetchOrders()

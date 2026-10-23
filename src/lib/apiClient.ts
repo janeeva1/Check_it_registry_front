@@ -23,6 +23,19 @@ interface User {
   created_at: string;
 }
 
+export interface ProofType { key: string; label: string; hint: string }
+export type OwnershipLevel = 'registered' | 'proof_submitted' | 'verified_owner' | 'disputed';
+export interface OwnershipProof {
+  id: string; proof_type: string; proof_label: string; file_url: string; note?: string | null;
+  status: 'pending' | 'approved' | 'rejected'; review_note?: string | null; reviewed_at?: string | null; created_at: string;
+}
+export interface DeviceOwnership {
+  deviceId: string; category: string; level: OwnershipLevel; verifiedAt: string | null;
+  proofGroup: string; proofTypes: ProofType[]; proofs: OwnershipProof[];
+  openDispute: { id: string; status: string; created_at: string } | null;
+}
+export interface ClaimableItem { brand: string; model: string; category: string; proofGroup: string; proofTypes: ProofType[] }
+
 interface AuthResponse {
   user: User;
   token: string;
@@ -38,11 +51,9 @@ class ApiClient {
   }
   private async request(endpoint: string, options: RequestInit = {}) {
     const url = `${API_BASE_URL}${endpoint}`;
-    console.log("API Request:", {
-      url,
-      method: options.method || "GET",
-      API_BASE_URL,
-    });
+    if (import.meta.env.DEV) {
+      console.debug("API Request:", options.method || "GET", url);
+    }
 
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -69,10 +80,6 @@ class ApiClient {
         headers,
       });
 
-      console.log("API Response:", {
-        status: response.status,
-        ok: response.ok,
-      });
 
       if (!response.ok) {
         let error;
@@ -86,7 +93,14 @@ class ApiClient {
         } catch {
           error = { error: `HTTP ${response.status}` };
         }
-        console.error("API Error:", error);
+        if (import.meta.env.DEV) console.error("API Error:", error);
+        // A revoked/expired session: clear it so the app returns to login
+        if (response.status === 401 && token && !endpoint.startsWith('/auth/login') && !endpoint.startsWith('/auth/verify-device')) {
+          this.token = null;
+          localStorage.removeItem("auth_token");
+          localStorage.removeItem("user_data");
+          if (this.authCallback) this.authCallback("SIGNED_OUT", null);
+        }
         const errMsg = typeof error?.error === 'string'
           ? error.error
           : typeof error?.error?.message === 'string'
@@ -94,7 +108,8 @@ class ApiClient {
             : typeof error?.message === 'string'
               ? error.message
               : `HTTP ${response.status}`;
-        throw new Error(errMsg);
+        // Keep the status and body so screens can react (e.g. canClaim on 409)
+        throw Object.assign(new Error(errMsg), { status: response.status, data: error });
       }
 
       // Handle empty responses
@@ -103,26 +118,28 @@ class ApiClient {
         return {};
       }
 
+      let parsed: any;
       try {
-        const parsed = JSON.parse(text);
-        // Unwrap response envelope if present ({ success: true, data: ... } or { success: false, error: ... })
-        if (parsed && typeof parsed === 'object' && parsed.success !== undefined) {
-          if (!parsed.success) {
-            const envelopeErr = typeof parsed.error?.message === 'string'
-              ? parsed.error.message
-              : typeof parsed.error === 'string'
-                ? parsed.error
-                : 'Request failed';
-            throw new Error(envelopeErr);
-          }
-          return parsed.data !== undefined ? parsed.data : parsed;
-        }
-        return parsed;
+        parsed = JSON.parse(text);
       } catch {
         throw new Error("Invalid JSON response from server");
       }
+      // Unwrap response envelope if present ({ success: true, data: ... } or { success: false, error: ... }).
+      // Done outside the JSON try/catch so the server's real message reaches the user.
+      if (parsed && typeof parsed === 'object' && parsed.success !== undefined) {
+        if (!parsed.success) {
+          const envelopeErr = typeof parsed.error?.message === 'string'
+            ? parsed.error.message
+            : typeof parsed.error === 'string'
+              ? parsed.error
+              : 'Request failed';
+          throw Object.assign(new Error(envelopeErr), { status: response.status, data: parsed });
+        }
+        return parsed.data !== undefined ? parsed.data : parsed;
+      }
+      return parsed;
     } catch (fetchError) {
-      console.error("Fetch Error:", fetchError);
+      if (import.meta.env.DEV) console.error("Fetch Error:", fetchError);
 
       // Handle different types of network errors
       if (fetchError instanceof TypeError) {
@@ -153,8 +170,9 @@ class ApiClient {
   private async upload(endpoint: string, formData: FormData) {
     const url = `${API_BASE_URL}${endpoint}`;
     const headers: Record<string, string> = {};
-    if (this.token) {
-      headers.Authorization = `Bearer ${this.token}`;
+    const token = this.token || localStorage.getItem("auth_token");
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
     }
     const response = await fetch(url, { method: 'POST', headers, body: formData });
     if (!response.ok) {
@@ -175,6 +193,7 @@ class ApiClient {
       password: string;
       phone?: string;
       region?: string;
+      role?: string;
     }) => {
       try {
         const response: AuthResponse = await this.request("/auth/register", {
@@ -193,10 +212,10 @@ class ApiClient {
           });
         }
 
-        return { data: { user: response.user }, error: null };
+        return { data: { user: response.user, token: response.token }, error: null };
       } catch (error) {
         return {
-          data: { user: null },
+          data: { user: null, token: null },
           error:
             error instanceof Error ? error : new Error("Registration failed"),
         };
@@ -432,11 +451,48 @@ class ApiClient {
       this.request(`/device-management/${id}`, {
         method: "DELETE",
       }),
+    release: (id: string) =>
+      this.request(`/device-management/${id}/release`, { method: "POST" }),
+    resendVerification: (deviceId: string) =>
+      this.request("/device-management/resend-verification", { method: "POST", body: JSON.stringify({ device_id: deviceId }) }),
+    verifyWithCode: (deviceId: string, code: string) =>
+      this.request("/device-management/verify-device", { method: "POST", body: JSON.stringify({ device_id: deviceId, otp_code: code }) }),
     bulkCreate: (data: any) =>
       this.request("/device-management/bulk", {
         method: "POST",
         body: JSON.stringify(data),
       }),
+  };
+
+  // Ownership levels, proof of ownership, claims and the admin review queue
+  ownership = {
+    proofTypes: (category?: string) =>
+      this.request(`/ownership/proof-types${buildQuery({ category })}`) as Promise<{ group: string; types: ProofType[] }>,
+    forDevice: (deviceId: string) => this.request(`/ownership/device/${deviceId}`) as Promise<DeviceOwnership>,
+    submitProof: (deviceId: string, data: { file: File; proofType: string; note?: string }) => {
+      const fd = new FormData();
+      fd.append('proof_type', data.proofType);
+      if (data.note) fd.append('note', data.note);
+      fd.append('proof_document', data.file);
+      return this.upload(`/ownership/device/${deviceId}/proof`, fd);
+    },
+    lookupClaim: (identifier: string) =>
+      this.request(`/ownership/claims/lookup${buildQuery({ identifier })}`) as Promise<ClaimableItem>,
+    fileClaim: (data: { identifier: string; statement: string; proofType: string; file: File }) => {
+      const fd = new FormData();
+      fd.append('identifier', data.identifier);
+      fd.append('statement', data.statement);
+      fd.append('proof_type', data.proofType);
+      fd.append('proof_document', data.file);
+      return this.upload('/ownership/claims', fd);
+    },
+    myClaims: () => this.request('/ownership/claims/mine'),
+    adminProofs: (status = 'pending') => this.request(`/ownership/admin/proofs${buildQuery({ status })}`),
+    reviewProof: (id: string, decision: 'approve' | 'reject', note?: string) =>
+      this.request(`/ownership/admin/proofs/${id}/review`, { method: 'POST', body: JSON.stringify({ decision, note }) }),
+    adminDisputes: (status = 'open') => this.request(`/ownership/admin/disputes${buildQuery({ status })}`),
+    resolveDispute: (id: string, decision: 'claimant' | 'owner', note: string) =>
+      this.request(`/ownership/admin/disputes/${id}/resolve`, { method: 'POST', body: JSON.stringify({ decision, note }) }),
   };
 
   // Report management (Admin)
@@ -712,10 +768,6 @@ class ApiClient {
     delete: (id: string) => this.request(`/marketplace/${id}`, {
       method: 'DELETE'
     }),
-    purchase: (id: string, paymentMethodId: string) => this.request(`/marketplace/${id}/purchase`, {
-      method: 'POST',
-      body: JSON.stringify({ paymentMethodId })
-    }),
     getSellerStats: () => this.request('/marketplace/seller/stats'),
     getSellerOrders: () => this.request('/marketplace/seller/orders'),
     getMessages: (id: string) => this.request(`/marketplace/${id}/messages`),
@@ -757,14 +809,10 @@ class ApiClient {
     removeMethod: (id: string) => this.request(`/payments/methods/${id}`, {
       method: 'DELETE'
     }),
-    charge: (data: { amount: number; methodId: string; description?: string }) => this.request('/payments/charge', {
-      method: 'POST',
-      body: JSON.stringify(data)
-    }),
     getBalance: () => this.request('/payments/balance'),
     getPayouts: (params?: any) => {
       const query = params ? buildQuery(params) : '';
-      return this.request(`/payments/payouts${query}`);
+      return this.request(`/payments${query}`); // payout list lives at GET /api/payments
     },
   };
 
@@ -836,10 +884,16 @@ class ApiClient {
   };
 
   publicCheckEnhanced = async (data: any) => {
-    return this.request('/public-check/enhanced', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+    try {
+      return await this.request('/public-check/enhanced', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    } catch (e: any) {
+      // "Not registered" is an answer, not an error: show it as a result
+      if (e?.data?.deviceStatus) return e.data;
+      throw e;
+    }
   };
 
   publicStats = async () => {
@@ -866,6 +920,8 @@ class ApiClient {
   // User Portal
   userPortal = {
     searchUsers: async (query: string) => this.request(`/user-portal/search-users?q=${encodeURIComponent(query)}`),
+    devices: (params: { status?: string; search?: string; page?: number; limit?: number } = {}) =>
+      this.request(`/user-portal/devices${buildQuery(params)}`),
   };
 
   // Revenue & Fees
@@ -890,10 +946,17 @@ class ApiClient {
       const query = params ? buildQuery(params) : '';
       return this.request(`/revenue-admin/summary${query}`);
     },
-    createInvoice: (data: { fee_type: string; amount: number; currency?: string; description?: string }) =>
+    // Amount is set by the server from the fee settings; returns a Paystack link
+    createInvoice: (data: { fee_type: string; description?: string }) =>
       this.request('/revenue-admin/create-invoice', {
         method: 'POST',
         body: JSON.stringify(data),
+      }),
+    // Ask the server (which asks Paystack) whether a fee invoice is paid
+    verifyInvoice: (reference: string) =>
+      this.request('/revenue-admin/invoices/verify', {
+        method: 'POST',
+        body: JSON.stringify({ reference }),
       }),
   };
 
@@ -914,12 +977,12 @@ class ApiClient {
         method: 'POST',
         body: JSON.stringify(data),
       }),
-    verifyNIN: (data: { nin: string; provider?: string; bypass_payment?: boolean }) =>
+    verifyNIN: (data: { nin: string; provider?: string; pay_by_pass?: string }) =>
       this.request('/security/nin/verify', {
         method: 'POST',
         body: JSON.stringify(data),
       }),
-    verifyCAC: (data: { rc_number: string; company_name?: string; provider?: string; bypass_payment?: boolean }) =>
+    verifyCAC: (data: { rcNumber: string; businessName?: string; companyType?: string; pay_by_pass?: string }) =>
       this.request('/security/cac/verify', {
         method: 'POST',
         body: JSON.stringify(data),
@@ -984,6 +1047,7 @@ class ApiClient {
       return this.request(`/public-check/history${query}`);
     },
     get: async (checkId: string) => this.request(`/public-check/report/${checkId}`),
+    mine: async () => this.request('/public-check/mine'),
   };
 
   // Security Questions

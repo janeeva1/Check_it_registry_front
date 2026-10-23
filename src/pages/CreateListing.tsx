@@ -3,8 +3,9 @@ import { Plus, Package, Info, Image as ImageIcon, X, Loader2 } from 'lucide-reac
 import { Layout } from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast, ToastContainer } from '../components/Toast'
+import { Link, useSearchParams } from 'react-router-dom'
 
-type MyDevice = { id: string; brand: string; model: string; imei: string; serial: string; category: string }
+type MyDevice = { id: string; brand: string; model: string; imei: string; serial: string; vin?: string; category: string; status: string; ownership_level?: string }
 
 type FormData = { deviceId: string; title: string; description: string; price: string; condition: string; images: File[] }
 
@@ -12,7 +13,8 @@ export default function CreateListing() {
   const { user: _user } = useAuth()
   const { toasts, removeToast, showSuccess, showError } = useToast()
   const [devices, setDevices] = useState<MyDevice[]>([])
-  const [form, setForm] = useState<FormData>({ deviceId: '', title: '', description: '', price: '', condition: 'excellent', images: [] })
+  const [params] = useSearchParams()
+  const [form, setForm] = useState<FormData>({ deviceId: params.get('device') || '', title: '', description: '', price: '', condition: 'excellent', images: [] })
   const [submitting, setSubmitting] = useState(false)
   const [loading, setLoading] = useState(true)
 
@@ -44,16 +46,23 @@ export default function CreateListing() {
     try {
       setSubmitting(true)
       const token = localStorage.getItem('auth_token')
-      const fd = new FormData()
-      fd.append('title', form.title)
-      fd.append('description', form.description)
-      fd.append('price', form.price)
-      fd.append('condition', form.condition)
-      fd.append('deviceId', form.deviceId)
-      form.images.forEach(img => fd.append('images', img))
-
-      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/marketplace/listings`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd })
-      if (!res.ok) { const err = await res.json(); throw new Error(err.message || 'Failed to create listing') }
+      const API = import.meta.env.VITE_API_URL || '/api'
+      // The listing endpoint takes JSON with image URLs, so upload photos first
+      const images: string[] = []
+      for (const img of form.images) {
+        const fd = new FormData()
+        fd.append('device_image', img)
+        const up = await fetch(`${API}/files/upload/device-image`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd })
+        const body = await up.json().catch(() => ({}))
+        if (!up.ok) throw new Error(body.error || 'A photo could not be uploaded')
+        if (body.file?.url) images.push(body.file.url)
+      }
+      const res = await fetch(`${API}/marketplace`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ device_id: form.deviceId, title: form.title, description: form.description, price: Number(form.price), condition: form.condition, currency: 'NGN', images }),
+      })
+      if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || err.message || 'Failed to create listing') }
       showSuccess('Listing created successfully!')
       setForm({ deviceId: '', title: '', description: '', price: '', condition: 'excellent', images: [] })
     } catch (err: any) { showError(err.message) } finally { setSubmitting(false) }
@@ -95,10 +104,17 @@ export default function CreateListing() {
                         <Loader2 size={16} className="spinner-border" /> Loading devices...
                       </div>
                     ) : (
+                      <>
                       <select className="modern-select" value={form.deviceId} onChange={e => setForm(p => ({ ...p, deviceId: e.target.value }))} required>
                         <option value="">Choose a registered device</option>
-                        {devices.map(d => <option key={d.id} value={d.id}>{d.brand} {d.model} ({d.imei || d.serial || d.id.slice(0, 8)})</option>)}
+                        {devices.filter(d => d.ownership_level === 'verified_owner' && d.status === 'verified').map(d => <option key={d.id} value={d.id}>{d.brand} {d.model} ({d.imei || d.serial || d.vin || d.id.slice(0, 8)})</option>)}
                       </select>
+                      {devices.some(d => d.ownership_level !== 'verified_owner') && (
+                        <p className="po-help mt-2">
+                          Only items with a <strong>verified owner</strong> can be sold. Not seeing an item? Open it from <Link to="/my-devices">My items</Link> and add proof of ownership first.
+                        </p>
+                      )}
+                      </>
                     )}
                   </div>
                   <div className="col-12">

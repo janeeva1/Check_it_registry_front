@@ -16,7 +16,7 @@ type Transfer = {
   otp_code: string | null
 }
 
-type Tab = 'initiate' | 'sent' | 'received'
+type Tab = 'initiate' | 'sent' | 'received' | 'receive'
 
 export default function DeviceTransfer() {
   const { user } = useAuth()
@@ -24,7 +24,53 @@ export default function DeviceTransfer() {
   const [searchParams] = useSearchParams()
   const { toasts, removeToast, showSuccess, showError, showWarning: _showWarning, showInfo } = useToast()
 
-  const [tab, setTab] = useState<Tab>('initiate')
+  // A link like /transfer?code=ABC123 (from the transfer email) opens the Receive tab
+  const [tab, setTab] = useState<Tab>(searchParams.get('code') || searchParams.get('tab') === 'receive' ? 'receive' : 'initiate')
+
+  // Receive-a-device state
+  const [receiveCode, setReceiveCode] = useState((searchParams.get('code') || '').toUpperCase())
+  const [receiveStep, setReceiveStep] = useState<'code' | 'otp' | 'done'>('code')
+  const [receiveOtp, setReceiveOtp] = useState('')
+  const [receiving, setReceiving] = useState(false)
+  const [receivedDevice, setReceivedDevice] = useState<{ brand?: string; model?: string } | null>(null)
+
+  const requestReceiveCode = async (e?: React.FormEvent) => {
+    e?.preventDefault()
+    const code = receiveCode.trim().toUpperCase()
+    if (!code) return
+    setReceiving(true)
+    try {
+      const res: any = await apiClient.deviceTransfer.complete({ transferCode: code })
+      if (res?.requiresBuyerOtp) {
+        setReceiveStep('otp')
+        showInfo('Check your email', 'We sent a 6-digit code to confirm you are receiving this device.')
+      }
+    } catch (err: any) {
+      showError('Could not use this code', err.message || 'Check the code and try again')
+    } finally {
+      setReceiving(false)
+    }
+  }
+
+  const confirmReceive = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!/^\d{6}$/.test(receiveOtp.trim())) {
+      showError('Enter the 6-digit code from your email')
+      return
+    }
+    setReceiving(true)
+    try {
+      const res: any = await apiClient.deviceTransfer.complete({ transferCode: receiveCode.trim().toUpperCase(), otpCode: receiveOtp.trim() })
+      setReceivedDevice(res?.device || null)
+      setReceiveStep('done')
+      showSuccess('Device received', 'The device is now registered to you')
+      fetchTransfers()
+    } catch (err: any) {
+      showError('Could not complete the transfer', err.message || 'Please try again')
+    } finally {
+      setReceiving(false)
+    }
+  }
   const [devices, setDevices] = useState<Device[]>([])
   const [transfers, setTransfers] = useState<Transfer[]>([])
   const [loadingDevices, setLoadingDevices] = useState(true)
@@ -190,7 +236,8 @@ export default function DeviceTransfer() {
   const tabs = [
     { key: 'initiate' as Tab, label: 'Initiate', icon: ArrowLeftRight },
     { key: 'sent' as Tab, label: 'Sent', icon: Send, count: sentTransfers.length },
-    { key: 'received' as Tab, label: 'Received', icon: User, count: receivedTransfers.filter(t => t.status === 'pending').length },
+    { key: 'receive' as Tab, label: 'Receive a device', icon: Key },
+    { key: 'received' as Tab, label: 'Received', icon: User, count: receivedTransfers.filter(t => ['active', 'awaiting_buyer_otp'].includes(t.status)).length },
   ]
 
   return (
@@ -213,7 +260,7 @@ export default function DeviceTransfer() {
           </div>
         </div>
 
-        <div className="d-flex gap-2 mb-4">
+        <div className="d-flex gap-2 mb-4 flex-wrap" role="tablist">
           {tabs.map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}
               className={`px-4 py-2 rounded-3 border d-inline-flex align-items-center gap-2 ${tab === t.key ? 'border-primary' : ''}`}
@@ -267,6 +314,71 @@ export default function DeviceTransfer() {
                     <div className="empty-state"><div className="empty-state-icon"><Smartphone size={48} /></div><h3>No Devices</h3><p>Register a device before initiating a transfer</p><Link to="/register-device" className="btn-gradient-primary mt-3">Register Device</Link></div>
                   </div>
                 )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {tab === 'receive' && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <div className="row justify-content-center">
+              <div className="col-lg-6">
+                <div className="modern-card p-4 p-md-5">
+                  {/* Progress: 1 enter code, 2 confirm with email code, 3 done */}
+                  <ol className="d-flex gap-2 list-unstyled mb-4" aria-label="Progress" style={{ fontSize: 13 }}>
+                    {['Enter transfer code', 'Confirm with email code', 'Done'].map((label, i) => {
+                      const current = receiveStep === 'code' ? 0 : receiveStep === 'otp' ? 1 : 2
+                      return (
+                        <li key={label} className="flex-fill text-center" aria-current={i === current ? 'step' : undefined}>
+                          <div style={{ height: 4, borderRadius: 2, background: i <= current ? 'var(--primary-600)' : 'var(--gray-200, #e5e7eb)', marginBottom: 6 }} />
+                          <span style={{ color: i <= current ? 'var(--text-primary)' : 'var(--text-tertiary)' }}>{label}</span>
+                        </li>
+                      )
+                    })}
+                  </ol>
+
+                  {receiveStep === 'code' && (
+                    <form onSubmit={requestReceiveCode}>
+                      <h5 className="mb-2 d-flex align-items-center gap-2"><Key size={20} style={{ color: 'var(--primary-600)' }} /> Receive a device</h5>
+                      <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>Enter the transfer code the seller shared with you. It is also in the email we sent you.</p>
+                      <label className="form-label" htmlFor="transfer-code">Transfer code</label>
+                      <input id="transfer-code" className="modern-input w-100 mb-3" style={{ fontFamily: 'var(--font-mono)', letterSpacing: '0.1em', textTransform: 'uppercase' }}
+                        value={receiveCode} onChange={e => setReceiveCode(e.target.value.toUpperCase().replace(/\s/g, ''))}
+                        placeholder="e.g. AB12CD34EF56" autoComplete="off" required />
+                      <button type="submit" className="btn-gradient-primary w-100 d-flex align-items-center justify-content-center gap-2 py-3" disabled={receiving || !receiveCode.trim()}>
+                        {receiving ? <Loader2 size={20} className="spin" /> : <Send size={20} />}
+                        {receiving ? 'Checking...' : 'Continue'}
+                      </button>
+                    </form>
+                  )}
+
+                  {receiveStep === 'otp' && (
+                    <form onSubmit={confirmReceive}>
+                      <h5 className="mb-2">Confirm it's you</h5>
+                      <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>Enter the 6-digit code we just emailed to {user?.email || 'you'}.</p>
+                      <label className="form-label" htmlFor="receive-otp">Email code</label>
+                      <input id="receive-otp" className="modern-input w-100 mb-3" inputMode="numeric" autoComplete="one-time-code" maxLength={6}
+                        style={{ fontFamily: 'var(--font-mono)', letterSpacing: '0.3em', fontSize: 20, textAlign: 'center' }}
+                        value={receiveOtp} onChange={e => setReceiveOtp(e.target.value.replace(/\D/g, '').slice(0, 6))} required />
+                      <button type="submit" className="btn-gradient-primary w-100 d-flex align-items-center justify-content-center gap-2 py-3" disabled={receiving || receiveOtp.length !== 6}>
+                        {receiving ? <Loader2 size={20} className="spin" /> : <CheckCircle size={20} />}
+                        {receiving ? 'Completing...' : 'Complete transfer'}
+                      </button>
+                      <button type="button" className="btn-ghost w-100 mt-2" disabled={receiving} onClick={() => requestReceiveCode()}>Send a new code</button>
+                    </form>
+                  )}
+
+                  {receiveStep === 'done' && (
+                    <div className="text-center">
+                      <CheckCircle size={48} style={{ color: 'var(--primary-600)' }} className="mb-3" />
+                      <h5>Device received</h5>
+                      <p style={{ color: 'var(--text-secondary)' }}>
+                        {receivedDevice?.brand ? `${receivedDevice.brand} ${receivedDevice.model || ''} is` : 'The device is'} now registered to you.
+                      </p>
+                      <Link to="/my-devices" className="btn-gradient-primary">View my devices</Link>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </motion.div>
@@ -340,24 +452,8 @@ export default function DeviceTransfer() {
                           </div>
                           <div className="col-auto d-flex align-items-center gap-2">
                             {statusBadge(t.status)}
-                            {['initiated', 'active'].includes(t.status) && (
-                              <>
-                                {verifyingTransfer === t.id ? (
-                                  <div className="d-flex align-items-center gap-2">
-                                    {otpInput.map((d, idx) => (
-                                      <input key={idx} ref={el => { otpRefs.current[idx] = el }} type="text" inputMode="numeric" maxLength={1} value={d}
-                                        onChange={e => handleOtpChange(idx, e.target.value)} onKeyDown={e => handleOtpKeyDown(idx, e)}
-                                        className="modern-input text-center" style={{ width: 36, height: 40, fontSize: 16, fontWeight: 700, padding: 0 }} />
-                                      ))}
-                                    <button className="btn-gradient-primary btn-sm" onClick={() => verifyOtp(t.id)} disabled={submitting}><CheckCircle size={16} /></button>
-                                    <button className="btn-ghost btn-sm" onClick={() => { setVerifyingTransfer(null); setOtpInput(['', '', '', '', '', '']) }}><X size={16} /></button>
-                                  </div>
-                                ) : (
-                                  <button className="btn-gradient-primary btn-sm d-inline-flex align-items-center gap-1" onClick={() => setVerifyingTransfer(t.id)}>
-                                    <Key size={14} /> Verify OTP
-                                  </button>
-                                )}
-                              </>
+                            {['active', 'awaiting_buyer_otp'].includes(t.status) && (
+                              <button className="btn-gradient-primary btn-sm" style={{ fontSize: 12, padding: '4px 12px' }} onClick={() => { setReceiveStep('code'); setTab('receive') }}>Receive</button>
                             )}
                           </div>
                         </div>
