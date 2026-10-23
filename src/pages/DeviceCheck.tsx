@@ -148,9 +148,12 @@ export default function DeviceCheck() {
       }
     } catch (err) {
       console.error('Check error:', err)
-      const msg = (err && typeof err === 'object' && (err as any).message)
+      const base = (err && typeof err === 'object' && (err as any).message)
         ? String((err as any).message)
         : (err instanceof Error ? err.message : 'Failed to check device')
+      // The server adds the technical reason outside production
+      const detail = (err as any)?.data?.detail
+      const msg = detail ? `${base} (${detail})` : base
       if (msg.toLowerCase().includes('payment') || msg.toLowerCase().includes('fee')) {
         setShowPayment(true)
       } else {

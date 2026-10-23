@@ -19,12 +19,11 @@ import {
   AlertTriangle,
   Loader2
 } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { useToast, ToastContainer } from '../components/Toast'
 import { useAuth } from '../contexts/AuthContext'
 import { motion, AnimatePresence } from 'framer-motion'
-import KYCVerificationModal from '../components/KYCVerificationModal'
 import { apiClient } from '../lib/apiClient'
 import { getDisplayName, getUserInitials } from '../utils/userHelpers'
 
@@ -68,7 +67,10 @@ export default function Profile() {
   const [uploadingImage, setUploadingImage] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [activeTab, setActiveTab] = useState<'overview' | 'security' | 'activity'>('overview')
-  const [showKYCModal, setShowKYCModal] = useState(false)
+  // Verifying opens the identity page (the same NIN check reports use);
+  // the old pop-up called routes that no longer exist and sat under the menus.
+  const navigate = useNavigate()
+  const openVerify = () => navigate('/identity-verification')
   
   const [formData, setFormData] = useState({
     name: '',
@@ -267,7 +269,7 @@ export default function Profile() {
                 {/* KYC Buttons */}
                 {profile.kyc_status !== 'verified' && profile.kyc_status !== 'pending' && (
                   <button 
-                    onClick={() => setShowKYCModal(true)}
+                    onClick={openVerify}
                     className="btn d-flex align-items-center gap-2 px-4 py-2 rounded-pill shadow-sm text-white border-0"
                     style={{ background: 'var(--success-500)' }}
                   >
@@ -339,7 +341,7 @@ export default function Profile() {
                <strong>Identity Verification Failed</strong>
                <p className="mb-0 small">Your recent verification attempt failed. Please ensure your selfie is clear and try again.</p>
              </div>
-             <button onClick={() => setShowKYCModal(true)} className="btn btn-outline-danger btn-sm ms-auto px-3 rounded-pill">Retry</button>
+             <button onClick={openVerify} className="btn btn-outline-danger btn-sm ms-auto px-3 rounded-pill">Retry</button>
            </div>
         )}
 
@@ -554,7 +556,7 @@ export default function Profile() {
                       Unlock full access and build trust by verifying your NIN. It takes less than 2 minutes.
                     </p>
                 <button 
-                  onClick={() => setShowKYCModal(true)}
+                  onClick={openVerify}
                   className="btn w-100 fw-bold border-0 shadow-sm text-white"
                   style={{ background: 'var(--primary-500)' }}
                 >
@@ -890,11 +892,11 @@ export default function Profile() {
           </div>
         </div>
         
-        <KYCVerificationModal 
-          isOpen={showKYCModal} 
-          onClose={() => setShowKYCModal(false)}
-          onSuccess={handleKYCSuccess}
-        />
+{profile.role === 'business' && (
+          <div className="mt-3">
+            <Link to="/business-verification" className="po-btn po-btn-secondary">Verify your business</Link>
+          </div>
+        )}
 
         <ToastContainer toasts={toasts} onRemove={removeToast} />
       </div>

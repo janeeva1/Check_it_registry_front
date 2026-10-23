@@ -77,3 +77,14 @@ test('signed-in people do see the check button on the landing page', async ({ pa
   await page.getByRole('button', { name: /check a device status/i }).click()
   await expect(page).toHaveURL(/\/device-check/)
 })
+
+test('"Verify Identity" on the profile opens the identity page (no hidden pop-up)', async ({ page }) => {
+  await signIn(page, 'business')
+  await page.goto('/profile')
+  await page.getByRole('button', { name: /verify identity|start verification/i }).first().click()
+  await expect(page).toHaveURL(/\/identity-verification/)
+  await expect(page.getByRole('heading', { name: /your identity/i })).toBeVisible()
+  await page.goto('/profile')
+  await page.getByRole('link', { name: /verify your business/i }).click()
+  await expect(page).toHaveURL(/\/business-verification/)
+})
