@@ -148,9 +148,12 @@ export default function DeviceCheck() {
       }
     } catch (err) {
       console.error('Check error:', err)
-      const msg = (err && typeof err === 'object' && (err as any).message)
+      const base = (err && typeof err === 'object' && (err as any).message)
         ? String((err as any).message)
         : (err instanceof Error ? err.message : 'Failed to check device')
+      // The server adds the technical reason outside production
+      const detail = (err as any)?.data?.detail
+      const msg = detail ? `${base} (${detail})` : base
       if (msg.toLowerCase().includes('payment') || msg.toLowerCase().includes('fee')) {
         setShowPayment(true)
       } else {
@@ -321,6 +324,9 @@ export default function DeviceCheck() {
             <h2>{advice.title}</h2>
             <p>{advice.message}</p>
             {result.status !== 'not_found' && result.status !== 'unknown' && <OwnershipBadge level={ownershipLevel} />}
+            {enhancedData?.custody?.held && (
+              <p className="po-result-action" data-testid="custody-note"><strong>Held by Prove Ownership.</strong> Since it was reported, Prove Ownership is its temporary holder. It can't be bought, sold or transferred until it is released to its owner. If you have this item, contact the police or Prove Ownership.</p>
+            )}
             <p className="po-result-action">{advice.action}</p>
 
             {(result.case_id || result.report_type || result.occurred_at) && (

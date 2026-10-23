@@ -16,8 +16,8 @@ const FILTERS: Array<[string, string]> = [
 ]
 
 const STATUS: Record<string, [string, string]> = {
-  verified: ['Active', 'success'], unverified: ['Confirm by email', 'warning'], stolen: ['Stolen', 'danger'], lost: ['Lost', 'danger'],
-  found: ['Found', 'info'], pending_transfer: ['Transferring', 'info'], released: ['Released', 'neutral'],
+  verified: ['Active', 'success'], unverified: ['Confirm by email', 'warning'], stolen: ['Stolen · held by Prove Ownership', 'danger'], lost: ['Lost · held by Prove Ownership', 'danger'],
+  found: ['Found · pay release fee', 'info'], pending_transfer: ['Transferring', 'info'], released: ['Released', 'neutral'],
 }
 
 // The single most useful thing to do next for an item
@@ -91,7 +91,7 @@ export default function MyDevices() {
               const id = primaryIdentifier(d)
               const [label, tone] = STATUS[d.status] || [d.status, 'neutral']
               const next = nextStep(d)
-              const alert = ['stolen', 'lost', 'unverified', 'pending_transfer'].includes(d.status)
+              const alert = ['stolen', 'lost', 'found', 'unverified', 'pending_transfer'].includes(d.status)
               return (
                 <li key={d.id}>
                   <Link to={`/device/${d.id}`} className="po-simple-row">

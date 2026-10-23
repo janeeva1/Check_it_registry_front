@@ -22,9 +22,10 @@ const itemVariants = {
 
 const FEE_LABELS: Record<string, { label: string; icon: React.ReactNode; desc: string }> = {
   nin_verification_fee: { label: 'NIN Verification', icon: <IdCard size={16} />, desc: 'Fee for NIN identity verification' },
-  report_verification_fee: { label: 'Report Verification', icon: <Search size={16} />, desc: 'Fee for device report verification' },
+  report_verification_fee: { label: 'Report fee', icon: <Search size={16} />, desc: 'Charged on every stolen/lost report (identity is confirmed each time)' },
+  device_release_fee: { label: 'Release fee', icon: <Shield size={16} />, desc: 'Paid by the owner to get back an item ProveOwnership held after it was reported' },
   device_check_fee: { label: 'Device Check', icon: <Smartphone size={16} />, desc: 'Fee per device check after free tier' },
-  business_verification_fee: { label: 'Business (CAC) Verify', icon: <Building2 size={16} />, desc: 'Fee for CAC business verification' },
+  business_verification_fee: { label: 'Business (CAC) Verify', icon: <Building2 size={16} />, desc: 'One-off fee to verify a business with its CAC number' },
   marketplace_commission_percent: { label: 'Marketplace Commission %', icon: <Percent size={16} />, desc: 'Percentage commission on marketplace sales' },
   device_recovery_fee: { label: 'Device Recovery', icon: <Shield size={16} />, desc: 'Fee for device recovery service' },
   business_onboarding_fee: { label: 'Customer Onboarding', icon: <Users size={16} />, desc: 'Fee for business customer onboarding' },

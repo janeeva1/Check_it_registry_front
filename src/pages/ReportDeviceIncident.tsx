@@ -106,8 +106,15 @@ export default function ReportDeviceIncident() {
   })
 
   const [submitting, setSubmitting] = useState(false)
-  const [ninVerified, setNinVerified] = useState<boolean | null>(null)
-  const [checkingNin, setCheckingNin] = useState(false)
+  // Every report: pay the report fee, then confirm identity. A payment is
+  // kept (also across a page reload) until a report is actually filed.
+  const PAID_KEY = 'po_report_payment'
+  const [paidRef, setPaidRef] = useState<string>(() => { try { return sessionStorage.getItem(PAID_KEY) || '' } catch { return '' } })
+  const [idError, setIdError] = useState('')
+  const [useRc, setUseRc] = useState(false)
+  const [rcInput, setRcInput] = useState('')
+  const isBusiness = user?.role === 'business'
+  const rememberPaid = (ref: string) => { setPaidRef(ref); try { ref ? sessionStorage.setItem(PAID_KEY, ref) : sessionStorage.removeItem(PAID_KEY) } catch { /* storage blocked */ } }
 
   const [showPayment, setShowPayment] = useState(false)
   const [paymentAmount, setPaymentAmount] = useState<number | null>(null)
@@ -115,7 +122,6 @@ export default function ReportDeviceIncident() {
   const [reportNumber, setReportNumber] = useState<number | null>(null)
 
   const [ninInput, setNinInput] = useState('')
-  const [verifyingNin, setVerifyingNin] = useState(false)
 
   const [confirmationData, setConfirmationData] = useState<{
     case_id: string
@@ -128,10 +134,12 @@ export default function ReportDeviceIncident() {
     loadDevices()
   }, [])
 
+  // The report fee (set by the admin); 0 means no payment step
   useEffect(() => {
-    if (step === 'kyc_payment') {
-      checkVerificationStatus()
-    }
+    if (step !== 'kyc_payment') return
+    apiClient.revenue.getFee('report_verification_fee')
+      .then((d: any) => { setPaymentAmount(Number(d?.amount) || 0); setPaymentCurrency(d?.currency || 'NGN') })
+      .catch(() => setPaymentAmount(null))
   }, [step])
 
   const loadDevices = async () => {
@@ -149,18 +157,6 @@ export default function ReportDeviceIncident() {
       setDevicesError(err.message || 'Failed to load devices')
     } finally {
       setDevicesLoading(false)
-    }
-  }
-
-  const checkVerificationStatus = async () => {
-    try {
-      setCheckingNin(true)
-      const data = await apiClient.security.getVerificationStatus()
-      setNinVerified(data?.nin_verified === true)
-    } catch {
-      setNinVerified(false)
-    } finally {
-      setCheckingNin(false)
     }
   }
 
@@ -182,12 +178,15 @@ export default function ReportDeviceIncident() {
     )
   }
 
-  const handleSubmitReport = async (nin?: string, payByPass?: string) => {
-    if (!selectedDevice || !reportType) return
+  const needsPayment = (paymentAmount ?? 0) > 0
+  const idReady = useRc ? rcInput.trim().length >= 5 : ninInput.trim().length === 11
+  const canSubmit = !submitting && idReady && (!needsPayment || !!paidRef)
 
+  const handleSubmitReport = async () => {
+    if (!selectedDevice || !reportType) return
+    setIdError('')
     try {
       setSubmitting(true)
-
       const body: any = {
         device_id: selectedDevice.id,
         report_type: reportType,
@@ -199,33 +198,20 @@ export default function ReportDeviceIncident() {
         witness_info: form.witness_info.trim() || undefined,
         evidence_url: form.evidence_url.trim() || undefined,
       }
-
-      if (nin) body.nin = nin
-      if (payByPass) body.pay_by_pass = payByPass
+      if (useRc) body.rc_number = rcInput.trim()
+      else body.nin = ninInput.trim()
+      if (paidRef) body.pay_by_pass = paidRef
 
       const response: SubmitResponse = await apiClient.reportManagement.create(body)
-
       if (response.requiresPayment) {
-        setPaymentAmount(response.amount || 0)
-        setPaymentCurrency(response.currency || 'NGN')
-        setReportNumber(response.reportNumber || null)
-        setSubmitting(false)
+        // Not paid yet, or that payment was already used for another report
+        rememberPaid('')
+        if (response.amount) setPaymentAmount(response.amount)
         setShowPayment(true)
         return
       }
-
-      if (response.requiresNin) {
-        showWarning(response.message || 'NIN verification required for your first report')
-        setSubmitting(false)
-        return
-      }
-
-      if (response.kycFailed) {
-        showError(response.error || 'KYC verification failed. Please verify your NIN first.')
-        setSubmitting(false)
-        return
-      }
-
+      rememberPaid('') // the payment went to this report
+      setNinInput(''); setRcInput('')
       setConfirmationData({
         case_id: response.case_id || 'N/A',
         report_number: response.report_number || reportNumber || 0,
@@ -234,46 +220,21 @@ export default function ReportDeviceIncident() {
       })
       setReportNumber(response.report_number || reportNumber)
       setStep('confirmation')
-      showSuccess('Incident report submitted successfully!')
+      showSuccess('Report submitted')
     } catch (err: any) {
-      const msg = err.message || 'Failed to submit report'
-      showError(msg)
+      const d = err?.data || {}
+      if (d.requiresPayment) { rememberPaid(''); setShowPayment(true); return }
+      if (d.identityFailed || d.requiresNin) { setIdError(d.error || err.message); return }
+      showError(err.message || 'Failed to submit report')
     } finally {
       setSubmitting(false)
     }
   }
 
-  const handleDetailsSubmit = () => {
-    if (ninVerified === false && !ninInput.trim()) {
-      return
-    }
-    if (ninVerified === false) {
-      handleSubmitReport(ninInput.trim())
-    } else {
-      handleSubmitReport()
-    }
-  }
-
   const handlePaymentSuccess = (token: string) => {
     setShowPayment(false)
-    handleSubmitReport(ninVerified === false ? ninInput.trim() : undefined, token)
-  }
-
-  const handleNinVerify = async () => {
-    if (!ninInput.trim() || ninInput.trim().length < 11) {
-      showError('Please enter a valid 11-digit NIN')
-      return
-    }
-    try {
-      setVerifyingNin(true)
-      await apiClient.security.verifyNIN({ nin: ninInput.trim() })
-      setNinVerified(true)
-      showSuccess('NIN verified successfully!')
-    } catch (err: any) {
-      showError(err.message || 'NIN verification failed')
-    } finally {
-      setVerifyingNin(false)
-    }
+    rememberPaid(token)
+    showSuccess('Payment received. Now confirm your identity and submit.')
   }
 
   const formatDateTime = (dt: string): string => {
@@ -287,7 +248,7 @@ export default function ReportDeviceIncident() {
     }
   }
 
-  const stepLabels = ['Select Device', 'Incident Details', 'KYC & Payment', 'Confirmation']
+  const stepLabels = ['Select item', 'What happened', 'Pay & confirm', 'Done']
 
   return (
     <Layout requireAuth>
@@ -786,155 +747,73 @@ export default function ReportDeviceIncident() {
                     </div>
                   </div>
 
-                  {/* NIN Section (conditional) */}
-                  {ninVerified === false && (
-                    <div className="modern-card p-4 p-md-5 mb-3">
-                      <div className="d-flex align-items-center gap-3 mb-3">
-                        <div
-                          className="d-flex align-items-center justify-content-center rounded-3"
-                          style={{ width: 40, height: 40, background: 'var(--warning-50)' }}
-                        >
-                          <Fingerprint size={20} style={{ color: 'var(--warning-600)' }} />
+                  {/* 1. Pay the report fee */}
+                  {needsPayment && (
+                    <div className="modern-card p-4 mb-3" data-testid="report-pay">
+                      <div className="d-flex align-items-center gap-3 flex-wrap">
+                        <div className="d-flex align-items-center justify-content-center rounded-3" style={{ width: 40, height: 40, background: paidRef ? 'var(--success-50)' : 'var(--primary-50)', flexShrink: 0 }}>
+                          {paidRef ? <CheckCircle size={20} style={{ color: 'var(--success-600)' }} /> : <CreditCard size={20} style={{ color: 'var(--primary-600)' }} />}
                         </div>
-                        <div>
-                          <h5 className="mb-0">NIN Verification Required</h5>
+                        <div className="flex-grow-1" style={{ minWidth: 180 }}>
+                          <h5 className="mb-0">1. Pay the report fee</h5>
                           <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>
-                            Your first report requires NIN verification
+                            {paidRef ? 'Paid. This payment is kept until your report is filed.' : `${paymentCurrency} ${Number(paymentAmount).toLocaleString()} for this report`}
                           </p>
                         </div>
-                      </div>
-
-                      <div className="p-3 rounded-3 mb-3" style={{ background: 'var(--warning-50)' }}>
-                        <div className="d-flex align-items-start gap-2">
-                          <Info size={16} style={{ color: 'var(--warning-600)', flexShrink: 0, marginTop: 2 }} />
-                          <p style={{ fontSize: 13, color: 'var(--warning-700)', margin: 0 }}>
-                            You must verify your National Identification Number (NIN) before submitting this report. This is a one-time verification.
-                          </p>
-                        </div>
-                      </div>
-
-                      <label className="form-label">
-                        NIN (11 digits) <span style={{ color: 'red' }}>*</span>
-                      </label>
-                      <div style={{ position: 'relative' }}>
-                        <input
-                          className="modern-input"
-                          placeholder="Enter your 11-digit NIN"
-                          value={ninInput}
-                          onChange={(e) => setNinInput(e.target.value.replace(/\D/g, '').slice(0, 11))}
-                          style={{ paddingLeft: 40 }}
-                          maxLength={11}
-                        />
-                        <Shield
-                          size={16}
-                          style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)', pointerEvents: 'none' }}
-                        />
-                      </div>
-                      <div className="d-flex justify-content-end mt-3">
-                        <button
-                          type="button"
-                          className="btn-gradient-primary btn-sm"
-                          onClick={handleNinVerify}
-                          disabled={verifyingNin || ninInput.trim().length < 11}
-                        >
-                          {verifyingNin ? (
-                            <>
-                              <Loader2 size={16} className="spinner-border" /> Verifying...
-                            </>
-                          ) : (
-                            <>
-                              <Shield size={16} /> Verify NIN
-                            </>
-                          )}
-                        </button>
+                        {!paidRef && (
+                          <button type="button" className="po-btn po-btn-primary" onClick={() => setShowPayment(true)}>
+                            Pay {paymentCurrency} {Number(paymentAmount).toLocaleString()}
+                          </button>
+                        )}
                       </div>
                     </div>
                   )}
 
-                  {ninVerified === true && (
-                    <div className="modern-card p-4 mb-3">
-                      <div className="d-flex align-items-center gap-3">
-                        <div
-                          className="d-flex align-items-center justify-content-center rounded-circle"
-                          style={{ width: 36, height: 36, background: 'var(--success-50)' }}
-                        >
-                          <CheckCircle size={18} style={{ color: 'var(--success-500)' }} />
-                        </div>
-                        <div>
-                          <p className="fw-semibold mb-0" style={{ fontSize: 14 }}>NIN Verified</p>
-                          <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0 }}>
-                            Your identity has been verified
-                          </p>
-                        </div>
+                  {/* 2. Confirm your identity (same wording on every report) */}
+                  <div className="modern-card p-4 mb-3" data-testid="report-identity">
+                    <div className="d-flex align-items-center gap-3 mb-3">
+                      <div className="d-flex align-items-center justify-content-center rounded-3" style={{ width: 40, height: 40, background: 'var(--primary-50)', flexShrink: 0 }}>
+                        <Fingerprint size={20} style={{ color: 'var(--primary-600)' }} />
                       </div>
-                    </div>
-                  )}
-
-                  {checkingNin && (
-                    <div className="modern-card p-4 mb-3 text-center">
-                      <Loader2 size={24} className="spinner-border" style={{ color: 'var(--primary-500)' }} />
-                      <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 8, marginBottom: 0 }}>
-                        Checking verification status...
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Payment Info (displayed from backend response) */}
-                  {paymentAmount !== null && (
-                    <div className="modern-card p-4 p-md-5 mb-3">
-                      <div className="d-flex align-items-center gap-3 mb-3">
-                        <div
-                          className="d-flex align-items-center justify-content-center rounded-3"
-                          style={{ width: 40, height: 40, background: 'var(--primary-50)' }}
-                        >
-                          <CreditCard size={20} style={{ color: 'var(--primary-600)' }} />
-                        </div>
-                        <div>
-                          <h5 className="mb-0">Payment Required</h5>
-                          <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>
-                            Report verification fee
-                          </p>
-                        </div>
-                      </div>
-                      <div
-                        className="p-4 rounded-3 text-center"
-                        style={{ background: 'linear-gradient(135deg, var(--primary-50), var(--primary-100))' }}
-                      >
-                        <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>
-                          Amount Due
-                        </p>
-                        <p style={{ fontSize: 32, fontWeight: 800, color: 'var(--primary-700)', margin: 0 }}>
-                          {paymentCurrency} {paymentAmount.toLocaleString()}
+                      <div>
+                        <h5 className="mb-0">{needsPayment ? '2. ' : ''}Confirm your identity</h5>
+                        <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>
+                          {isBusiness ? 'Enter your NIN, or your business registration (RC/BN) number.' : 'Enter your 11-digit National Identification Number (NIN).'} We check it against the name on your account.
                         </p>
                       </div>
-                      <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 12, marginBottom: 0, textAlign: 'center' }}>
-                        Admin-configurable report verification fee
-                      </p>
                     </div>
-                  )}
-
-                  {/* Report Number Display */}
-                  {reportNumber !== null && (
-                    <div className="modern-card p-3 mb-3">
-                      <div className="d-flex align-items-center gap-2">
-                        <Hash size={16} style={{ color: 'var(--primary-600)' }} />
-                        <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-                          Report Number: <strong style={{ color: 'var(--text-primary)' }}>#{reportNumber}</strong>
-                        </span>
+                    {isBusiness && (
+                      <div className="po-chip-row mb-2" role="tablist" aria-label="Confirm with">
+                        <button type="button" role="tab" aria-selected={!useRc} className={`po-chip ${!useRc ? 'is-selected' : ''}`} onClick={() => { setUseRc(false); setIdError('') }}>NIN</button>
+                        <button type="button" role="tab" aria-selected={useRc} className={`po-chip ${useRc ? 'is-selected' : ''}`} onClick={() => { setUseRc(true); setIdError('') }}>Registration number</button>
                       </div>
-                    </div>
-                  )}
+                    )}
+                    {useRc ? (
+                      <>
+                        <label className="form-label" htmlFor="report-rc">Business registration number</label>
+                        <input id="report-rc" className="modern-input po-mono" placeholder="e.g. RC1234567" autoComplete="off" value={rcInput}
+                          onChange={(e) => { setRcInput(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 15)); setIdError('') }} />
+                      </>
+                    ) : (
+                      <>
+                        <label className="form-label" htmlFor="report-nin">NIN</label>
+                        <input id="report-nin" className="modern-input po-mono" placeholder="11 digits" inputMode="numeric" autoComplete="off" maxLength={11} value={ninInput}
+                          onChange={(e) => { setNinInput(e.target.value.replace(/\D/g, '').slice(0, 11)); setIdError('') }} />
+                      </>
+                    )}
+                    {idError && <p className="po-error mt-2 mb-0" role="alert">{idError}{paidRef ? ' Your payment is kept.' : ''}</p>}
+                  </div>
 
                   {/* Navigation */}
                   <div className="modern-card p-4">
-                    <div className="d-flex justify-content-between">
+                    <div className="d-flex justify-content-between gap-2">
                       <button type="button" className="btn-ghost" onClick={() => setStep('details')}>
                         <ArrowLeft size={16} /> Back
                       </button>
                       <button
                         type="button"
                         className="btn-gradient-danger d-flex align-items-center gap-2"
-                        disabled={submitting || (ninVerified === false && ninInput.trim().length < 11)}
+                        disabled={!canSubmit}
                         onClick={() => handleSubmitReport()}
                       >
                         {submitting ? (
@@ -943,11 +822,12 @@ export default function ReportDeviceIncident() {
                           </>
                         ) : (
                           <>
-                            <Send size={18} /> Submit Report
+                            <Send size={18} /> Submit report
                           </>
                         )}
                       </button>
                     </div>
+                    {needsPayment && !paidRef && <p className="po-muted mt-2 mb-0" style={{ fontSize: 13 }}>Pay the report fee first.</p>}
                   </div>
                 </motion.div>
               )}
@@ -1058,8 +938,8 @@ export default function ReportDeviceIncident() {
         isOpen={showPayment}
         onClose={() => setShowPayment(false)}
         feeType="report_verification_fee"
-        feeLabel="Report Verification"
-        description="Fee for device incident report verification"
+        feeLabel="Report fee"
+        description="Fee for this report"
         onSuccess={handlePaymentSuccess}
       />
     </Layout>
