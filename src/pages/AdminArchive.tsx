@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { useToast, ToastContainer } from '../components/Toast'
+import { useConfirm } from '../components/ConfirmDialog'
 import { apiClient } from '../lib/apiClient'
 import { Archive, Users, Smartphone, RotateCcw, Search, Download, Shield, ChevronRight, X, AlertTriangle, ExternalLink } from 'lucide-react'
 
@@ -10,6 +11,7 @@ type Tab = 'users' | 'devices' | 'stats' | 'exports'
 export default function AdminArchive() {
   const navigate = useNavigate()
   const { showSuccess, showError, toasts, removeToast } = useToast()
+  const confirm = useConfirm()
   const [tab, setTab] = useState<Tab>('stats')
   const [loading, setLoading] = useState(true)
 
@@ -77,7 +79,7 @@ export default function AdminArchive() {
   }
 
   const handleRestore = async (type: 'user' | 'device', archiveId: string) => {
-    if (!confirm(`Are you sure you want to restore this ${type}?`)) return
+    if (!await confirm({ title: `Restore this ${type}?`, confirmLabel: 'Restore' })) return
     try {
       if (type === 'user') await apiClient.archive.restoreUser(archiveId)
       else await apiClient.archive.restoreDevice(archiveId)

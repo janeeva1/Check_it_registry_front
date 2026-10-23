@@ -1,5 +1,6 @@
 // Mobile Device Check Component - Enhanced mobile device checking interface
 import React, { useState, useEffect } from 'react';
+import { useToast } from '../Toast';
 import { QRScanner } from './QRScanner';
 import { NFCReader } from './NFCReader';
 import { mobileIntegrationService, MobileCapabilities } from '../../services/MobileIntegrationService';
@@ -13,6 +14,7 @@ export const MobileDeviceCheck: React.FC<MobileDeviceCheckProps> = ({
   onDeviceIdentified,
   onLocationUpdate
 }) => {
+  const { showError: toastError } = useToast();
   const [capabilities, setCapabilities] = useState<MobileCapabilities | null>(null);
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [showNFCReader, setShowNFCReader] = useState(false);
@@ -65,7 +67,7 @@ export const MobileDeviceCheck: React.FC<MobileDeviceCheckProps> = ({
 
   const startLocationTracking = () => {
     if (!capabilities?.hasGPS) {
-      alert('GPS not available on this device');
+      toastError('Location is not available on this device');
       return;
     }
 
@@ -270,7 +272,7 @@ export const MobileDeviceCheck: React.FC<MobileDeviceCheckProps> = ({
       <QRScanner
         isOpen={showQRScanner}
         onScan={handleQRScan}
-        onError={(error) => alert(`QR Scan Error: ${error}`)}
+        onError={(error) => toastError('Could not scan the code', String(error))}
         onClose={() => setShowQRScanner(false)}
       />
 
@@ -278,7 +280,7 @@ export const MobileDeviceCheck: React.FC<MobileDeviceCheckProps> = ({
       <NFCReader
         isOpen={showNFCReader}
         onRead={handleNFCRead}
-        onError={(error) => alert(`NFC Read Error: ${error}`)}
+        onError={(error) => toastError('Could not read the tag', String(error))}
         onClose={() => setShowNFCReader(false)}
       />
     </div>

@@ -1,5 +1,6 @@
 // Recovery Service Dashboard - Admin interface for managing recovery services
 import React, { useState, useEffect } from 'react'
+import { useToast } from '../Toast'
 import { Layout } from '../Layout'
 import {
   DollarSign,
@@ -40,6 +41,7 @@ interface RecoveryStats {
 }
 
 function RecoveryServiceDashboard() {
+  const { showError: toastError, showSuccess: toastSuccess } = useToast()
   const [services, setServices] = useState<RecoveryService[]>([])
   const [stats, setStats] = useState<RecoveryStats | null>(null)
   const [loading, setLoading] = useState(true)
@@ -121,7 +123,7 @@ function RecoveryServiceDashboard() {
 
       loadDashboardData()
     } catch (err) {
-      alert(`Error updating status: ${err instanceof Error ? err.message : 'Unknown error'}`)
+      toastError('Could not update status', err instanceof Error ? err.message : undefined)
     }
   }
 
@@ -141,11 +143,11 @@ function RecoveryServiceDashboard() {
       }
 
       const result = await response.json()
-      alert(`Refund processed: ${result.refundAmount}`)
+      toastSuccess('Refund processed', String(result.refundAmount))
 
       loadDashboardData()
     } catch (err) {
-      alert(`Error processing refund: ${err instanceof Error ? err.message : 'Unknown error'}`)
+      toastError('Could not process the refund', err instanceof Error ? err.message : undefined)
     }
   }
 

@@ -23,13 +23,32 @@ export default function PaymentCallback() {
     const complete = async () => {
       try {
         const token = localStorage.getItem('auth_token')
-        const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/marketplace/complete-purchase`, {
+        const api = import.meta.env.VITE_API_URL || '/api'
+        const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
+
+        // Fee payments (device check, report, NIN ...): just confirm the payment;
+        // the original tab continues the action automatically.
+        if (searchParams.get('kind') === 'fee' || ref.startsWith('FEE-') || ref.startsWith('CHK-')) {
+          const res = await fetch(`${api}/revenue-admin/invoices/verify`, {
+            method: 'POST', headers, body: JSON.stringify({ reference: ref }),
+          })
+          const data = await res.json().catch(() => ({}))
+          if (!res.ok) throw new Error(data.error?.message || data.error || 'Verification failed')
+          if (!data.paid) throw new Error('Payment not confirmed yet. If you were charged, wait a minute and refresh this page.')
+          setStatus('success')
+          setMessage('Payment confirmed. You can close this tab and go back to the page you were on.')
+          return
+        }
+
+        // Marketplace: single item or whole cart
+        const endpoint = ref.startsWith('BUL') ? 'bulk-complete-purchase' : 'complete-purchase'
+        const res = await fetch(`${api}/marketplace/${endpoint}`, {
           method: 'POST',
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({ reference: ref }),
         })
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.error || 'Verification failed')
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) throw new Error(data.error?.message || data.error || 'Verification failed')
         setStatus('success')
         setMessage(data.message || 'Purchase completed!')
       } catch (err: any) {
@@ -38,7 +57,7 @@ export default function PaymentCallback() {
       }
     }
     complete()
-  }, [ref])
+  }, [ref, searchParams])
 
   return (
     <Layout requireAuth>

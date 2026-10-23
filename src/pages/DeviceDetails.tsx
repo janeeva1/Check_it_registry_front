@@ -1,249 +1,283 @@
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { Smartphone, ArrowLeft, Edit2, Trash2, CheckCircle, AlertTriangle, Clock, Shield, Copy, History, Loader2, LogOut } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
+import { ArrowLeft, Pencil, Trash2, AlertTriangle, Copy, Check, History, Loader2, LogOut, ArrowLeftRight, Search, MailCheck, Store, ChevronRight } from 'lucide-react'
 import { Layout } from '../components/Layout'
-import { useAuth } from '../contexts/AuthContext'
-import { useToast, ToastContainer } from '../components/Toast'
-import { useParams, useNavigate, Link } from 'react-router-dom'
-import { getDisplayName } from '../utils/userHelpers'
+import { useToast } from '../components/Toast'
+import { useConfirm } from '../components/ConfirmDialog'
+import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom'
+import { apiClient } from '../lib/apiClient'
+import { CategoryIcon, categoryLabel, formatNaira, storedCategory } from '../utils/categories'
+import OwnershipPanel from '../components/ownership/OwnershipPanel'
 
 type Device = {
   id: string
   brand: string
   model: string
-  imei: string
-  serial: string
   category: string
-  color: string
-  storage: string
+  imei?: string | null
+  imei2?: string | null
+  serial?: string | null
+  vin?: string | null
+  license_plate?: string | null
+  year?: string | null
+  engine_number?: string | null
+  certificate_number?: string | null
+  color?: string | null
+  storage_capacity?: string | null
+  estimated_value?: number | string | null
+  description?: string | null
+  notes?: string | null
   status: string
-  notes: string
-  purchaseDate: string
-  estimatedValue: number
+  ownership_level?: string
   created_at: string
-  owner?: { id: string; name: string; email: string; first_name?: string; middle_name?: string; last_name?: string }
+}
+
+const STATUS: Record<string, { label: string; tone: string; help: string }> = {
+  verified: { label: 'Active', tone: 'success', help: 'Protected and in your name.' },
+  unverified: { label: 'Confirm by email', tone: 'warning', help: 'Confirm this registration with the code we email you.' },
+  stolen: { label: 'Reported stolen', tone: 'danger', help: 'Anyone who checks it is told it was stolen.' },
+  lost: { label: 'Reported lost', tone: 'danger', help: 'Anyone who checks it is told it was lost.' },
+  found: { label: 'Found', tone: 'info', help: 'Marked as found.' },
+  pending_transfer: { label: 'Transfer in progress', tone: 'info', help: 'A transfer to a new owner is waiting to be completed.' },
+  released: { label: 'Released', tone: 'neutral', help: 'No longer in your name.' },
+}
+
+// Which edit fields make sense for which kind of item
+const EDIT_FIELDS: Record<string, Array<[keyof Device, string]>> = {
+  common: [['brand', 'Brand'], ['model', 'Model'], ['color', 'Colour']],
+  mobile_phone: [['storage_capacity', 'Storage']],
+  computer: [['storage_capacity', 'Storage']],
+  vehicle: [['license_plate', 'Plate number']],
+}
+
+function CopyValue({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false)
+  return (
+    <button type="button" className="po-icon-btn po-icon-btn-sm" aria-label="Copy"
+      onClick={() => { navigator.clipboard?.writeText(value); setCopied(true); setTimeout(() => setCopied(false), 1500) }}>
+      {copied ? <Check size={14} /> : <Copy size={14} />}
+    </button>
+  )
 }
 
 export default function DeviceDetails() {
   const { id } = useParams<{ id: string }>()
+  const [params] = useSearchParams()
+  const isNew = params.get('new') === '1'
   const navigate = useNavigate()
-  const { user } = useAuth()
-  const { toasts, removeToast, showSuccess, showError } = useToast()
+  const confirm = useConfirm()
+  const { showSuccess, showError } = useToast()
   const [device, setDevice] = useState<Device | null>(null)
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [editForm, setEditForm] = useState<Partial<Device>>({})
+  const [level, setLevel] = useState<string | undefined>()
+  const [code, setCode] = useState('')
+  const [codeSent, setCodeSent] = useState(false)
+  const [verifying, setVerifying] = useState(false)
 
-  useEffect(() => {
+  const load = useCallback(async () => {
     if (!id) return
-    const fetchDevice = async () => {
-      try {
-        setLoading(true)
-        const token = localStorage.getItem('auth_token')
-        const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/device-management/${id}`, { headers: { Authorization: `Bearer ${token}` } })
-        if (!res.ok) throw new Error('Device not found')
-      const data = await res.json()
-        setDevice(data.data || data)
-      } catch { setDevice(null) }
-      finally { setLoading(false) }
-    }
-    fetchDevice()
+    try {
+      const d = await apiClient.devices.get(id)
+      setDevice(d?.data || d)
+    } catch { setDevice(null) } finally { setLoading(false) }
   }, [id])
 
-  const handleEdit = async () => {
+  useEffect(() => { load() }, [load])
+
+  const cat = storedCategory(device?.category)
+
+  const saveEdit = async () => {
     if (!device) return
+    const changed: Record<string, unknown> = {}
+    for (const [k, v] of Object.entries(editForm)) if ((device as any)[k] !== v) changed[k] = v
+    if (!Object.keys(changed).length) { setEditing(false); return }
+    setSaving(true)
     try {
-      const token = localStorage.getItem('auth_token')
-      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/device-management/${device.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(editForm),
-      })
-      if (!res.ok) throw new Error('Failed to update')
-      const _data = await res.json()
-      setDevice({ ...device, ...editForm })
+      await apiClient.devices.update(device.id, changed)
+      setDevice({ ...device, ...changed } as Device)
       setEditing(false)
-      showSuccess('Device updated')
-    } catch (err: any) { showError(err.message) }
+      showSuccess('Changes saved')
+    } catch (err: any) { showError('Could not save changes', err?.message) } finally { setSaving(false) }
   }
 
-  const handleDelete = async () => {
-    if (!device || !window.confirm('Are you sure? This cannot be undone.')) return
-    try {
-      const token = localStorage.getItem('auth_token')
-      await fetch(`${import.meta.env.VITE_API_URL || '/api'}/device-management/${device.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
-      showSuccess('Device removed')
-      navigate('/my-devices')
-    } catch (err: any) { showError(err.message) }
-  }
-
-  const handleRelease = async () => {
+  const remove = async () => {
     if (!device) return
-    if (!window.confirm(`Release "${device.brand} ${device.model}" from your account?\n\nThe device will be available for a new owner to register. This action cannot be undone.`)) return
+    const ok = await confirm({
+      title: `Remove ${device.brand} ${device.model}?`,
+      message: 'It will disappear from your items and stop being protected. If you sold or gave it away, use Transfer instead so the new owner gets it.',
+      confirmLabel: 'Remove item', danger: true,
+    })
+    if (!ok) return
     try {
-      const token = localStorage.getItem('auth_token')
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || '/api'}/device-management/${device.id}/release`, {
-        method: 'POST', headers: { Authorization: `Bearer ${token}` }
-      })
-      if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed to release device') }
-      showSuccess('Device released successfully')
-      setTimeout(() => navigate('/my-devices'), 1500)
-    } catch (err: any) { showError(err.message) }
+      await apiClient.devices.delete(device.id)
+      showSuccess('Item removed')
+      navigate('/my-devices')
+    } catch (err: any) { showError('Could not remove item', err?.message) }
   }
 
-  const statusBadge = (s?: string) => {
-    const st = (s || '').toLowerCase()
-    if (['clean', 'verified', 'clear', 'active'].includes(st)) return <span className="status-badge status-verified">Active</span>
-    if (st === 'stolen') return <span className="status-badge status-stolen">Stolen</span>
-    if (st === 'lost') return <span className="status-badge status-unverified">Lost</span>
-    if (st === 'transferred') return <span className="status-badge status-found">Transferred</span>
-    return <span className="status-badge status-found">{(s || 'Unknown').charAt(0).toUpperCase() + (s || 'Unknown').slice(1)}</span>
+  const release = async () => {
+    if (!device) return
+    const ok = await confirm({
+      title: `Release ${device.brand} ${device.model}?`,
+      message: 'It will no longer be in your name, and anyone can register it. Use this only if you no longer have the item and no one is buying it from you.',
+      confirmLabel: 'Release item', danger: true,
+    })
+    if (!ok) return
+    try {
+      await apiClient.devices.release(device.id)
+      showSuccess('Item released')
+      navigate('/my-devices')
+    } catch (err: any) { showError('Could not release item', err?.message) }
+  }
+
+  const sendCode = async () => {
+    if (!device) return
+    try {
+      await apiClient.devices.resendVerification(device.id)
+      setCodeSent(true)
+      showSuccess('Code sent', 'Check your email for a 6-digit code.')
+    } catch (err: any) { showError('Could not send code', err?.message) }
+  }
+
+  const verify = async () => {
+    if (!device || code.trim().length < 4) return
+    setVerifying(true)
+    try {
+      await apiClient.devices.verifyWithCode(device.id, code.trim())
+      showSuccess('Registration confirmed')
+      setCode(''); setCodeSent(false)
+      await load()
+    } catch (err: any) { showError('That code did not work', err?.message) } finally { setVerifying(false) }
   }
 
   if (loading) {
-    return (
-      <Layout requireAuth>
-        <div className="container-fluid">
-          <div className="row justify-content-center py-4">
-            <div className="col-lg-8"><div className="modern-card p-5 text-center"><Loader2 size={32} className="spinner-border" style={{ color: 'var(--primary-600)' }} /></div></div>
-          </div>
-        </div>
-      </Layout>
-    )
+    return <Layout requireAuth><div className="po-page po-center"><Loader2 size={28} className="po-spin" aria-label="Loading" /></div></Layout>
   }
 
   if (!device) {
     return (
       <Layout requireAuth>
-        <div className="container-fluid">
-          <div className="row justify-content-center py-4">
-            <div className="col-lg-8">
-              <div className="modern-card p-5 text-center">
-                <div className="empty-state"><div className="empty-state-icon"><Smartphone size={48} /></div><h3>Device Not Found</h3><p>The device doesn't exist or has been removed</p><Link to="/my-devices" className="btn-gradient-primary mt-3">My Devices</Link></div>
-              </div>
-            </div>
+        <div className="po-page">
+          <div className="modern-card p-5 text-center">
+            <h1 className="h4">Item not found</h1>
+            <p className="po-muted">It may have been removed or transferred to someone else.</p>
+            <Link to="/my-devices" className="po-btn po-btn-primary">Go to my items</Link>
           </div>
         </div>
       </Layout>
     )
   }
 
+  const status = STATUS[device.status] || { label: device.status, tone: 'neutral', help: '' }
+  const ids: Array<[string, string | null | undefined]> = [
+    ['IMEI', device.imei], ['Second IMEI', device.imei2], ['Serial number', device.serial],
+    ['VIN', device.vin], ['Plate number', device.license_plate], ['Engine number', device.engine_number],
+    ['Certificate number', device.certificate_number],
+  ]
+  const details: Array<[string, string | null | undefined]> = [
+    ['Type', categoryLabel(device.category)], ['Colour', device.color], ['Storage', device.storage_capacity],
+    ['Year', device.year], ['Estimated value', device.estimated_value ? formatNaira(device.estimated_value) : null],
+    ['Registered', new Date(device.created_at).toLocaleDateString()],
+  ]
+  const editFields = [...EDIT_FIELDS.common, ...(EDIT_FIELDS[cat] || [])]
+  const blocked = ['stolen', 'lost', 'released'].includes(device.status)
+  const canSell = level === 'verified_owner' && device.status === 'verified'
+
+  const checkLink = device.imei ? `/device-check?imei=${encodeURIComponent(device.imei)}` : `/device-check?serial=${encodeURIComponent(device.serial || device.vin || '')}`
+  const shown = [...ids, ...details].filter(([, v]) => v)
+
   return (
     <Layout requireAuth>
-      <div className="container-fluid">
-        <div className="row mb-4">
-          <div className="col-12">
-            <div className="page-header">
-              <div className="d-flex align-items-center gap-3 flex-wrap">
-                <button className="btn-ghost d-inline-flex align-items-center gap-2" onClick={() => navigate(-1)}><ArrowLeft size={18} /> Back</button>
-                <div className="d-flex align-items-center justify-content-center rounded-circle" style={{ width: 48, height: 48, background: 'linear-gradient(135deg, var(--primary-500), var(--primary-700))' }}>
-                  <Smartphone size={24} className="text-white" />
-                </div>
-                <div>
-                  <h1>{device.brand} {device.model}</h1>
-                  <p>{device.category} &middot; {statusBadge(device.status)}</p>
-                </div>
-                <div className="ms-md-auto d-flex gap-2">
-                  <button className="btn-ghost d-inline-flex align-items-center gap-2" onClick={() => { setEditing(!editing); setEditForm(device) }}><Edit2 size={16} /> {editing ? 'Cancel' : 'Edit'}</button>
-                  <button className="btn-ghost d-inline-flex align-items-center gap-2" style={{ color: 'var(--danger-500)' }} onClick={handleDelete}><Trash2 size={16} /> Remove</button>
-                </div>
-              </div>
+      <div className="po-page po-single">
+        <button className="po-back" onClick={() => navigate(-1)}><ArrowLeft size={18} aria-hidden="true" /> Back</button>
+
+        <header className="po-item-head">
+          <span className="po-item-icon"><CategoryIcon category={device.category} size={26} /></span>
+          <div className="po-item-title">
+            <h1>{device.brand} {device.model}</h1>
+            <div className="po-item-meta">
+              <span className={`po-badge po-badge-${status.tone}`} title={status.help}>{status.label}</span>
             </div>
           </div>
-        </div>
+        </header>
 
-        <div className="row g-4">
-          <div className="col-lg-7">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-              {editing ? (
-                <div className="modern-card p-4">
-                  <h5 className="mb-4">Edit Device</h5>
-                  <div className="row g-3">
-                    <div className="col-md-6">
-                      <label className="form-label">Brand</label>
-                      <input className="modern-input" value={editForm.brand || ''} onChange={e => setEditForm(p => ({ ...p, brand: e.target.value }))} />
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label">Model</label>
-                      <input className="modern-input" value={editForm.model || ''} onChange={e => setEditForm(p => ({ ...p, model: e.target.value }))} />
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label">Color</label>
-                      <input className="modern-input" value={editForm.color || ''} onChange={e => setEditForm(p => ({ ...p, color: e.target.value }))} />
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label">Storage</label>
-                      <input className="modern-input" value={editForm.storage || ''} onChange={e => setEditForm(p => ({ ...p, storage: e.target.value }))} />
-                    </div>
-                    <div className="col-12">
-                      <label className="form-label">Notes</label>
-                      <textarea className="modern-textarea" rows={3} value={editForm.notes || ''} onChange={e => setEditForm(p => ({ ...p, notes: e.target.value }))} />
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label">Estimated Value ($)</label>
-                      <input type="number" className="modern-input" value={editForm.estimatedValue || ''} onChange={e => setEditForm(p => ({ ...p, estimatedValue: parseFloat(e.target.value) || 0 }))} />
-                    </div>
-                  </div>
-                  <div className="mt-4 d-flex gap-2 justify-content-end">
-                    <button className="btn-ghost" onClick={() => setEditing(false)}>Cancel</button>
-                    <button className="btn-gradient-primary" onClick={handleEdit}>Save Changes</button>
-                  </div>
-                </div>
-              ) : (
-                <div className="modern-card p-4">
-                  <h5 className="mb-4">Device Information</h5>
-                  <div className="row g-3" style={{ fontSize: 14 }}>
-                    <div className="col-md-4"><span style={{ color: 'var(--text-secondary)' }}>Category</span><p className="fw-medium mb-0 mt-1 text-capitalize">{device.category}</p></div>
-                    <div className="col-md-4"><span style={{ color: 'var(--text-secondary)' }}>Color</span><p className="fw-medium mb-0 mt-1">{device.color || '—'}</p></div>
-                    <div className="col-md-4"><span style={{ color: 'var(--text-secondary)' }}>Storage</span><p className="fw-medium mb-0 mt-1">{device.storage || '—'}</p></div>
-                    <div className="col-md-4"><span style={{ color: 'var(--text-secondary)' }}>IMEI</span><p className="fw-medium mb-0 mt-1" style={{ fontFamily: 'monospace' }}>{device.imei || '—'}<button className="btn btn-link p-0 ms-1" onClick={() => { navigator.clipboard?.writeText(device.imei || '') }}><Copy size={12} /></button></p></div>
-                    <div className="col-md-4"><span style={{ color: 'var(--text-secondary)' }}>Serial</span><p className="fw-medium mb-0 mt-1" style={{ fontFamily: 'monospace' }}>{device.serial || '—'}</p></div>
-                    <div className="col-md-4"><span style={{ color: 'var(--text-secondary)' }}>Status</span><p className="mb-0 mt-1">{statusBadge(device.status)}</p></div>
-                    <div className="col-md-4"><span style={{ color: 'var(--text-secondary)' }}>Est. Value</span><p className="fw-medium mb-0 mt-1">{device.estimatedValue ? `$${device.estimatedValue}` : '—'}</p></div>
-                    <div className="col-md-4"><span style={{ color: 'var(--text-secondary)' }}>Registered</span><p className="fw-medium mb-0 mt-1">{new Date(device.created_at).toLocaleDateString()}</p></div>
-                    {device.notes && <div className="col-12"><span style={{ color: 'var(--text-secondary)' }}>Notes</span><p className="fw-medium mb-0 mt-1">{device.notes}</p></div>}
-                  </div>
-                </div>
-              )}
+        {device.status === 'unverified' && (
+          <section className="po-card is-highlighted" aria-labelledby="confirm-title">
+            <h2 id="confirm-title" className="po-card-title"><MailCheck size={20} aria-hidden="true" /> Confirm it's yours</h2>
+            <p className="po-card-text">Open the link we emailed you{isNew ? ' just now' : ''}. Can't find it?</p>
+            {codeSent ? (
+              <div className="po-inline-form">
+                <label htmlFor="verify-code" className="visually-hidden">6-digit code</label>
+                <input id="verify-code" className="modern-input" inputMode="numeric" autoComplete="one-time-code" maxLength={8}
+                  placeholder="6-digit code" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} />
+                <button className="po-btn po-btn-primary" onClick={verify} disabled={verifying || code.length < 4}>
+                  {verifying ? <Loader2 size={16} className="po-spin" aria-hidden="true" /> : null} Confirm
+                </button>
+              </div>
+            ) : (
+              <button className="po-btn po-btn-secondary" onClick={sendCode}>Email me a code</button>
+            )}
+          </section>
+        )}
 
-              {device.owner && device.owner.id !== user?.id && (
-                <div className="modern-card p-3 mt-3">
-                  <p style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Owner: {getDisplayName(device.owner)} ({device.owner.email})</p>
-                </div>
-              )}
-            </motion.div>
+        <OwnershipPanel deviceId={device.id} highlight={isNew} onLevelChange={setLevel} />
+
+        <ul className="po-simple-list po-mb">
+          <li><Link to={checkLink} className="po-simple-row"><span className="po-row-icon"><Search size={20} aria-hidden="true" /></span><span className="po-simple-main"><strong>Check it</strong><span>See what a buyer sees</span></span><ChevronRight size={18} aria-hidden="true" /></Link></li>
+          {!blocked && <li><Link to={`/transfer?device=${device.id}`} className="po-simple-row"><span className="po-row-icon"><ArrowLeftRight size={20} aria-hidden="true" /></span><span className="po-simple-main"><strong>Transfer to a new owner</strong><span>You sold or gave it away</span></span><ChevronRight size={18} aria-hidden="true" /></Link></li>}
+          {canSell && <li><Link to={`/marketplace/create-listing?device=${device.id}`} className="po-simple-row"><span className="po-row-icon"><Store size={20} aria-hidden="true" /></span><span className="po-simple-main"><strong>Sell it</strong><span>List on the marketplace</span></span><ChevronRight size={18} aria-hidden="true" /></Link></li>}
+          {!blocked && <li><Link to={`/report-incident?device=${device.id}`} className="po-simple-row is-danger"><span className="po-row-icon"><AlertTriangle size={20} aria-hidden="true" /></span><span className="po-simple-main"><strong>Report stolen or lost</strong><span>Warn anyone who checks it</span></span><ChevronRight size={18} aria-hidden="true" /></Link></li>}
+        </ul>
+
+        <section className="po-card" aria-labelledby="details-title">
+          <div className="po-card-head">
+            <h2 id="details-title" className="po-card-title">Details</h2>
+            {!editing && !blocked && (
+              <button className="po-btn po-btn-ghost po-btn-sm" onClick={() => { setEditForm(Object.fromEntries(editFields.map(([k]) => [k, device[k] ?? '']))); setEditing(true) }}>
+                <Pencil size={16} aria-hidden="true" /> Edit
+              </button>
+            )}
           </div>
-
-          <div className="col-lg-5">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-              <div className="modern-card p-4 mb-4">
-                <h5 className="mb-4 d-flex align-items-center gap-2"><Shield size={20} style={{ color: 'var(--primary-600)' }} /> Quick Actions</h5>
-                <div className="d-flex flex-column gap-2">
-                  <Link to={`/device-check-report?deviceId=${device.id}`} className="btn-outline-primary d-flex align-items-center gap-2"><Shield size={16} /> Check Device</Link>
-                  <Link to={`/transfer?device=${device.id}`} className="btn-outline-primary d-flex align-items-center gap-2"><Smartphone size={16} /> Transfer Ownership</Link>
-                  <Link to={`/verify-device?device=${device.id}`} className="btn-outline-primary d-flex align-items-center gap-2"><CheckCircle size={16} /> Verify Ownership</Link>
-                  <Link to={`/report-incident?device=${device.id}`} className="btn-outline-primary d-flex align-items-center gap-2" style={{ color: 'var(--danger-500)' }}><AlertTriangle size={16} /> Report Incident</Link>
-                  <button onClick={handleRelease} className="btn-outline-primary d-flex align-items-center gap-2" style={{ color: 'var(--warning-500)' }}><LogOut size={16} /> Release Device</button>
+          {editing ? (
+            <>
+              <div className="po-form-grid">
+                {editFields.map(([k, label]) => (
+                  <div key={k} className="po-field">
+                    <label className="po-label" htmlFor={`edit-${k}`}>{label}</label>
+                    <input id={`edit-${k}`} className="modern-input" value={String(editForm[k] ?? '')} onChange={(e) => setEditForm((p) => ({ ...p, [k]: e.target.value }))} />
+                  </div>
+                ))}
+                <div className="po-field po-span-2">
+                  <label className="po-label" htmlFor="edit-notes">Notes</label>
+                  <textarea id="edit-notes" className="modern-textarea" rows={3} value={String(editForm.notes ?? device.notes ?? '')} onChange={(e) => setEditForm((p) => ({ ...p, notes: e.target.value }))} />
                 </div>
               </div>
-
-              <div className="modern-card p-4">
-                <h5 className="mb-3 d-flex align-items-center gap-2"><History size={18} style={{ color: 'var(--primary-600)' }} /> Recent Activity</h5>
-                <div className="d-flex align-items-center gap-3 mb-3">
-                  <div className="d-flex align-items-center justify-content-center rounded-circle" style={{ width: 32, height: 32, background: 'var(--primary-50)' }}><Clock size={14} style={{ color: 'var(--primary-600)' }} /></div>
-                  <div>
-                    <p className="fw-medium mb-0" style={{ fontSize: 13 }}>Device Registered</p>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: 11 }}>{new Date(device.created_at).toLocaleString()}</p>
-                  </div>
-                </div>
-                <Link to={`/audit-trail?resource=device&q=${encodeURIComponent(String(device.id))}`} className="btn-ghost d-inline-flex align-items-center gap-2" style={{ fontSize: 13 }}>
-                  <History size={14} /> View Full Audit Trail
-                </Link>
+              <div className="po-actions">
+                <button className="po-btn po-btn-secondary" onClick={() => setEditing(false)}>Cancel</button>
+                <button className="po-btn po-btn-primary" onClick={saveEdit} disabled={saving}>{saving && <Loader2 size={16} className="po-spin" aria-hidden="true" />} Save</button>
               </div>
-            </motion.div>
-          </div>
+            </>
+          ) : (
+            <dl className="po-rows">
+              {shown.map(([k, v]) => (
+                <div key={k}>
+                  <dt>{k}</dt>
+                  <dd className={ids.some(([n]) => n === k) ? 'po-mono' : ''}>{v}{ids.some(([n]) => n === k) && <CopyValue value={String(v)} />}</dd>
+                </div>
+              ))}
+              {device.description && <div><dt>Description</dt><dd>{device.description}</dd></div>}
+              {device.notes && <div><dt>Notes</dt><dd>{device.notes}</dd></div>}
+            </dl>
+          )}
+        </section>
+
+        <div className="po-quiet-links">
+          <Link to={`/device-check-report?deviceId=${device.id}`}><History size={15} aria-hidden="true" /> Who checked this item</Link>
+          {!blocked && <button type="button" onClick={release}><LogOut size={15} aria-hidden="true" /> Release</button>}
+          {!blocked && <button type="button" className="is-danger" onClick={remove}><Trash2 size={15} aria-hidden="true" /> Remove</button>}
         </div>
-        <ToastContainer toasts={toasts} onRemove={removeToast} />
       </div>
     </Layout>
   )

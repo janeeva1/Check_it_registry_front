@@ -92,12 +92,12 @@ export default function MarketplaceInbox() {
               <h1>Inbox</h1>
               <p>Manage buyer inquiries and messages</p>
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <div style={{ position: 'relative' }}>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', width: '100%', maxWidth: 380 }}>
+              <div style={{ position: 'relative', flex: '1 1 180px', minWidth: 0 }}>
                 <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
                 <input
                   className="modern-input"
-                  style={{ paddingLeft: 36, paddingTop: 8, paddingBottom: 8, fontSize: 14, width: 220 }}
+                  style={{ paddingLeft: 36, paddingTop: 8, paddingBottom: 8, fontSize: 14, width: '100%' }}
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder="Search messages..."
@@ -105,7 +105,7 @@ export default function MarketplaceInbox() {
               </div>
               <select
                 className="modern-select"
-                style={{ width: 140, paddingTop: 8, paddingBottom: 8, fontSize: 14 }}
+                style={{ flex: '0 1 140px', minWidth: 0, paddingTop: 8, paddingBottom: 8, fontSize: 14 }}
                 value={filter}
                 onChange={e => setFilter(e.target.value as any)}
               >

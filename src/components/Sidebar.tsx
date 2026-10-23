@@ -1,7 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useTheme } from "../contexts/ThemeContext";
 import {
   LayoutDashboard,
   Smartphone,
@@ -26,6 +25,10 @@ import {
   ArrowLeftRight,
   Archive,
   RotateCcw,
+  Plus,
+  Scale,
+  HelpCircle,
+  User,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -49,13 +52,13 @@ interface NavGroup {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, user }) => {
   const location = useLocation();
-  const { theme } = useTheme();
-  const [isMobile, setIsMobile] = React.useState(window.innerWidth < 768);
+  // Below 1024px the sidebar is a drawer over the page
+  const [isMobile, setIsMobile] = React.useState(window.innerWidth < 1024);
 
   // Handle window resize
   React.useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
+      setIsMobile(window.innerWidth < 1024);
     };
 
     window.addEventListener("resize", handleResize);
@@ -63,24 +66,29 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, user }) => {
   }, []);
 
   const getNavGroups = (): NavGroup[] => {
+    // Plain-language groups, ordered by how often people need them
     const usersMenu: NavGroup = {
       key: "users",
-      title: "Users Menu",
-      icon: Users,
+      title: "My items",
+      icon: Smartphone,
       items: [
-        { path: "/device-check", label: "Device Check", icon: Search },
-        { path: "/verification-status", label: "Verification Status", icon: ShieldCheck },
-        { path: "/device-check-report", label: "Check Report", icon: FileText },
-        { path: "/register-device", label: "Register Device", icon: Smartphone },
-        { path: "/my-devices", label: "My Devices", icon: Smartphone },
+        { path: "/my-devices", label: "My items", icon: Smartphone },
+        { path: "/register-device", label: "Register an item", icon: Plus },
         { path: "/transfer", label: "Transfers", icon: ArrowLeftRight },
-        { path: "/report-incident", label: "Report Incident", icon: AlertOctagon },
-        { path: "/reports", label: "My Reports", icon: FileText },
-        { path: "/notifications", label: "Notifications", icon: Bell },
-        { path: "/device-recovery", label: "Device Recovery", icon: Shield },
-        { path: "/orders", label: "My Orders", icon: Receipt },
-        { path: "/search", label: "Search", icon: Search },
-        { path: "/profile", label: "Profile", icon: Users },
+        { path: "/report-incident", label: "Report stolen or lost", icon: AlertOctagon },
+        { path: "/reports", label: "My reports", icon: FileText },
+        { path: "/claim", label: "Claim an item", icon: Scale },
+        { path: "/device-recovery", label: "Recovery help", icon: Shield },
+      ],
+    };
+
+    const checkMenu: NavGroup = {
+      key: "check",
+      title: "Check before you buy",
+      icon: Search,
+      items: [
+        { path: "/device-check", label: "Check an item", icon: Search },
+        { path: "/device-check-report", label: "Check history", icon: History },
       ],
     };
 
@@ -90,7 +98,20 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, user }) => {
       icon: Inbox,
       items: [
         { path: "/marketplace/browse", label: "Browse", icon: Search },
-        { path: "/marketplace-inbox", label: "Inbox", icon: MessageSquare },
+        { path: "/marketplace-inbox", label: "Messages", icon: MessageSquare },
+        { path: "/orders", label: "My orders", icon: Receipt },
+      ],
+    };
+
+    const accountMenu: NavGroup = {
+      key: "account",
+      title: "Account",
+      icon: User,
+      items: [
+        { path: "/notifications", label: "Notifications", icon: Bell },
+        { path: "/profile", label: "Profile", icon: User },
+        { path: "/settings", label: "Settings", icon: Settings },
+        { path: "/help", label: "Help", icon: HelpCircle },
       ],
     };
 
@@ -115,10 +136,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, user }) => {
       title: "Payments",
       icon: CreditCard,
       items: [
-        { path: "/payments/add-method", label: "Add Payment", icon: CreditCard },
-        { path: "/payments/method-selection", label: "Payment Methods", icon: CreditCard },
-        { path: "/payments/confirm", label: "Confirm", icon: Receipt },
         { path: "/payments/transactions", label: "Transactions", icon: Receipt },
+        { path: "/business/payout-settings", label: "Payout bank account", icon: CreditCard },
       ],
     };
 
@@ -142,6 +161,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, user }) => {
       title: "Admin Menus",
       icon: Settings,
       items: [
+        { path: "/admin/ownership-review", label: "Ownership Review", icon: ShieldCheck },
+        { path: "/admin/verification-queue", label: "Verification Queue", icon: Shield },
         { path: "/admin/alerts", label: "Alerts", icon: AlertTriangle },
         { path: "/user-management", label: "User Management", icon: Users },
         { path: "/analytics", label: "Analytics", icon: BarChart3 },
@@ -154,7 +175,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, user }) => {
         { path: "/admin/system-settings", label: "System Settings", icon: Settings },
         { path: "/admin/device-categories", label: "Device Categories", icon: Settings },
         { path: "/admin/transfers", label: "Transfers", icon: ArrowLeftRight },
-        { path: "/admin/verification-queue", label: "Verification Queue", icon: Shield },
         { path: "/admin/archive", label: "Archive & Recovery", icon: Archive },
         { path: "/admin/landing-content", label: "Landing Content", icon: FileText },
       ],
@@ -183,19 +203,21 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, user }) => {
     // Build groups per role
     const role = user?.role;
     if (role === "admin" || role === "super_admin") {
-      return [adminMenu, businessMenu, leaMenu, usersMenu, marketplaceMenu, communicationMenu, settingsMenu];
+      return [adminMenu, businessMenu, leaMenu, usersMenu, checkMenu, marketplaceMenu, communicationMenu, settingsMenu];
     }
     if (role === "business") {
-      return [businessMenu, marketplaceMenu, paymentsMenu];
+      return [businessMenu, checkMenu, marketplaceMenu, paymentsMenu, accountMenu];
     }
     if (role === "lea") {
-      return [leaMenu, marketplaceMenu];
+      return [leaMenu, accountMenu];
     }
     // default user
-    return [usersMenu, marketplaceMenu];
+    return [usersMenu, checkMenu, marketplaceMenu, accountMenu];
   };
 
   const navGroups = getNavGroups();
+  // Short menus (everyone except admins) stay fully open: no hunting in accordions
+  const alwaysOpen = !(user?.role === "admin" || user?.role === "super_admin");
 
   const [openGroup, setOpenGroup] = React.useState<string | null>(null);
 
@@ -222,7 +244,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, user }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="sidebar-overlay d-md-none"
+            className="sidebar-overlay"
             onClick={onClose}
             style={{ zIndex: 1020 }}
           />
@@ -241,7 +263,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, user }) => {
           zIndex: 1030,
           // Use transform for show/hide on both mobile and desktop
           transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
-          transition: 'transform 0.3s ease-in-out',
+          // Hidden links shouldn't be reachable with the keyboard when closed
+          visibility: isOpen ? 'visible' : 'hidden',
+          transition: 'transform 0.3s ease-in-out, visibility 0.3s',
           width: isMobile ? 'min(320px, 85vw)' : '280px',
           maxWidth: '320px',
         }}
@@ -252,22 +276,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, user }) => {
             className="sidebar-header p-3 border-bottom d-flex align-items-center justify-content-between"
             style={{ borderBottomColor: "var(--border-color)" }}
           >
-            <div className="sidebar-logo-container flex-grow-1 d-flex justify-content-center">
-              <img
-                src={theme === "dark" ? "/logod.png" : "/logo1.png"}
-                alt="Prove Ownership Device Registry"
-                className="sidebar-logo"
-                style={{
-                  maxWidth: "100%",
-                  height: "auto",
-                  maxHeight: "60px",
-                  objectFit: "contain",
-                }}
-              />
-            </div>
+            <Link to="/" className="sidebar-logo-container flex-grow-1 d-flex align-items-center gap-2 text-decoration-none" aria-label="Prove Ownership home">
+              <img src="/logo-mark.png" alt="" width={46} height={28} style={{ height: 28, width: 'auto' }} />
+              <span className="fw-bold" style={{ color: "var(--text-primary)", fontSize: 17 }}>Prove Ownership</span>
+            </Link>
             <button
               onClick={onClose}
-              className="d-md-none btn btn-link p-1 ms-2 text-decoration-none flex-shrink-0"
+              aria-label="Close menu"
+              className={`${isMobile ? '' : 'd-none'} btn btn-link p-1 ms-2 text-decoration-none flex-shrink-0`}
               style={{ color: "var(--text-secondary)" }}
             >
               <X size={20} />
@@ -314,8 +330,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, user }) => {
               const isOpenGroup = openGroup === group.key;
               return (
                 <div key={group.key} className="mb-2">
+                  {alwaysOpen ? (
+                    <div className="nav-section-title">{group.title}</div>
+                  ) : (
                   <button
                     className="nav-group-btn"
+                    aria-expanded={isOpenGroup}
                     onClick={() => setOpenGroup(prev => (prev === group.key ? null : group.key))}
                     title={group.title}
                   >
@@ -327,9 +347,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, user }) => {
                       style={{ color: 'var(--text-secondary)', transition: 'transform 0.2s' }}
                     />
                   </button>
+                  )}
 
                   <AnimatePresence initial={false}>
-                    {isOpenGroup && (
+                    {(isOpenGroup || alwaysOpen) && (
                       <motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}

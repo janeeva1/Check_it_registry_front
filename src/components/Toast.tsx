@@ -49,7 +49,7 @@ function Toast({ toast, onRemove }: ToastProps) {
       style={{
         boxShadow: `0 10px 15px -3px ${bgGlow}, 0 4px 6px -4px ${bgGlow}`
       }}
-      className={`min-w-[300px] w-full max-w-[400px] ${bg} border ${border} rounded-xl p-4 text-white pointer-events-auto backdrop-blur-sm bg-opacity-95`}
+      className={`w-full max-w-[400px] ${bg} border ${border} rounded-xl p-4 text-white pointer-events-auto backdrop-blur-sm bg-opacity-95`}
     >
       <div className="d-flex align-items-start gap-3">
         <div className="flex-shrink-0 mt-1">
@@ -65,6 +65,7 @@ function Toast({ toast, onRemove }: ToastProps) {
         </div>
         <button
           onClick={() => onRemove(toast.id)}
+          aria-label="Dismiss"
           className="btn btn-sm btn-link p-0 text-white text-opacity-75 hover:text-opacity-100 flex-shrink-0"
         >
           <X size={18} />
@@ -79,11 +80,20 @@ interface ToastContainerProps {
   onRemove: (id: string) => void
 }
 
-export function ToastContainer({ toasts, onRemove }: ToastContainerProps) {
+// Pages used to render their own <ToastContainer/> on top of the one the
+// provider renders, so every toast showed twice. The provider now owns the
+// only container; this export stays as a no-op so those pages still compile.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function ToastContainer(_props: ToastContainerProps) {
+  return null
+}
+
+function ToastStack({ toasts, onRemove }: ToastContainerProps) {
   return (
     <div 
       className="position-fixed top-0 end-0 p-3 p-md-4 d-flex flex-column gap-3 pointer-events-none" 
-      style={{ zIndex: 100000, width: '100%', maxWidth: '450px', marginTop: '72px' }}
+      style={{ zIndex: 100000, width: '100%', maxWidth: '450px', marginTop: '64px' }}
+      role="region" aria-live="polite" aria-label="Notifications"
     >
       <AnimatePresence mode="popLayout">
         {toasts.map((toast) => (
@@ -126,7 +136,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     let messageStr = '';
 
     if (!error) {
-      messageStr = 'An unknown error occurred.';
+      messageStr = '';
     } else if (typeof error === 'string') {
       messageStr = error;
     } else if (error.response?.data?.error) {
@@ -166,7 +176,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <ToastContainer toasts={toasts} onRemove={removeToast} />
+      <ToastStack toasts={toasts} onRemove={removeToast} />
     </ToastContext.Provider>
   )
 }

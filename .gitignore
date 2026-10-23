@@ -57,4 +57,7 @@ ROLE_TESTING_GUIDE.md
 QUICKSTART.md
 START_PROJECT.md
 
-
+# Browser test output
+e2e/.results/
+e2e/.report/
+e2e/.screens/

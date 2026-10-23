@@ -42,7 +42,7 @@ interface NavbarProps {
 }
 
 const NAV_LINKS = [
-  { path: '/device-check', label: 'Verify Device', icon: Search },
+  { path: '/device-check', label: 'Check an item', icon: Search },
   { path: '/marketplace/browse', label: 'Marketplace', icon: Store },
   { path: '/found-device', label: 'Report Found', icon: Flag },
 ];
@@ -103,8 +103,10 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onMenuClick, sidebarOpe
           {user && onMenuClick ? (
             <button
               onClick={() => onMenuClick?.()}
-              className="nav-action-btn d-none d-md-flex"
-              title={sidebarOpen ? 'Close Menu' : 'Open Menu'}
+              className="nav-action-btn"
+              title={sidebarOpen ? 'Close menu' : 'Open menu'}
+              aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={!!sidebarOpen}
               type="button"
             >
               {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
@@ -113,14 +115,16 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onMenuClick, sidebarOpe
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="nav-action-btn d-lg-none"
-              title={isMobileMenuOpen ? 'Close Menu' : 'Open Menu'}
+              title={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={isMobileMenuOpen}
               type="button"
             >
               {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
           )}
-          <Link to="/" className="d-flex align-items-center gap-2 text-decoration-none" onClick={() => setIsMobileMenuOpen(false)}>
-            <img src="/logo1.png" alt="Prove Ownership" style={{ height: '28px', objectFit: 'contain' }} />
+          <Link to="/" className="po-nav-brand d-flex align-items-center gap-2 text-decoration-none" onClick={() => setIsMobileMenuOpen(false)}>
+            <img src="/logo-mark.png" alt="Prove Ownership" style={{ height: '28px', objectFit: 'contain' }} />
             <span className="fw-bold d-none d-sm-inline" style={{ color: 'var(--text-primary)', fontSize: 'var(--text-lg)' }}>Prove Ownership</span>
           </Link>
         </div>
@@ -131,6 +135,8 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onMenuClick, sidebarOpe
             <NavLink
               key={link.path}
               to={link.path}
+              title={link.label}
+              aria-label={link.label}
               className={({ isActive }) => `custom-nav-link text-decoration-none d-flex align-items-center gap-2 ${isActive ? 'custom-nav-link-active' : ''}`}
               onClick={() => setIsMobileMenuOpen(false)}
             >
@@ -144,9 +150,9 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onMenuClick, sidebarOpe
         <div className="d-flex align-items-center gap-2">
           <Link
             to="/cart"
-            className="nav-action-btn position-relative"
-            title="Shopping Cart"
-            type="button"
+            className={`nav-action-btn position-relative ${itemCount > 0 ? '' : 'd-none d-md-inline-flex'}`}
+            title="Cart"
+            aria-label={itemCount > 0 ? `Cart, ${itemCount} items` : 'Cart'}
           >
             <ShoppingCart size={20} />
             {itemCount > 0 && (
@@ -164,8 +170,9 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onMenuClick, sidebarOpe
           </Link>
           <button
             onClick={toggleTheme}
-            className="nav-action-btn"
+            className={`nav-action-btn ${user ? 'd-none d-md-inline-flex' : ''}`}
             title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
             type="button"
           >
             {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
@@ -174,10 +181,11 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onMenuClick, sidebarOpe
           {user ? (
             <>
               <div className="position-relative" ref={notificationRef}>
-                <button
-                  onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-                  className="nav-action-btn"
-                  type="button"
+                <Link
+                  to="/notifications"
+                  className="nav-action-btn position-relative"
+                  aria-label="Notifications"
+                  title="Notifications"
                 >
                   <Bell size={20} />
                   {unreadCount > 0 && (
@@ -192,7 +200,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onMenuClick, sidebarOpe
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                   )}
-                </button>
+                </Link>
                 <AnimatePresence>
                   {isNotificationOpen && (
                     <motion.div
@@ -218,18 +226,23 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onMenuClick, sidebarOpe
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
                   className="d-flex align-items-center gap-2 nav-action-btn"
+                  style={{ paddingInline: 6 }}
+                  aria-label="Account menu"
+                  aria-expanded={isProfileOpen}
                   type="button"
                 >
                   {user.profile_image_url ? (
                     <img src={user.profile_image_url} alt={getDisplayName(user)} className="rounded-circle" style={{ width: '32px', height: '32px', objectFit: 'cover' }} />
                       ) : (
-                        <div className="rounded-circle d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px', background: 'var(--primary)', color: 'white', fontSize: '12px', fontWeight: 600 }}>
+                        <div className="rounded-circle d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px', background: 'var(--primary-600)', color: 'white', fontSize: '12px', fontWeight: 600 }}>
                       {getUserInitials(user)}
                       </div>
                     )}
-                    <div className="fw-medium" style={{ color: 'var(--text-primary)', fontSize: '14px', lineHeight: 1.2 }}>{getDisplayName(user)}</div>
-                    <div className="text-capitalize" style={{ color: 'var(--text-secondary)', fontSize: '12px', lineHeight: 1.2 }}>{user.role}</div>
-                  <ChevronDown size={14} style={{ color: 'var(--text-secondary)' }} />
+                  <span className="d-none d-xl-flex flex-column align-items-start">
+                    <span className="fw-medium" style={{ color: 'var(--text-primary)', fontSize: '14px', lineHeight: 1.2 }}>{getDisplayName(user)}</span>
+                    <span className="text-capitalize" style={{ color: 'var(--text-secondary)', fontSize: '12px', lineHeight: 1.2 }}>{user.role}</span>
+                  </span>
+                  <ChevronDown size={14} className="d-none d-md-inline" style={{ color: 'var(--text-secondary)' }} />
                 </button>
                 <AnimatePresence>
                   {isProfileOpen && (
@@ -261,6 +274,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onMenuClick, sidebarOpe
                         <Link to="/settings" className="d-flex align-items-center gap-3 px-3 py-2 text-decoration-none rounded-2 dropdown-item-custom" style={{ color: 'var(--text-secondary)' }} onClick={() => setIsProfileOpen(false)}><Settings size={18} /><span>Settings</span></Link>
                         <Link to="/help" className="d-flex align-items-center gap-3 px-3 py-2 text-decoration-none rounded-2 dropdown-item-custom" style={{ color: 'var(--text-secondary)' }} onClick={() => setIsProfileOpen(false)}><HelpCircle size={18} /><span>Help & Support</span></Link>
                         <Link to="/privacy" className="d-flex align-items-center gap-3 px-3 py-2 text-decoration-none rounded-2 dropdown-item-custom" style={{ color: 'var(--text-secondary)' }} onClick={() => setIsProfileOpen(false)}><Shield size={18} /><span>Privacy & Legal</span></Link>
+                        <button type="button" onClick={toggleTheme} className="w-100 d-flex align-items-center gap-3 px-3 py-2 bg-transparent border-0 rounded-2 dropdown-item-custom d-md-none" style={{ color: 'var(--text-secondary)' }}>{theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}<span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span></button>
                         <hr className="my-2" style={{ borderColor: 'var(--border-color)' }} />
                         <button onClick={handleLogout} className="w-100 d-flex align-items-center gap-3 px-3 py-2 bg-transparent border-0 rounded-2 dropdown-item-custom" style={{ color: 'var(--danger-500)' }} type="button"><LogOut size={18} /><span>Sign Out</span></button>
                       </div>

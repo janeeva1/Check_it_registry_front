@@ -4,6 +4,7 @@ import { Package, Shield, CheckCircle, XCircle, AlertTriangle, Loader2, ThumbsUp
 import { Layout } from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast, ToastContainer } from '../components/Toast'
+import { useConfirm } from '../components/ConfirmDialog'
 import { Link } from 'react-router-dom'
 
 type Order = {
@@ -30,6 +31,7 @@ type Order = {
 export default function BuyerOrders() {
   const { user: _user } = useAuth()
   const { toasts, removeToast, showSuccess, showError } = useToast()
+  const confirm = useConfirm()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'held' | 'released' | 'disputed'>('all')
@@ -52,7 +54,7 @@ export default function BuyerOrders() {
   useEffect(() => { fetchOrders() }, [])
 
   const confirmDelivery = async (escrowId: string) => {
-    if (!confirm('Confirm that you have received the item and are satisfied with it?\n\nOnce confirmed, funds will be released to the seller.')) return
+    if (!await confirm({ title: 'Did you receive the item?', message: 'Confirm only if you have it and are happy with it. The money is then released to the seller and the item moves into your name.', confirmLabel: 'Yes, I received it' })) return
     try {
       const token = localStorage.getItem('auth_token')
       const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/escrow/${escrowId}/confirm-delivery`, {

@@ -1,541 +1,221 @@
-import { useState, useEffect, useCallback } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { apiClient } from '../lib/apiClient'
+// One listing: big photos, the price, who sells it and why it is safe, and
+// two clear actions (Buy now / Message seller). Fake ratings and the
+// pretend "report" button from the old page are gone; reporting is real.
+import { useEffect, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ArrowLeft, ChevronLeft, ChevronRight, MapPin, MessageSquare, ShieldCheck, LockKeyhole, Share2, Flag, ShoppingCart, BadgeCheck, Loader2, PackageOpen, Clock } from 'lucide-react'
 import { Layout } from '../components/Layout'
-import { useToast } from '../components/Toast'
+import { apiClient } from '../lib/apiClient'
+import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
-import { motion } from 'framer-motion'
-import {
-  ArrowLeft, BadgeCheck, MapPin, MessageSquare, Star,
-  ChevronLeft, ChevronRight, Heart, Share2, Clock,
-  Shield, Flag, Smartphone, CheckCircle, ShoppingCart
-} from 'lucide-react'
-import { getDisplayName, getUserInitials } from '../utils/userHelpers'
+import { useToast } from '../components/Toast'
+import { CategoryIcon, categoryLabel, formatNaira } from '../utils/categories'
+import { CONDITION } from './MarketplaceBrowse'
 
 type Listing = {
-  id: string
-  title: string
-  brand: string
-  model: string
-  storage?: string
-  color?: string
-  condition: 'new' | 'used' | 'refurbished'
-  price: number
-  currency: string
-  location: string
-  verified: boolean
-  description: string
-  images: string[]
-  category: string
-  seller: {
-    name: string
-    first_name?: string
-    middle_name?: string
-    last_name?: string
-    rating: number
-    verified: boolean
-    joinDate: string
-    totalSales: number
-  }
-  specifications: Record<string, string>
-  rating: number
-  reviewCount: number
-  inStock: boolean
-}
-
-const conditionConfig = {
-  new: { label: 'New', color: 'var(--success-500)', bg: 'rgba(16, 185, 129, 0.1)' },
-  used: { label: 'Used', color: 'var(--warning-500)', bg: 'rgba(245, 158, 11, 0.1)' },
-  refurbished: { label: 'Refurbished', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' },
+  id: string; title: string; brand?: string; model?: string; category?: string; storage_capacity?: string; color?: string
+  device_condition?: string; price: number; location?: string; description?: string; images: string[]; status?: string
+  seller_id?: string; seller_name?: string; seller_verified?: string; seller_since?: string; ownership_level?: string; created_at?: string
 }
 
 export default function MarketplaceListing() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { toasts: _toasts, removeToast: _removeToast, showSuccess, showError } = useToast()
+  const { user } = useAuth()
   const { addItem } = useCart()
- 
+  const { showSuccess, showError } = useToast()
   const [listing, setListing] = useState<Listing | null>(null)
   const [loading, setLoading] = useState(true)
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const [isWishlisted, setIsWishlisted] = useState(false)
-  const [showReport, setShowReport] = useState(false)
-  const [similarListings, setSimilarListings] = useState<any[]>([])
-  const [reportReason, setReportReason] = useState('')
-  const [zoomed, setZoomed] = useState(false)
-  const [commissionPercent, setCommissionPercent] = useState<number | null>(null)
-
-  const fetchListing = useCallback(async () => {
-    if (!id) return
-    try {
-      setLoading(true)
-      const data = await apiClient.marketplace.get(id)
-      if (data) {
-        const mapped: Listing = {
-          id: data.id,
-          title: data.title,
-          brand: data.brand,
-          model: data.model,
-          storage: data.storage_capacity,
-          color: data.color,
-          condition: data.device_condition,
-          price: typeof data.price === 'string' ? parseFloat(data.price) : data.price,
-          currency: data.currency === 'NGN' ? '₦' : data.currency,
-          location: data.location,
-          verified: data.seller_verified === 'verified',
-          description: data.description,
-          images: (typeof data.images === 'string' ? JSON.parse(data.images) : data.images) || [],
-          category: 'Electronics',
-          seller: {
-            name: data.seller_name || 'Unknown',
-            rating: 5.0,
-            verified: data.seller_verified === 'verified',
-            joinDate: new Date().toISOString(),
-            totalSales: 0,
-          },
-          specifications: {
-            'Brand': data.brand,
-            'Model': data.model,
-            'Condition': data.device_condition,
-            'Storage': data.storage_capacity || 'N/A',
-            'Color': data.color || 'N/A',
-          },
-          rating: 0,
-          reviewCount: 0,
-          inStock: data.status === 'active',
-        }
-        if (mapped.images.length === 0) {
-          mapped.images = []
-        }
-        setListing(mapped)
-      }
-    } catch (err) {
-      console.error(err)
-      showError('Error', 'Failed to load listing details')
-    } finally {
-      setLoading(false)
-    }
-  }, [id, showError])
+  const [index, setIndex] = useState(0)
+  const [fee, setFee] = useState<number | null>(null)
+  const [flagOpen, setFlagOpen] = useState(false)
+  const [reason, setReason] = useState('')
+  const [flagging, setFlagging] = useState(false)
 
   useEffect(() => {
-    fetchListing()
-    apiClient.revenue.getFee('marketplace_commission_percent')
-      .then((data: any) => setCommissionPercent(data?.amount ?? 5))
-      .catch(() => setCommissionPercent(5))
-  }, [id, fetchListing])
+    if (!id) return
+    setLoading(true); setIndex(0)
+    apiClient.marketplace.get(id)
+      .then((d: any) => {
+        if (!d || !d.id) { setListing(null); return }
+        const images = typeof d.images === 'string' ? (() => { try { return JSON.parse(d.images) } catch { return [] } })() : d.images
+        setListing({ ...d, price: Number(d.price) || 0, images: Array.isArray(images) ? images : [] })
+      })
+      .catch(() => setListing(null))
+      .finally(() => setLoading(false))
+    if (user) apiClient.revenue.getFee('marketplace_commission_percent').then((f: any) => setFee(f?.amount ?? null)).catch(() => setFee(null))
+  }, [id, user])
 
-  const _fetchSimilar = async () => {
-    try {
-      const data = await apiClient.marketplace.list({ limit: 4 })
-      const mapped = (data || []).slice(0, 4).map((l: any) => ({
-        id: l.id,
-        title: l.title,
-        price: typeof l.price === 'string' ? parseFloat(l.price) : l.price,
-        currency: l.currency === 'NGN' ? '₦' : l.currency,
-        location: l.location,
-        thumbnail: l.images?.[0] || '',
-        condition: l.device_condition,
-      }))
-      setSimilarListings(mapped)
-    } catch (err) {
-      console.error(err)
-    }
-  }
-
-  const handleReport = () => {
-    showSuccess('Report submitted', 'We will review this listing shortly.')
-    setShowReport(false)
-    setReportReason('')
-  }
-
-  const formatCurrency = (amount: number, currency = '₦') => `${currency}${amount.toLocaleString()}`
-  const formatDate = (date: string) => new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-
-  const nextImage = () => {
-    if (listing) setCurrentImageIndex(prev => (prev + 1) % listing.images.length)
-  }
-  const prevImage = () => {
-    if (listing) setCurrentImageIndex(prev => (prev - 1 + listing.images.length) % listing.images.length)
-  }
-
-  if (loading) {
-    return (
-      <Layout>
-        <div className="container-fluid">
-          <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-            <div className="skeleton" style={{ height: 24, width: 200, marginBottom: 24, borderRadius: 4 }} />
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
-              <div>
-                <div className="skeleton" style={{ height: 400, borderRadius: 16, marginBottom: 12 }} />
-                <div style={{ display: 'flex', gap: 8 }}>
-                  {[1, 2, 3, 4].map(i => <div key={i} className="skeleton" style={{ width: 80, height: 80, borderRadius: 8 }} />)}
-                </div>
-              </div>
-              <div>
-                <div className="skeleton skeleton-title" style={{ width: '80%' }} />
-                <div className="skeleton skeleton-text" style={{ width: '40%' }} />
-                <div className="skeleton skeleton-text" style={{ width: '60%' }} />
-                <div className="skeleton skeleton-text" style={{ width: '50%' }} />
-                <div className="skeleton" style={{ height: 48, borderRadius: 10, marginTop: 24 }} />
-                <div className="skeleton" style={{ height: 48, borderRadius: 10, marginTop: 12 }} />
-              </div>
-            </div>
-          </div>
-        </div>
-      </Layout>
-    )
-  }
+  if (loading) return <Layout><div className="po-page po-center py-5"><Loader2 size={30} className="po-spin" aria-label="Loading" /></div></Layout>
 
   if (!listing) {
     return (
       <Layout>
-        <div className="container-fluid">
-          <div style={{ maxWidth: 600, margin: '60px auto', textAlign: 'center' }}>
-            <Smartphone size={48} style={{ color: 'var(--text-tertiary)', marginBottom: 16, opacity: 0.5 }} />
-            <h4>Listing Not Found</h4>
-            <p style={{ color: 'var(--text-tertiary)' }}>This listing may have been removed or doesn't exist.</p>
-            <button className="btn-gradient-primary" onClick={() => navigate('/marketplace/browse')}>
-              <ArrowLeft size={16} /> Back to Browse
-            </button>
+        <div className="po-page po-single">
+          <div className="po-mk-empty">
+            <PackageOpen size={44} aria-hidden="true" />
+            <h2>This listing isn't available</h2>
+            <p className="po-muted">It may have been sold or removed.</p>
+            <Link to="/marketplace" className="po-btn po-btn-primary">Back to the marketplace</Link>
           </div>
         </div>
       </Layout>
     )
   }
 
-  const condConfig = conditionConfig[listing.condition]
+  const l = listing
+  const name = l.title || [l.brand, l.model].filter(Boolean).join(' ')
+  const mine = !!user && user.id === l.seller_id
+  const available = !l.status || l.status === 'active'
+  const imgs = l.images
+  const go = (n: number) => setIndex((i) => (i + n + imgs.length) % imgs.length)
+
+  const buy = () => {
+    if (!user) { navigate('/login', { state: { from: `/marketplace/listing/${l.id}` } }); return }
+    navigate(`/checkout?listing=${encodeURIComponent(l.id)}`)
+  }
+  const addToCart = () => {
+    addItem({ id: l.id, title: name, price: l.price, currency: '₦', image: imgs[0], seller_id: l.seller_id || '', seller_name: l.seller_name || '', condition: l.device_condition || '', location: l.location || '' })
+    showSuccess('Added to your cart')
+  }
+  const message = () => {
+    if (!user) { navigate('/login', { state: { from: `/marketplace/listing/${l.id}` } }); return }
+    navigate(`/marketplace-inbox/${l.id}`)
+  }
+  const share = async () => {
+    try {
+      if (navigator.share) await navigator.share({ title: name, url: window.location.href })
+      else { await navigator.clipboard.writeText(window.location.href); showSuccess('Link copied') }
+    } catch { /* closed the share sheet */ }
+  }
+  const flag = async () => {
+    setFlagging(true)
+    try {
+      const token = localStorage.getItem('auth_token') || ''
+      const r = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/marketplace/${l.id}/flag`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ reason }) })
+      const b = await r.json().catch(() => ({}))
+      if (!r.ok) throw new Error(b.error || 'Could not send the report')
+      showSuccess('Thanks — we will review this listing')
+      setFlagOpen(false); setReason('')
+    } catch (e: any) { showError('Report not sent', e.message) } finally { setFlagging(false) }
+  }
+
+  const details: Array<[string, string | undefined]> = [
+    ['Type', l.category ? categoryLabel(l.category) : undefined],
+    ['Brand', l.brand], ['Model', l.model],
+    ['Condition', l.device_condition ? (CONDITION[l.device_condition] || l.device_condition) : undefined],
+    ['Storage', l.storage_capacity], ['Colour', l.color],
+  ]
 
   return (
     <Layout>
-      <div className="container-fluid" style={{ maxWidth: 1200, margin: '0 auto' }}>
-        {/* Breadcrumb */}
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 24 }}>
-          <button
-            onClick={() => navigate('/marketplace/browse')}
-            className="btn btn-ghost"
-            style={{ padding: '6px 12px', fontWeight: 500 }}
-          >
-            <ArrowLeft size={16} /> Back to Marketplace
-          </button>
-        </motion.div>
+      <div className="po-page po-mk-detail">
+        <Link to="/marketplace" className="po-back"><ArrowLeft size={18} aria-hidden="true" /> Marketplace</Link>
 
-        <div className="row g-4">
-          {/* Image Gallery */}
-          <div className="col-lg-7">
-            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-              <div
-                className="modern-card p-0 overflow-hidden"
-                style={{ position: 'relative', cursor: 'crosshair' }}
-                onClick={() => setZoomed(!zoomed)}
-              >
-                <div style={{ position: 'relative', overflow: 'hidden' }}>
-                  {listing.images.length > 0 ? (
-                  <img
-                    src={listing.images[currentImageIndex]}
-                    alt={listing.title}
-                    style={{
-                      width: '100%',
-                      height: zoomed ? 600 : 450,
-                      objectFit: zoomed ? 'contain' : 'cover',
-                      transition: 'all 0.3s ease',
-                      background: 'var(--bg-secondary)',
-                      display: 'block',
-                    }}
-                  />
-                  ) : (
-                    <div style={{ width: '100%', height: 450, background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>
-                      No image available
-                    </div>
-                  )}
-                  {listing.images.length > 1 && (
-                    <>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); prevImage() }}
-                        className="btn btn-dark"
-                        style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', opacity: 0.8, borderRadius: '50%', width: 44, height: 44, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                      >
-                        <ChevronLeft size={20} />
-                      </button>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); nextImage() }}
-                        className="btn btn-dark"
-                        style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', opacity: 0.8, borderRadius: '50%', width: 44, height: 44, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                      >
-                        <ChevronRight size={20} />
-                      </button>
-                    </>
-                  )}
-                  <div style={{ position: 'absolute', bottom: 16, right: 16, background: 'rgba(0,0,0,0.7)', color: '#fff', padding: '4px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600 }}>
-                    {currentImageIndex + 1} / {listing.images.length}
-                  </div>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setIsWishlisted(!isWishlisted) }}
-                    className={`btn ${isWishlisted ? 'btn-danger' : 'btn-dark'}`}
-                    style={{ position: 'absolute', top: 16, right: 16, borderRadius: '50%', width: 40, height: 40, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.85 }}
-                  >
-                    <Heart size={18} fill={isWishlisted ? 'currentColor' : 'none'} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Thumbnails */}
-              {listing.images.length > 1 && (
-                <div style={{ display: 'flex', gap: 8, marginTop: 12, overflow: 'auto', paddingBottom: 4 }}>
-                  {listing.images.map((img, i) => (
-                    <div
-                      key={i}
-                      onClick={() => setCurrentImageIndex(i)}
-                      style={{
-                        width: 80, height: 80, borderRadius: 10, overflow: 'hidden',
-                        border: `3px solid ${i === currentImageIndex ? 'var(--primary-500)' : 'var(--border-color)'}`,
-                        cursor: 'pointer', flexShrink: 0, transition: 'border-color 0.2s ease',
-                      }}
-                    >
-                      <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    </div>
-                  ))}
-                </div>
+        <div className="po-mk-detail-grid">
+          <div className="po-mk-gallery">
+            <div className="po-mk-photo">
+              {imgs.length ? <img src={imgs[index]} alt={name} /> : <span className="po-listing-noimg"><CategoryIcon category={l.category} size={72} /></span>}
+              {imgs.length > 1 && (
+                <>
+                  <button className="po-mk-arrow is-left" onClick={() => go(-1)} aria-label="Previous photo"><ChevronLeft size={22} /></button>
+                  <button className="po-mk-arrow is-right" onClick={() => go(1)} aria-label="Next photo"><ChevronRight size={22} /></button>
+                  <span className="po-listing-count">{index + 1} / {imgs.length}</span>
+                </>
               )}
-            </motion.div>
-          </div>
-
-          {/* Listing Details */}
-          <div className="col-lg-5">
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-              <div className="modern-card" style={{ padding: 28 }}>
-                {/* Title & Price */}
-                <div style={{ marginBottom: 20 }}>
-                  <h4 style={{ fontWeight: 700, marginBottom: 8, lineHeight: 1.3 }}>{listing.title}</h4>
-                  <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--primary-600)' }}>
-                    {formatCurrency(listing.price, listing.currency)}
-                  </div>
-                </div>
-
-                {/* Quick Info */}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 6, background: condConfig.bg, color: condConfig.color, fontSize: 13, fontWeight: 600 }}>
-                    <CheckCircle size={14} /> {condConfig.label}
-                  </span>
-                  {listing.verified && (
-                    <span className="status-badge status-verified" style={{ fontSize: 13 }}>
-                      <BadgeCheck size={14} /> Verified Seller
-                    </span>
-                  )}
-                  {listing.storage && (
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 6, background: 'var(--bg-tertiary)', color: 'var(--text-secondary)', fontSize: 13, fontWeight: 500 }}>
-                      <Smartphone size={14} /> {listing.storage}
-                    </span>
-                  )}
-                </div>
-
-                {/* Location & Date */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20, paddingBottom: 20, borderBottom: '1px solid var(--border-color)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: 'var(--text-secondary)' }}>
-                    <MapPin size={16} /> {listing.location}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: 'var(--text-secondary)' }}>
-                    <Clock size={16} /> Listed {formatDate(new Date().toISOString())}
-                  </div>
-                </div>
-
-                {/* Seller Card */}
-                <div className="modern-card" style={{ padding: 16, background: 'var(--bg-secondary)', marginBottom: 20 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div className="avatar avatar-lg" style={{ background: listing.seller.verified ? 'var(--primary-500)' : 'var(--gray-400)', fontSize: 22 }}>
-                      {getUserInitials(listing.seller)}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontWeight: 600 }}>{getDisplayName(listing.seller)}</span>
-                        {listing.seller.verified && <BadgeCheck size={16} style={{ color: 'var(--success-500)' }} />}
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--text-tertiary)' }}>
-                        <Star size={14} fill="var(--warning-500)" color="var(--warning-500)" />
-                        <span>{listing.seller.rating} • {listing.seller.totalSales} sales</span>
-                      </div>
-                      <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 2 }}>
-                        <Shield size={12} style={{ display: 'inline', marginRight: 4 }} />
-                        Joined {formatDate(listing.seller.joinDate)}
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      <button
-                        className="btn-gradient-primary"
-                        style={{ padding: '8px 16px', fontSize: 13, whiteSpace: 'nowrap' }}
-                        onClick={() => navigate(`/marketplace-inbox/${listing.id}`)}
-                      >
-                        <MessageSquare size={14} /> Contact
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {commissionPercent !== null && (
-                  <div style={{ marginBottom: 16, padding: '10px 14px', background: 'var(--bg-tertiary)', borderRadius: 8, fontSize: 12, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Shield size={14} style={{ color: 'var(--primary)' }} />
-                    <span>Marketplace commission applies on sale. <strong style={{ color: 'var(--text-primary)' }}>{commissionPercent}%</strong> platform fee deducted at transaction completion.</span>
-                  </div>
-                )}
-
-                {/* Action Buttons */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <button
-                    className="btn d-flex align-items-center justify-content-center gap-2"
-                    style={{ background: 'var(--success-500)', color: '#fff', border: 'none', borderRadius: 10, padding: '12px 20px', fontWeight: 700, fontSize: 15 }}
-                    onClick={() => { addItem({ id: listing.id, title: listing.title, price: listing.price, currency: listing.currency, image: listing.images[0], seller_id: listing.seller?.name || '', seller_name: getDisplayName(listing.seller) || '', condition: listing.condition, location: listing.location }); showSuccess('Added to cart!') }}
-                  >
-                    <ShoppingCart size={20} /> Add to Cart
-                  </button>
-                  <div style={{ display: 'flex', gap: 12 }}>
-                    <button
-                      className="btn-gradient-primary"
-                      style={{ flex: 1 }}
-                      onClick={() => navigate(`/marketplace-inbox/${listing.id}`)}
-                    >
-                      <MessageSquare size={18} /> Contact Seller
-                    </button>
-                    <button
-                      className="btn btn-outline-secondary"
-                      style={{ width: 48, height: 48, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                      onClick={() => { navigator.clipboard.writeText(window.location.href); showSuccess('Link copied!') }}
-                      title="Share"
-                    >
-                      <Share2 size={18} />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Report */}
-                <div style={{ marginTop: 16, textAlign: 'center' }}>
-                  <button
-                    className="btn btn-ghost btn-sm"
-                    style={{ color: 'var(--text-tertiary)', fontSize: 13 }}
-                    onClick={() => setShowReport(!showReport)}
-                  >
-                    <Flag size={14} /> Report this listing
-                  </button>
-                  {showReport && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      style={{ marginTop: 12, padding: 16, background: 'var(--bg-secondary)', borderRadius: 10 }}
-                    >
-                      <select className="modern-select" style={{ fontSize: 13, marginBottom: 8 }} value={reportReason} onChange={e => setReportReason(e.target.value)}>
-                        <option value="">Select a reason</option>
-                        <option value="fraud">Suspected fraud</option>
-                        <option value="wrong">Wrong information</option>
-                        <option value="sold">Already sold</option>
-                        <option value="other">Other</option>
-                      </select>
-                      <button className="btn-gradient-danger btn-sm" style={{ width: '100%', fontSize: 13 }} disabled={!reportReason} onClick={handleReport}>
-                        Submit Report
-                      </button>
-                    </motion.div>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-
-        {/* Description & Specs */}
-        <div className="row g-4 mt-2">
-          <div className="col-lg-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              <div className="modern-card" style={{ padding: 28 }}>
-                <h5 style={{ fontWeight: 700, marginBottom: 16 }}>Description</h5>
-                <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{listing.description}</p>
-              </div>
-
-              <div className="modern-card" style={{ padding: 28, marginTop: 20 }}>
-                <h5 style={{ fontWeight: 700, marginBottom: 16 }}>Specifications</h5>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
-                  {Object.entries(listing.specifications).map(([key, value], i) => (
-                    <div
-                      key={key}
-                      style={{
-                        padding: '12px 0',
-                        borderBottom: i < Object.entries(listing.specifications).length - 1 ? '1px solid var(--border-color)' : 'none',
-                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                      }}
-                    >
-                      <span style={{ fontSize: 14, color: 'var(--text-tertiary)' }}>{key}</span>
-                      <span style={{ fontSize: 14, fontWeight: 600 }}>{value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          </div>
-
-          <div className="col-lg-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <div className="modern-card" style={{ padding: 24 }}>
-                <h5 style={{ fontWeight: 700, marginBottom: 12 }}>Safety Tips</h5>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {[
-                    'Inspect the device in person before paying',
-                    'Meet in a public, safe location',
-                    'Use secure payment methods',
-                    'Verify the device IMEI on ProveOwnership',
-                  ].map((tip, i) => (
-                    <div key={i} style={{ display: 'flex', gap: 10, fontSize: 14, color: 'var(--text-secondary)' }}>
-                      <Shield size={16} style={{ color: 'var(--primary-500)', flexShrink: 0, marginTop: 2 }} />
-                      <span>{tip}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-
-        {/* Similar Listings */}
-        {similarListings.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            style={{ marginTop: 40 }}
-          >
-            <h5 style={{ fontWeight: 700, marginBottom: 20 }}>Similar Listings</h5>
-            <div className="grid-4">
-              {similarListings.map((l: any) => (
-                <div
-                  key={l.id}
-                  className="modern-card p-0 overflow-hidden"
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => { navigate(`/marketplace/listing/${l.id}`); window.scrollTo(0, 0) }}
-                >
-                  <div style={{ height: 180, backgroundSize: 'cover', backgroundPosition: 'center', backgroundImage: l.thumbnail ? `url(${l.thumbnail})` : undefined, backgroundColor: l.thumbnail ? undefined : 'var(--bg-tertiary)', display: l.thumbnail ? undefined : 'flex', alignItems: l.thumbnail ? undefined : 'center', justifyContent: l.thumbnail ? undefined : 'center' }}>
-                    {!l.thumbnail && <span style={{ color: 'var(--text-tertiary)', fontSize: 12 }}>No image</span>}
-                  </div>
-                  <div style={{ padding: 14 }}>
-                    <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4, display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                      {l.title}
-                    </div>
-                    <div style={{ fontWeight: 700, fontSize: 18, color: 'var(--primary-600)' }}>
-                      {l.currency}{Number(l.price).toLocaleString()}
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4, fontSize: 12, color: 'var(--text-tertiary)' }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><MapPin size={12} /> {l.location}</span>
-                      <span className="status-badge" style={{ fontSize: 11, padding: '2px 8px', ...(l.condition === 'new' ? { background: 'rgba(16,185,129,0.1)', color: 'var(--success-500)' } : l.condition === 'used' ? { background: 'rgba(245,158,11,0.1)', color: 'var(--warning-500)' } : { background: 'rgba(59,130,246,0.1)', color: '#3b82f6' }) }}>
-                        {l.condition}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
             </div>
-          </motion.div>
+            {imgs.length > 1 && (
+              <div className="po-mk-thumbs po-scroll-x">
+                {imgs.map((src, i) => (
+                  <button key={i} className={`po-mk-thumb ${i === index ? 'is-selected' : ''}`} onClick={() => setIndex(i)} aria-label={`Photo ${i + 1}`}><img src={src} alt="" /></button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <aside className="po-mk-side">
+            <div className="po-card po-mk-buy">
+              <h1 className="po-mk-title">{name}</h1>
+              <div className="po-mk-price">{formatNaira(l.price)}</div>
+              <div className="po-mk-pills">
+                {l.device_condition && <span className="po-badge po-badge-neutral">{CONDITION[l.device_condition] || l.device_condition}</span>}
+                <span className="po-badge po-badge-success"><ShieldCheck size={13} aria-hidden="true" /> Verified owner</span>
+                {!available && <span className="po-badge po-badge-warning">{l.status === 'sold' ? 'Sold' : 'Not available'}</span>}
+              </div>
+              {l.location && <p className="po-mk-line"><MapPin size={16} aria-hidden="true" /> {l.location}</p>}
+              {l.created_at && <p className="po-mk-line"><Clock size={16} aria-hidden="true" /> Listed {new Date(l.created_at).toLocaleDateString()}</p>}
+
+              {mine ? (
+                <Link to="/business/my-listings" className="po-btn po-btn-secondary w-100">This is your listing — manage it</Link>
+              ) : available ? (
+                <div className="po-mk-actions">
+                  <button className="po-btn po-btn-primary po-btn-lg w-100" onClick={buy}>Buy now</button>
+                  <div className="po-mk-actions-row">
+                    <button className="po-btn po-btn-secondary" onClick={message}><MessageSquare size={18} aria-hidden="true" /> Message seller</button>
+                    <button className="po-btn po-btn-secondary" onClick={addToCart} aria-label="Add to cart"><ShoppingCart size={18} aria-hidden="true" /></button>
+                    <button className="po-btn po-btn-secondary" onClick={share} aria-label="Share"><Share2 size={18} aria-hidden="true" /></button>
+                  </div>
+                </div>
+              ) : (
+                <Link to="/marketplace" className="po-btn po-btn-secondary w-100">See other items</Link>
+              )}
+            </div>
+
+            <div className="po-card po-mk-seller">
+              <span className="po-avatar" aria-hidden="true">{(l.seller_name || '?').trim().charAt(0).toUpperCase()}</span>
+              <div>
+                <strong>{l.seller_name || 'Seller'} {l.seller_verified === 'verified' && <BadgeCheck size={16} className="po-text-success" aria-label="ID checked" />}</strong>
+                <span className="po-muted d-block">{l.seller_verified === 'verified' ? 'ID checked' : 'Owner verified'}{l.seller_since ? ` · on ProveOwnership since ${new Date(l.seller_since).getFullYear()}` : ''}</span>
+              </div>
+            </div>
+
+            <div className="po-card po-mk-safe">
+              <h2 className="po-card-title">Why this is safe</h2>
+              <ul>
+                <li><ShieldCheck size={18} aria-hidden="true" /> The seller proved they own this item.</li>
+                <li><CategoryIcon category={l.category} size={18} /> It is not reported stolen or lost.</li>
+                <li><LockKeyhole size={18} aria-hidden="true" /> Your payment is held until you confirm you received it{fee !== null ? `. A ${fee}% fee is taken from the seller, not you` : ''}.</li>
+              </ul>
+            </div>
+          </aside>
+        </div>
+
+        <div className="po-mk-info">
+          {l.description && (
+            <section className="po-card">
+              <h2 className="po-card-title">About this item</h2>
+              <p className="po-card-text" style={{ whiteSpace: 'pre-wrap' }}>{l.description}</p>
+            </section>
+          )}
+          <section className="po-card">
+            <h2 className="po-card-title">Details</h2>
+            <dl className="po-rows">
+              {details.filter(([, v]) => v).map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}
+            </dl>
+          </section>
+        </div>
+
+        {!mine && user && (
+          <div className="po-mk-flag">
+            {!flagOpen ? (
+              <button className="po-link-btn" onClick={() => setFlagOpen(true)}><Flag size={14} aria-hidden="true" /> Report this listing</button>
+            ) : (
+              <div className="po-card">
+                <label className="form-label" htmlFor="flag-reason">What's wrong?</label>
+                <select id="flag-reason" className="modern-select mb-2" value={reason} onChange={(e) => setReason(e.target.value)}>
+                  <option value="">Choose a reason</option>
+                  <option value="fraud">Looks like a scam</option>
+                  <option value="wrong">The details are wrong</option>
+                  <option value="sold">It's already sold</option>
+                  <option value="other">Something else</option>
+                </select>
+                <div className="d-flex gap-2">
+                  <button className="po-btn po-btn-primary" disabled={!reason || flagging} onClick={flag}>{flagging ? 'Sending…' : 'Send report'}</button>
+                  <button className="po-btn po-btn-secondary" onClick={() => setFlagOpen(false)}>Cancel</button>
+                </div>
+              </div>
+            )}
+          </div>
         )}
       </div>
     </Layout>

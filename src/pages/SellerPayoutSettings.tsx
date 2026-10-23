@@ -4,6 +4,7 @@ import { Landmark, CheckCircle, AlertTriangle, Loader2, Trash2, ArrowLeft } from
 import { Layout } from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast, ToastContainer } from '../components/Toast'
+import { useConfirm } from '../components/ConfirmDialog'
 import { useNavigate, Link } from 'react-router-dom'
 
 type Bank = { code: string; name: string }
@@ -13,6 +14,7 @@ export default function SellerPayoutSettings() {
   const { user: _user } = useAuth()
   const _navigate = useNavigate()
   const { toasts, removeToast, showSuccess, showError } = useToast()
+  const confirm = useConfirm()
 
   const [banks, setBanks] = useState<Bank[]>([])
   const [account, setAccount] = useState<BankAccount | null>(null)
@@ -101,7 +103,7 @@ export default function SellerPayoutSettings() {
   }
 
   const removeAccount = async () => {
-    if (!confirm('Remove your bank account? You won\'t be able to receive payouts.')) return
+    if (!await confirm({ title: 'Remove your bank account?', message: "You won't be able to receive payouts until you add one again.", confirmLabel: 'Remove', danger: true })) return
     try {
       const token = localStorage.getItem('auth_token')
       const res = await fetch(`${API_BASE}/payments/seller-bank-account`, {

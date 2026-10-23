@@ -1,246 +1,121 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Layout } from '../components/Layout'
-import { useToast, ToastContainer } from '../components/Toast'
-import { Device, DeviceStatus } from '../types/database'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { Smartphone, Search, Filter, RefreshCw, Plus, Eye, CheckCircle, AlertTriangle } from 'lucide-react'
-import { SegmentedControl } from '../components/mobile/SegmentedControl'
-import { StatsRow } from '../components/mobile/StatsRow'
-import { SectionHeader } from '../components/mobile/SectionHeader'
+import { Plus, Search, ChevronRight, Loader2, PackageOpen } from 'lucide-react'
+import { Layout } from '../components/Layout'
+import { apiClient } from '../lib/apiClient'
+import OwnershipBadge from '../components/ownership/OwnershipBadge'
+import { CategoryIcon, categoryLabel, primaryIdentifier } from '../utils/categories'
 
-interface DeviceListItem extends Device {
-  verified_by_name?: string
-  verified_by_email?: string
-  days_registered?: number
-  report_count?: number
-  last_report_date?: string
+type Item = {
+  id: string; brand: string; model: string; category: string; status: string; ownership_level?: string
+  imei?: string; serial?: string; vin?: string; license_plate?: string; certificate_number?: string; created_at: string
+}
+
+const FILTERS: Array<[string, string]> = [
+  ['', 'All'], ['verified', 'Active'], ['unverified', 'Needs confirming'], ['stolen', 'Stolen'], ['lost', 'Lost'], ['pending_transfer', 'Transferring'],
+]
+
+const STATUS: Record<string, [string, string]> = {
+  verified: ['Active', 'success'], unverified: ['Confirm by email', 'warning'], stolen: ['Stolen', 'danger'], lost: ['Lost', 'danger'],
+  found: ['Found', 'info'], pending_transfer: ['Transferring', 'info'], released: ['Released', 'neutral'],
+}
+
+// The single most useful thing to do next for an item
+function nextStep(d: Item) {
+  if (d.status === 'unverified') return 'Confirm the registration from your email'
+  if (d.ownership_level === 'disputed') return 'Someone claimed this item — send your proof'
+  if (d.ownership_level === 'registered' || !d.ownership_level) return 'Add proof of ownership'
+  return null
 }
 
 export default function MyDevices() {
-  const [devices, setDevices] = useState<DeviceListItem[]>([])
+  const [items, setItems] = useState<Item[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState('')
+  const [status, setStatus] = useState('')
   const [search, setSearch] = useState('')
-  const [status, setStatus] = useState<DeviceStatus | ''>('')
-  const [brand, setBrand] = useState('')
-  const [category, setCategory] = useState('')
-  const [categories, setCategories] = useState<{ key: string; label: string }[]>([])
+  const [query, setQuery] = useState('')
   const [page, setPage] = useState(1)
   const [pages, setPages] = useState(1)
-  const [limit] = useState(12)
-  const { toasts, removeToast, showError, showSuccess } = useToast()
+  const [reload, setReload] = useState(0)
 
-  // Unified API base
-  const API_BASE = (import.meta.env.VITE_API_BASE_URL as string) || ''
-  const API_URL = API_BASE ? `${API_BASE}/api` : (import.meta.env.VITE_API_URL || '/api')
+  // Search as you type (after a short pause)
+  useEffect(() => { const t = setTimeout(() => { setQuery(search.trim()); setPage(1) }, 350); return () => clearTimeout(t) }, [search])
 
   useEffect(() => {
-    loadDevices()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, brand, page])
-
-  const loadDevices = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      const token = localStorage.getItem('auth_token')
-      if (!token) throw new Error('No authentication token found')
-
-      const params = new URLSearchParams()
-      if (status) params.append('status', status)
-      if (brand) params.append('brand', brand)
-      if (search) params.append('search', search)
-      params.append('page', String(page))
-      params.append('limit', String(limit))
-
-      const res = await fetch(`${API_URL}/user-portal/devices?${params.toString()}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      if (!res.ok) throw new Error('Failed to fetch devices')
-      const json = await res.json()
-      const list: DeviceListItem[] = json?.data?.devices || []
-      const pg = json?.data?.pagination?.pages || 1
-      setDevices(list)
-      setPages(pg)
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Error loading devices'
-      setError(msg)
-      showError('Loading Error', msg)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // Load categories for filter
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const token = localStorage.getItem('auth_token')
-        if (!token) return
-        const res = await fetch(`${API_URL}/device-management/categories`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        if (!res.ok) return
-        const data = await res.json()
-        const opts = Array.isArray(data) ? data : []
-        setCategories(opts)
-      } catch { /* fetch may fail silently */ }
-    }
-    fetchCategories()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const filtered = useMemo(() => {
-    const s = search.trim().toLowerCase()
-    let list = devices
-    if (category) {
-      list = list.filter(d => (d as any).category === category)
-    }
-    if (!s) return list
-    return list.filter(d => (
-      [d.brand, d.model, d.imei || '', d.serial || '']
-        .some(v => v?.toLowerCase().includes(s))
-    ))
-  }, [devices, search, category])
-
-  const resetFilters = () => {
-    setStatus('')
-    setBrand('')
-    setSearch('')
-    setCategory('')
-    setPage(1)
-    showSuccess('Filters Reset', 'Showing all your devices')
-    loadDevices()
-  }
+    let cancelled = false
+    setLoading(true); setError('')
+    apiClient.userPortal.devices({ status: status || undefined, search: query || undefined, page, limit: 20 })
+      .then((r: any) => { if (!cancelled) { setItems(r?.devices || []); setPages(r?.pagination?.pages || 1) } })
+      .catch((e: any) => { if (!cancelled) setError(e?.message || 'Could not load your items') })
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
+  }, [status, query, page, reload])
 
   return (
     <Layout requireAuth>
-      <div className="container-fluid">
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-3">
-          <SectionHeader
-            title="My Devices"
-            subtitle="Manage your registered devices"
-            actions={
-              <div className="d-flex gap-2">
-                <Link to="/register-device" className="btn-gradient-primary d-flex align-items-center gap-2">
-                  <Plus size={18} /> Register New
-                </Link>
-                <Link to="/report-incident" className="btn-gradient-danger d-flex align-items-center gap-2">
-                  <Smartphone size={18} /> Report Issue
-                </Link>
-              </div>
-            }
-          />
-        </motion.div>
-
-        {/* Quick stats row inspired by mobile designs */}
-        <div className="modern-card p-3 mb-3">
-          <StatsRow
-            items={[
-              { label: 'Total', value: devices.length, icon: <Smartphone size={16} style={{ color: 'var(--primary-600)' }} /> },
-              { label: 'Verified', value: devices.filter(d => d.status === 'verified').length, icon: <CheckCircle size={16} style={{ color: 'var(--success-500)' }} /> },
-              { label: 'Issues', value: devices.filter(d => ['stolen','lost'].includes(d.status)).length, icon: <AlertTriangle size={16} style={{ color: 'var(--warning-500)' }} /> },
-              { label: 'Unverified', value: devices.filter(d => d.status === 'unverified').length, icon: <Smartphone size={16} style={{ color: 'var(--text-secondary)' }} /> },
-            ]}
-          />
+      <div className="po-page">
+        <div className="po-title-row">
+          <h1 className="po-hello">My items</h1>
+          <Link to="/register-device" className="po-btn po-btn-primary"><Plus size={18} aria-hidden="true" /> <span className="po-hide-xs">Register</span></Link>
         </div>
 
-        {/* Mobile-style segmented filters + search */}
-        <div className="modern-card p-3 mb-3">
-          <div className="d-flex flex-column gap-3">
-            <SegmentedControl
-              options={[
-                { key: 'all', label: 'All' },
-                { key: 'verified', label: 'Verified' },
-                { key: 'unverified', label: 'Unverified' },
-                { key: 'stolen', label: 'Stolen' },
-                { key: 'lost', label: 'Lost' },
-                { key: 'found', label: 'Found' },
-                { key: 'pending_transfer', label: 'Transfer' },
-              ]}
-              value={status || 'all'}
-              onChange={(key) => setStatus(key === 'all' ? '' : (key as DeviceStatus))}
-            />
-            <div className="row g-3 align-items-end">
-              <div className="col-md-6">
-                <label className="form-label" style={{ color: 'var(--text-secondary)' }}>Search</label>
-                <div className="input-group">
-                  <span className="input-group-text"><Search size={16} /></span>
-                  <input value={search} onChange={e => setSearch(e.target.value)} className="form-control" placeholder="Brand, model, IMEI, serial" />
-                </div>
-              </div>
-              <div className="col-md-4">
-                <label className="form-label" style={{ color: 'var(--text-secondary)' }}>Brand</label>
-                <input value={brand} onChange={e => setBrand(e.target.value)} className="form-control" placeholder="e.g. Samsung" />
-              </div>
-              <div className="col-md-2">
-                <label className="form-label" style={{ color: 'var(--text-secondary)' }}>Category</label>
-                <select className="form-select" value={category} onChange={e => setCategory(e.target.value)}>
-                  <option value="">All</option>
-                  {categories.map(c => (
-                    <option key={c.key} value={c.key}>{c.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="col-md-2 d-flex gap-2">
-                <button onClick={loadDevices} className="btn btn-outline-primary d-flex align-items-center gap-2"><Filter size={16} /> Apply</button>
-                <button onClick={resetFilters} className="btn btn-outline-secondary d-flex align-items-center gap-2"><RefreshCw size={16} /> Reset</button>
-              </div>
-            </div>
+        <div className="po-toolbar">
+          <div className="po-search">
+            <Search size={18} aria-hidden="true" />
+            <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name, IMEI, serial, VIN or plate" aria-label="Search your items" />
           </div>
-        </div>
-
-        {/* Device list inspired by mobile_app/my_devices_list_page */}
-        {loading ? (
-          <div className="text-center py-5">
-            <div className="spinner-border" style={{ color: 'var(--primary-600)' }} />
-            <p className="mt-3" style={{ color: 'var(--text-secondary)' }}>Loading devices…</p>
-          </div>
-        ) : error ? (
-          <div className="modern-card p-4 text-center" style={{ color: 'var(--danger-500)' }}>{error}</div>
-        ) : (
-          <div className="modern-card p-2">
-            {filtered.map(device => (
-              <div key={device.id} className="p-3 d-flex align-items-center gap-3 rounded position-relative" style={{ transition: 'box-shadow 0.2s', cursor: 'pointer', borderBottom: '1px solid var(--border-color)' }}>
-                {/* Left accent bar */}
-                <div style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', width: 6, height: 24, borderTopRightRadius: 6, borderBottomRightRadius: 6, background: device.status === 'verified' ? 'var(--success-500)' : ['stolen','lost'].includes(device.status) ? 'var(--warning-500)' : 'var(--border-color)' }} />
-                <div className="d-flex align-items-center justify-content-center rounded" style={{ width: 44, height: 44, backgroundColor: 'var(--bg-tertiary)' }}>
-                  <Smartphone size={22} style={{ color: 'var(--primary-600)' }} />
-                </div>
-                <div className="flex-grow-1">
-                  <div className="d-flex justify-content-between align-items-center">
-                    <p className="mb-1 fw-semibold" style={{ color: 'var(--text-primary)' }}>{device.brand} {device.model}</p>
-                    <span className={`badge ${device.status === 'verified' ? 'status-verified' : device.status === 'unverified' ? 'status-unverified' : ['stolen','lost'].includes(device.status) ? 'status-stolen' : 'status-found'}`}>{device.status}</span>
-                  </div>
-                  <p className="mb-0" style={{ color: 'var(--text-secondary)', fontSize: 13 }}>IMEI: {device.imei || '—'} | Serial: {device.serial || '—'}</p>
-                </div>
-                <div className="d-flex align-items-center gap-2">
-                  <Link to={`/device/${device.id}`} className="btn btn-sm btn-outline-primary d-flex align-items-center gap-1"><Eye size={14} /> Details</Link>
-                </div>
-              </div>
+          <div className="po-chip-row po-scroll-x" role="tablist" aria-label="Filter by status">
+            {FILTERS.map(([k, label]) => (
+              <button key={k || 'all'} role="tab" aria-selected={status === k} className={`po-chip ${status === k ? 'is-selected' : ''}`} onClick={() => { setStatus(k); setPage(1) }}>{label}</button>
             ))}
-            {filtered.length === 0 && (
-              <div className="p-4 text-center" style={{ color: 'var(--text-secondary)' }}>No devices match your filters.</div>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="po-center py-5"><Loader2 size={28} className="po-spin" aria-label="Loading" /></div>
+        ) : error ? (
+          <div className="modern-card p-4"><p className="po-error">{error}</p><button className="po-btn po-btn-secondary" onClick={() => setReload((n) => n + 1)}>Try again</button></div>
+        ) : items.length === 0 ? (
+          <div className="modern-card po-empty">
+            <PackageOpen size={40} aria-hidden="true" />
+            {query || status ? (
+              <><h2>No items match</h2><p className="po-muted">Try a different search or filter.</p><button className="po-btn po-btn-secondary" onClick={() => { setSearch(''); setStatus('') }}>Clear filters</button></>
+            ) : (
+              <><h2>You haven't registered anything yet</h2><p className="po-muted">Register your phone, laptop, car or anything valuable so it can be checked and recovered if stolen.</p><Link to="/register-device" className="po-btn po-btn-primary"><Plus size={18} aria-hidden="true" /> Register your first item</Link></>
             )}
           </div>
+        ) : (
+          <ul className="po-simple-list">
+            {items.map((d) => {
+              const id = primaryIdentifier(d)
+              const [label, tone] = STATUS[d.status] || [d.status, 'neutral']
+              const next = nextStep(d)
+              const alert = ['stolen', 'lost', 'unverified', 'pending_transfer'].includes(d.status)
+              return (
+                <li key={d.id}>
+                  <Link to={`/device/${d.id}`} className="po-simple-row">
+                    <span className="po-row-icon"><CategoryIcon category={d.category} size={20} /></span>
+                    <span className="po-simple-main">
+                      <strong>{d.brand} {d.model}</strong>
+                      <span>{next ? <span className="po-next">{next}</span> : id ? <span className="po-mono">{id.label} {id.value}</span> : categoryLabel(d.category)}</span>
+                    </span>
+                    {alert ? <span className={`po-badge po-badge-${tone}`}>{label}</span> : <OwnershipBadge level={d.ownership_level} compact />}
+                    <ChevronRight size={18} aria-hidden="true" />
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
         )}
 
-        {/* Pagination */}
         {pages > 1 && (
-          <div className="d-flex justify-content-center align-items-center gap-3 mt-4">
-            <button disabled={page <= 1} onClick={() => setPage(p => Math.max(1, p - 1))} className="btn btn-outline-secondary">Prev</button>
-            <span style={{ color: 'var(--text-secondary)' }}>Page {page} of {pages}</span>
-            <button disabled={page >= pages} onClick={() => setPage(p => Math.min(pages, p + 1))} className="btn btn-outline-secondary">Next</button>
-          </div>
+          <nav className="po-pager" aria-label="Pages">
+            <button className="po-btn po-btn-secondary" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>Previous</button>
+            <span className="po-muted">Page {page} of {pages}</span>
+            <button className="po-btn po-btn-secondary" disabled={page >= pages} onClick={() => setPage((p) => p + 1)}>Next</button>
+          </nav>
         )}
-
-        {/* Floating Action Button inspired by mobile_app */}
-        <Link to="/register-device" className="d-inline-flex align-items-center justify-content-center" style={{ position: 'fixed', right: 24, bottom: 24, width: 56, height: 56, borderRadius: 16, background: 'var(--primary-600)', color: '#fff', boxShadow: '0 8px 24px rgba(0,0,0,0.2)' }}>
-          <Plus size={22} />
-        </Link>
-
-        <ToastContainer toasts={toasts} onRemove={removeToast} />
       </div>
     </Layout>
   )

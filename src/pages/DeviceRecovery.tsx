@@ -71,7 +71,7 @@ export default function DeviceRecovery() {
   const handlePaySuccess = (token: string) => {
     setBypassToken(token)
     setShowPayment(false)
-    proceedRecovery()
+    proceedRecovery(undefined, token)
   }
 
   const handleMfaSuccess = (token: string) => {
@@ -80,14 +80,14 @@ export default function DeviceRecovery() {
     proceedRecovery(token)
   }
 
-  const proceedRecovery = async (mfa?: string) => {
+  const proceedRecovery = async (mfa?: string, payToken?: string) => {
     if (!selectedDevice) return
     setProcessing(true)
     try {
       const payload: any = {
         deviceId: selectedDevice.id,
         servicePackage: 'standard',
-        bypass_payment: bypassToken || null,
+        bypass_payment: payToken || bypassToken || null,
       }
       if (mfa) payload.mfaToken = mfa
       const token = localStorage.getItem('auth_token')
@@ -97,7 +97,7 @@ export default function DeviceRecovery() {
         body: JSON.stringify(payload),
       })
       const json = await res.json().catch(() => ({}))
-      if (json.requiresPayment && !bypassToken) {
+      if (json.requiresPayment && !(payToken || bypassToken)) {
         setShowPayment(true)
         return
       }

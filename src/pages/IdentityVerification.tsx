@@ -55,10 +55,16 @@ export default function IdentityVerification() {
     }
     setLoading(true)
     try {
-      const res = await apiClient.security.verifyNIN({
+      const res: any = await apiClient.security.verifyNIN({
         nin: cleaned,
-        bypass_payment: !!bypassToken,
-      })
+        pay_by_pass: bypassToken || undefined,
+      } as any)
+      if (res && res.requiresPayment) {
+        // Fee not paid yet: open the payment step, then verify again
+        setShowPayment(true)
+        return
+      }
+      setBypassToken(null) // a payment covers one verification
       setStatus({ nin_verified: true, nin_data: res.data })
       showSuccess('NIN Verified Successfully', 'Your identity has been verified')
     } catch (e: any) {
