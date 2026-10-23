@@ -2,7 +2,7 @@
 // reports and shortcuts. No charts.
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ShieldCheck, Scale, ClipboardCheck, FileWarning, Users, Smartphone, Shield, Store, Settings, History, ChevronRight, RefreshCw } from 'lucide-react'
+import { ShieldCheck, Scale, ClipboardCheck, FileWarning, Users, Smartphone, Shield, Store, Settings, History, ChevronRight, RefreshCw, Power, Landmark } from 'lucide-react'
 import { Layout } from '../components/Layout'
 import { apiClient } from '../lib/apiClient'
 
@@ -20,6 +20,8 @@ const SHORTCUTS = [
   { to: '/user-management', label: 'Users', icon: Users },
   { to: '/admin/device-management', label: 'Items', icon: Smartphone },
   { to: '/admin/lea-management', label: 'Police agencies', icon: Shield },
+  { to: '/admin/modules', label: 'Modules & payments', icon: Power },
+  { to: '/admin/custody', label: 'Held items', icon: Landmark },
   { to: '/admin/marketplace', label: 'Marketplace', icon: Store },
   { to: '/audit-trail', label: 'Audit trail', icon: History },
   { to: '/admin/system-settings', label: 'Settings', icon: Settings },

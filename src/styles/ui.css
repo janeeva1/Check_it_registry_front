@@ -31,8 +31,10 @@
   box-shadow: var(--po-ring);
   border-radius: 8px;
 }
+/* Calmer motion inside the app for people who ask for it. The landing page
+   keeps all its animations, exactly as designed. */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+  :where(main, .po-page) *, :where(main, .po-page) *::before, :where(main, .po-page) *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
 html { -webkit-text-size-adjust: 100%; }
 body { overflow-x: hidden; }
@@ -647,3 +649,7 @@ main .stat-card, main [class*="stat-tile"] { padding: 16px !important; }
 .po-mk-side .po-card.po-mk-buy { display: block; text-align: left; }
 .po-mk-actions { width: 100%; }
 .po-card.po-mk-seller { flex-direction: row; align-items: center; text-align: left; }
+
+/* Note shown to admins on a switched-off module */
+.po-module-off-note { position: sticky; top: 0; z-index: 1040; padding: 8px 16px; text-align: center; font-size: 0.9rem; background: #fef3c7; color: #92400e; border-bottom: 1px solid #fcd34d; }
+.po-module-off-note a { color: inherit; font-weight: 600; text-decoration: underline; }

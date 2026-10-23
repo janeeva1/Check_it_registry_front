@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useModules, isMarketplacePath } from '../contexts/ModulesContext';
 import { Link, NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -55,6 +56,8 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onMenuClick, sidebarOpe
   const [unreadCount] = useState(0);
   const { theme, toggleTheme } = useTheme();
   const { itemCount } = useCart();
+  const { visible } = useModules();
+  const showMarket = visible('marketplace');
 
   const notificationRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -132,7 +135,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onMenuClick, sidebarOpe
 
         {/* Center: Desktop nav links - ALWAYS visible for ALL users */}
         <div className="d-none d-lg-flex align-items-center gap-1">
-          {NAV_LINKS.filter(link => user || !link.signedIn).map(link => (
+          {NAV_LINKS.filter(link => (user || !link.signedIn) && (showMarket || !isMarketplacePath(link.path))).map(link => (
             <NavLink
               key={link.path}
               to={link.path}
@@ -149,7 +152,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onMenuClick, sidebarOpe
 
         {/* Right: cart + dark mode + user menu / auth buttons */}
         <div className="d-flex align-items-center gap-2">
-          <Link
+          {showMarket && <Link
             to="/cart"
             className={`nav-action-btn position-relative ${itemCount > 0 ? '' : 'd-none d-md-inline-flex'}`}
             title="Cart"
@@ -168,7 +171,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onMenuClick, sidebarOpe
                 {itemCount > 9 ? '9+' : itemCount}
               </span>
             )}
-          </Link>
+          </Link>}
           <button
             onClick={toggleTheme}
             className={`nav-action-btn ${user ? 'd-none d-md-inline-flex' : ''}`}
@@ -322,7 +325,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onMenuClick, sidebarOpe
                 <div className="px-3 pt-1 pb-2 text-uppercase fw-semibold" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', letterSpacing: '0.08em' }}>
                   Quick Actions
                 </div>
-                {NAV_LINKS.filter(link => user || !link.signedIn).map(link => (
+                {NAV_LINKS.filter(link => (user || !link.signedIn) && (showMarket || !isMarketplacePath(link.path))).map(link => (
                   <NavLink
                     key={link.path}
                     to={link.path}

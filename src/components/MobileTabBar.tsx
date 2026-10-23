@@ -1,6 +1,7 @@
 // Bottom navigation for phones: the four things each role does most, plus
 // "Menu" for everything else. Hidden on tablets and desktops (CSS).
 import { NavLink } from 'react-router-dom'
+import { useModules, isMarketplacePath } from '../contexts/ModulesContext'
 import { Home, Search, Plus, Smartphone, Menu, Store, FileText, Bell, ShieldCheck, Users } from 'lucide-react'
 
 type Tab = { to: string; label: string; icon: typeof Home; main?: boolean }
@@ -33,9 +34,13 @@ function tabsFor(role?: string): Tab[] {
 }
 
 export default function MobileTabBar({ role, onMenu }: { role?: string; onMenu: () => void }) {
+  const { visible } = useModules()
+  const showMarket = visible('marketplace')
+  // While the marketplace is off, a business's "Listings" tab becomes "My items"
+  const tabs = tabsFor(role).map((t) => (!showMarket && isMarketplacePath(t.to) ? { ...t, to: '/my-devices', label: 'My items' } : t))
   return (
     <nav className="po-tabbar" aria-label="Main">
-      {tabsFor(role).map((t) => (
+      {tabs.map((t) => (
         <NavLink key={t.to} to={t.to} end={t.to === '/admin' || t.to === '/lea' || t.to === '/business'}
           className={({ isActive }) => `${t.main ? 'po-tab-main' : ''} ${isActive ? 'is-active' : ''}`}>
           {t.main ? <span className="po-tab-plus"><t.icon size={22} aria-hidden="true" /></span> : <t.icon size={22} aria-hidden="true" />}

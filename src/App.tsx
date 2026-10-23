@@ -3,6 +3,8 @@ import { lazy, Suspense } from 'react'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { CartProvider } from './contexts/CartContext'
+import { ModulesProvider } from './contexts/ModulesContext'
+import ModuleGate from './components/ModuleGate'
 import { ToastProvider } from './components/Toast'
 import './tailwind.css'
 import './App.css'
@@ -89,6 +91,7 @@ const Settings = lazy(() => import('./pages/Settings'))
 const Checkout = lazy(() => import('./pages/Checkout'))
 const Cart = lazy(() => import('./pages/Cart'))
 const CustodyDesk = lazy(() => import('./pages/CustodyDesk'))
+const AdminModules = lazy(() => import('./pages/AdminModules'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 const AdminMarketplaceManagement = lazy(() => import('./pages/AdminMarketplaceManagement'))
 const LandingContentManager = lazy(() => import('./pages/admin/LandingContentManager'))
@@ -144,12 +147,12 @@ function AppRoutes() {
         <Route path="/my-devices" element={user ? <MyDevices /> : <Navigate to="/login" />} />
         <Route path="/device/:id" element={user ? <DeviceDetails /> : <Navigate to="/login" />} />
         <Route path="/notifications" element={user ? <Notifications /> : <Navigate to="/login" />} />
-        <Route path="/marketplace" element={<MarketplaceBrowse />} />
-        <Route path="/marketplace/browse" element={<MarketplaceBrowse />} />
-        <Route path="/marketplace/listing/:id" element={<MarketplaceListing />} />
+        <Route path="/marketplace" element={<ModuleGate name="marketplace"><MarketplaceBrowse /></ModuleGate>} />
+        <Route path="/marketplace/browse" element={<ModuleGate name="marketplace"><MarketplaceBrowse /></ModuleGate>} />
+        <Route path="/marketplace/listing/:id" element={<ModuleGate name="marketplace"><MarketplaceListing /></ModuleGate>} />
         <Route path="/business" element={<ProtectedRoute allowedRoles={['business','admin']}><BusinessDashboard /></ProtectedRoute>} />
-        <Route path="/business/my-listings" element={<ProtectedRoute allowedRoles={['business','admin']}><BusinessMyListings /></ProtectedRoute>} />
-        <Route path="/marketplace/create-listing" element={user ? <CreateListing /> : <Navigate to="/login" />} />
+        <Route path="/business/my-listings" element={<ModuleGate name="marketplace"><ProtectedRoute allowedRoles={['business','admin']}><BusinessMyListings /></ProtectedRoute></ModuleGate>} />
+        <Route path="/marketplace/create-listing" element={<ModuleGate name="marketplace">{user ? <CreateListing /> : <Navigate to="/login" />}</ModuleGate>} />
         <Route path="/device-check" element={user ? <ErrorBoundary><DeviceCheck /></ErrorBoundary> : <Navigate to="/login" />} />
         <Route path="/verification-status" element={user ? <DeviceVerificationStatus /> : <Navigate to="/login" />} />
         <Route path="/device-check-report" element={user ? <DeviceCheckReport /> : <Navigate to="/login" />} />
@@ -200,16 +203,16 @@ function AppRoutes() {
         <Route path="/audit-trail" element={<ProtectedRoute allowedRoles={['admin']}><AuditTrail /></ProtectedRoute>} />
         <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
         <Route path="/settings" element={user ? <Settings /> : <Navigate to="/login" />} />
-        <Route path="/marketplace-inbox" element={user ? <MarketplaceInbox /> : <Navigate to="/login" />} />
-        <Route path="/marketplace-inbox/:id" element={user ? <MarketplaceThread /> : <Navigate to="/login" />} />
+        <Route path="/marketplace-inbox" element={<ModuleGate name="marketplace">{user ? <MarketplaceInbox /> : <Navigate to="/login" />}</ModuleGate>} />
+        <Route path="/marketplace-inbox/:id" element={<ModuleGate name="marketplace">{user ? <MarketplaceThread /> : <Navigate to="/login" />}</ModuleGate>} />
         <Route path="/search" element={<Navigate to="/device-check" replace />} />
         <Route path="/payments/add-method" element={user ? <PaymentAddMethod /> : <Navigate to="/login" />} />
         <Route path="/payments/method-selection" element={user ? <PaymentMethodSelection /> : <Navigate to="/login" />} />
         <Route path="/payments/confirm" element={user ? <PaymentConfirmation /> : <Navigate to="/login" />} />
         <Route path="/payment/callback" element={user ? <PaymentCallback /> : <Navigate to="/login" />} />
         <Route path="/payments/transactions" element={user ? <TransactionHistory /> : <Navigate to="/login" />} />
-        <Route path="/orders" element={user ? <BuyerOrders /> : <Navigate to="/login" />} />
-        <Route path="/seller/orders" element={<ProtectedRoute allowedRoles={['business','admin']}><SellerOrders /></ProtectedRoute>} />
+        <Route path="/orders" element={<ModuleGate name="marketplace">{user ? <BuyerOrders /> : <Navigate to="/login" />}</ModuleGate>} />
+        <Route path="/seller/orders" element={<ModuleGate name="marketplace"><ProtectedRoute allowedRoles={['business','admin']}><SellerOrders /></ProtectedRoute></ModuleGate>} />
         <Route path="/business/payouts" element={<ProtectedRoute allowedRoles={['business','admin']}><BusinessPayouts /></ProtectedRoute>} />
         <Route path="/business/payout-settings" element={<ProtectedRoute allowedRoles={['business','admin']}><SellerPayoutSettings /></ProtectedRoute>} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
@@ -228,10 +231,11 @@ function AppRoutes() {
         <Route path="/admin/revenue" element={<ProtectedRoute allowedRoles={['admin']}><ErrorBoundary><RevenueSettings /></ErrorBoundary></ProtectedRoute>} />
         <Route path="/admin/fraud-alerts" element={<ProtectedRoute allowedRoles={['admin']}><ErrorBoundary><FraudAlerts /></ErrorBoundary></ProtectedRoute>} />
         <Route path="/admin/recovery" element={<ProtectedRoute allowedRoles={['admin']}><ErrorBoundary><RecoveryServiceDashboard /></ErrorBoundary></ProtectedRoute>} />
-        <Route path="/cart" element={<Cart />} />
+        <Route path="/cart" element={<ModuleGate name="marketplace"><Cart /></ModuleGate>} />
+        <Route path="/admin/modules" element={<ProtectedRoute allowedRoles={['admin']}><AdminModules /></ProtectedRoute>} />
         <Route path="/admin/custody" element={<ProtectedRoute allowedRoles={['admin']}><CustodyDesk /></ProtectedRoute>} />
         <Route path="/lea/custody" element={<ProtectedRoute allowedRoles={['lea','admin']}><CustodyDesk /></ProtectedRoute>} />
-        <Route path="/checkout" element={user ? <Checkout /> : <Navigate to="/login" />} />
+        <Route path="/checkout" element={<ModuleGate name="marketplace">{user ? <Checkout /> : <Navigate to="/login" />}</ModuleGate>} />
         {/* Catch-all route: send all unknown links to NotFound with back to dashboard */}
         <Route path="*" element={<NotFound />} />
       </Routes>
@@ -244,6 +248,7 @@ function App() {
     <ThemeProvider>
       <BrowserRouter>
       <AuthProvider>
+        <ModulesProvider>
         <CartProvider>
           <ToastProvider>
             <ConfirmProvider>
@@ -253,6 +258,7 @@ function App() {
             </ConfirmProvider>
           </ToastProvider>
         </CartProvider>
+        </ModulesProvider>
       </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>
