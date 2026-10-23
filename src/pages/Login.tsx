@@ -10,6 +10,16 @@ import {
 import { useToast } from '../components/Toast'
 import { getDisplayName } from '../utils/userHelpers'
 import OTPVerification from '../components/OTPVerification'
+import { deviceHeaders } from '../utils/deviceId'
+
+// What this browser is, shown on the code screen (it used to always say "Chrome on Windows")
+function describeBrowser() {
+  const ua = typeof navigator !== 'undefined' ? navigator.userAgent : ''
+  const browser = /Edg\//.test(ua) ? 'Edge' : /OPR\/|Opera/.test(ua) ? 'Opera' : /Firefox\//.test(ua) ? 'Firefox' : /Chrome\//.test(ua) ? 'Chrome' : /Safari\//.test(ua) ? 'Safari' : 'Browser'
+  const os = /Android/.test(ua) ? 'Android' : /iPhone|iPad|iPod/.test(ua) ? 'iOS' : /Windows/.test(ua) ? 'Windows' : /Mac OS/.test(ua) ? 'macOS' : /Linux/.test(ua) ? 'Linux' : 'Unknown'
+  const device = /Mobi|Android|iPhone/.test(ua) ? 'Phone' : /iPad|Tablet/.test(ua) ? 'Tablet' : 'Computer'
+  return { browser, os, device }
+}
 
 // Where to go after login: a page the visitor tried to reach (e.g. a device
 // check from the landing page), else the dashboard. Only internal paths.
@@ -97,7 +107,7 @@ export default function Login() {
     try {
       const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...deviceHeaders() },
         body: JSON.stringify({
           email: email.trim(),
           password,
@@ -150,7 +160,7 @@ export default function Login() {
     try {
       const response = await fetch(`${API_URL}/auth/verify-device`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...deviceHeaders() },
         body: JSON.stringify({
           user_id: otpData.userId,
           otp_code: otp,
@@ -187,7 +197,7 @@ export default function Login() {
     try {
       const response = await fetch(`${API_URL}/auth/resend-device-otp`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...deviceHeaders() },
         body: JSON.stringify({
           user_id: otpData.userId,
           device_fingerprint: otpData.deviceFingerprint,
@@ -420,13 +430,10 @@ export default function Login() {
           setOtpError('')
         }}
         onVerify={handleOTPVerify}
+        defaultRemember={rememberMe}
         onResendOTP={handleResendOTP}
         userEmail={otpData?.userEmail}
-        deviceInfo={{
-          browser: 'Chrome',
-          os: 'Windows',
-          device: 'Desktop'
-        }}
+        deviceInfo={describeBrowser()}
         loading={otpLoading}
         error={otpError}
       />
