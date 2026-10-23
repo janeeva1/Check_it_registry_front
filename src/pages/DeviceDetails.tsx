@@ -8,6 +8,7 @@ import { apiClient } from '../lib/apiClient'
 import { CategoryIcon, categoryLabel, formatNaira, storedCategory } from '../utils/categories'
 import OwnershipPanel from '../components/ownership/OwnershipPanel'
 import CustodyPanel from '../components/custody/CustodyPanel'
+import { useModules } from '../contexts/ModulesContext'
 
 type Device = {
   id: string
@@ -62,6 +63,7 @@ function CopyValue({ value }: { value: string }) {
 
 export default function DeviceDetails() {
   const { id } = useParams<{ id: string }>()
+  const marketOn = useModules().visible('marketplace')
   const [params] = useSearchParams()
   const isNew = params.get('new') === '1'
   const navigate = useNavigate()
@@ -229,7 +231,7 @@ export default function DeviceDetails() {
         <ul className="po-simple-list po-mb">
           <li><Link to={checkLink} className="po-simple-row"><span className="po-row-icon"><Search size={20} aria-hidden="true" /></span><span className="po-simple-main"><strong>Check it</strong><span>See what a buyer sees</span></span><ChevronRight size={18} aria-hidden="true" /></Link></li>
           {!blocked && <li><Link to={`/transfer?device=${device.id}`} className="po-simple-row"><span className="po-row-icon"><ArrowLeftRight size={20} aria-hidden="true" /></span><span className="po-simple-main"><strong>Transfer to a new owner</strong><span>You sold or gave it away</span></span><ChevronRight size={18} aria-hidden="true" /></Link></li>}
-          {canSell && <li><Link to={`/marketplace/create-listing?device=${device.id}`} className="po-simple-row"><span className="po-row-icon"><Store size={20} aria-hidden="true" /></span><span className="po-simple-main"><strong>Sell it</strong><span>List on the marketplace</span></span><ChevronRight size={18} aria-hidden="true" /></Link></li>}
+          {canSell && marketOn && <li><Link to={`/marketplace/create-listing?device=${device.id}`} className="po-simple-row"><span className="po-row-icon"><Store size={20} aria-hidden="true" /></span><span className="po-simple-main"><strong>Sell it</strong><span>List on the marketplace</span></span><ChevronRight size={18} aria-hidden="true" /></Link></li>}
           {!blocked && <li><Link to={`/report-incident?device=${device.id}`} className="po-simple-row is-danger"><span className="po-row-icon"><AlertTriangle size={20} aria-hidden="true" /></span><span className="po-simple-main"><strong>Report stolen or lost</strong><span>Warn anyone who checks it</span></span><ChevronRight size={18} aria-hidden="true" /></Link></li>}
         </ul>
 

@@ -83,7 +83,7 @@ test('"Verify Identity" on the profile opens the identity page (no hidden pop-up
   await page.goto('/profile')
   await page.getByRole('button', { name: /verify identity|start verification/i }).first().click()
   await expect(page).toHaveURL(/\/identity-verification/)
-  await expect(page.getByRole('heading', { name: /your identity/i })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /your identity/i }).first()).toBeVisible()
   await page.goto('/profile')
   await page.getByRole('link', { name: /verify your business/i }).click()
   await expect(page).toHaveURL(/\/business-verification/)

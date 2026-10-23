@@ -1,4 +1,5 @@
 import React from "react";
+import { useModules, isMarketplacePath } from '../contexts/ModulesContext';
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -30,6 +31,7 @@ import {
   Scale,
   HelpCircle,
   User,
+  Power,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -52,6 +54,7 @@ interface NavGroup {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, user }) => {
+  const { visible } = useModules();
   const location = useLocation();
   // Below 1024px the sidebar is a drawer over the page
   const [isMobile, setIsMobile] = React.useState(window.innerWidth < 1024);
@@ -158,55 +161,79 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, user }) => {
       ],
     };
 
-    const adminMenu: NavGroup = {
-      key: "admin",
-      title: "Admin Menus",
-      icon: Settings,
+    // Admin: grouped by job, most-used first
+    const adminWork: NavGroup = {
+      key: "admin-work",
+      title: "To review",
+      icon: ShieldCheck,
       items: [
-        { path: "/admin/ownership-review", label: "Ownership Review", icon: ShieldCheck },
-        { path: "/admin/verification-queue", label: "Verification Queue", icon: Shield },
+        { path: "/admin/ownership-review", label: "Ownership proofs & disputes", icon: ShieldCheck },
+        { path: "/admin/verification-queue", label: "Identity checks", icon: Shield },
+        { path: "/admin/report-management", label: "Theft & loss reports", icon: FileText },
         { path: "/admin/alerts", label: "Alerts", icon: AlertTriangle },
-        { path: "/user-management", label: "User Management", icon: Users },
-        { path: "/analytics", label: "Analytics", icon: BarChart3 },
-        { path: "/audit-trail", label: "Audit Trail", icon: History },
-        { path: "/admin/device-management", label: "Device Management", icon: Smartphone },
-        { path: "/admin/lea-management", label: "LEA Management", icon: Shield },
-        { path: "/admin/report-management", label: "Report Management", icon: FileText },
-        { path: "/admin/recovery", label: "Recovery Services", icon: RotateCcw },
-        { path: "/admin/custody", label: "Held items", icon: Landmark },
-        { path: "/admin/marketplace", label: "Marketplace Management", icon: Inbox },
-        { path: "/admin/system-settings", label: "System Settings", icon: Settings },
-        { path: "/admin/device-categories", label: "Device Categories", icon: Settings },
+        { path: "/admin/fraud-alerts", label: "Fraud alerts", icon: AlertOctagon },
         { path: "/admin/transfers", label: "Transfers", icon: ArrowLeftRight },
-        { path: "/admin/archive", label: "Archive & Recovery", icon: Archive },
-        { path: "/admin/landing-content", label: "Landing Content", icon: FileText },
       ],
     };
 
-    const communicationMenu: NavGroup = {
-      key: "communication",
-      title: "Communication",
-      icon: MessageSquare,
+    const adminRecovery: NavGroup = {
+      key: "admin-recovery",
+      title: "Recovery",
+      icon: RotateCcw,
       items: [
-        { path: "/notifications", label: "Notifications", icon: Bell },
-        { path: "/marketplace-inbox", label: "Marketplace Inbox", icon: MessageSquare },
-        { path: "/lea/communication", label: "LEA Communication", icon: MessageSquare },
+        { path: "/admin/custody", label: "Held items", icon: Landmark },
+        { path: "/admin/recovery", label: "Recovery services", icon: RotateCcw },
+        { path: "/admin/lea-management", label: "Police agencies", icon: Shield },
       ],
     };
 
-    const settingsMenu: NavGroup = {
-      key: "settings",
-      title: "Settings",
+    const adminRecords: NavGroup = {
+      key: "admin-records",
+      title: "People & items",
+      icon: Users,
+      items: [
+        { path: "/user-management", label: "Users", icon: Users },
+        { path: "/admin/device-management", label: "Items", icon: Smartphone },
+        { path: "/admin/device-categories", label: "Item categories", icon: Settings },
+        { path: "/admin/archive", label: "Archive & restore", icon: Archive },
+      ],
+    };
+
+    const adminMoney: NavGroup = {
+      key: "admin-money",
+      title: "Payments",
+      icon: CreditCard,
+      items: [
+        { path: "/admin/modules", label: "Modules & payments", icon: Power },
+        { path: "/admin/revenue", label: "Fees & revenue", icon: CreditCard },
+        { path: "/admin/marketplace", label: "Marketplace listings", icon: Inbox },
+      ],
+    };
+
+    const adminInsights: NavGroup = {
+      key: "admin-insights",
+      title: "Reports & logs",
+      icon: BarChart3,
+      items: [
+        { path: "/analytics", label: "Analytics", icon: BarChart3 },
+        { path: "/audit-trail", label: "Audit trail", icon: History },
+      ],
+    };
+
+    const adminSite: NavGroup = {
+      key: "admin-site",
+      title: "Site settings",
       icon: Settings,
       items: [
-        { path: "/settings", label: "App Settings", icon: Settings },
+        { path: "/admin/system-settings", label: "System settings", icon: Settings },
+        { path: "/admin/landing-content", label: "Home page content", icon: FileText },
       ],
     };
 
     // Build groups per role
     const role = user?.role;
     if (role === "admin" || role === "super_admin") {
-      return [adminMenu, businessMenu, leaMenu, usersMenu, checkMenu, marketplaceMenu, communicationMenu, settingsMenu];
+      return [adminWork, adminRecovery, adminRecords, adminMoney, adminInsights, adminSite, accountMenu];
     }
     if (role === "business") {
       return [businessMenu, checkMenu, marketplaceMenu, paymentsMenu, accountMenu];
@@ -218,7 +245,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, user }) => {
     return [usersMenu, checkMenu, marketplaceMenu, accountMenu];
   };
 
-  const navGroups = getNavGroups();
+  // Hide the marketplace links while it is switched off (admins still see them)
+  const showMarket = visible('marketplace');
+  const navGroups = getNavGroups()
+    .map((g) => ({ ...g, items: g.items.filter((i) => showMarket || !isMarketplacePath(i.path)) }))
+    .filter((g) => g.items.length > 0);
   // Short menus (everyone except admins) stay fully open: no hunting in accordions
   const alwaysOpen = !(user?.role === "admin" || user?.role === "super_admin");
 
@@ -298,7 +329,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, user }) => {
             {(() => {
               const role = user?.role;
               let dashboardPath = "/dashboard";
-              if (role === "admin") dashboardPath = "/admin";
+              if (role === "admin" || role === "super_admin") dashboardPath = "/admin";
               else if (role === "business") dashboardPath = "/business";
               else if (role === "lea") dashboardPath = "/lea";
 

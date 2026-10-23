@@ -36,9 +36,11 @@ import { landingVariantsEnabled, landingVersions } from '../lib/landingVariants'
 import Navbar from '../components/Navbar';
 import TechParticles from '../components/TechParticles';
 import { useAuth } from '../contexts/AuthContext';
+import { useModules } from '../contexts/ModulesContext';
 
 export default function LandingPage() {
   const { user, logout } = useAuth();
+  const marketOn = useModules().visible('marketplace');
   const location = useLocation();
   const [stats, setStats] = useState({
     users: 0,
@@ -989,7 +991,7 @@ export default function LandingPage() {
               <h6 className="fw-bold mb-3 text-uppercase" style={{ color: 'var(--text-primary)', fontSize: 'var(--text-xs)', letterSpacing: 'var(--tracking-wider)' }}>Platform</h6>
               <ul className="list-unstyled d-flex flex-column gap-2">
                 {user && <li><Link to="/device-check" className="text-decoration-none" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>Check an item</Link></li>}
-                <li><Link to="/marketplace/browse" className="text-decoration-none" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>Marketplace</Link></li>
+                {marketOn && <li><Link to="/marketplace/browse" className="text-decoration-none" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>Marketplace</Link></li>}
                 <li><Link to="/found-device" className="text-decoration-none" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>Report Found</Link></li>
               </ul>
             </div>

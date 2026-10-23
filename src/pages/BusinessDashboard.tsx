@@ -1,6 +1,7 @@
 // Business home: big actions, what needs doing, three numbers, latest
 // orders, shortcuts.
 import { useEffect, useState } from 'react'
+import { useModules } from '../contexts/ModulesContext'
 import { Link } from 'react-router-dom'
 import { Store, Upload, Search, ChevronRight, ShieldCheck, Receipt, Wallet, Users, Package, RefreshCw } from 'lucide-react'
 import { Layout } from '../components/Layout'
@@ -20,13 +21,16 @@ export default function BusinessDashboard() {
   const [verified, setVerified] = useState(true)
   const [needProof, setNeedProof] = useState(0)
   const [loading, setLoading] = useState(true)
+  const { visible, loaded } = useModules()
+  const showMarket = visible('marketplace')
 
   const load = async () => {
     setLoading(true)
     const mp = apiClient.marketplace as any
+    // Marketplace numbers only while the marketplace is on
     const [s, o, v, items] = await Promise.allSettled([
-      mp.getSellerStats(),
-      mp.getSellerOrders(),
+      showMarket ? mp.getSellerStats() : Promise.resolve({}),
+      showMarket ? mp.getSellerOrders() : Promise.resolve([]),
       apiClient.security.getVerificationStatus(),
       apiClient.userPortal.devices({ limit: 100 }),
     ])
@@ -47,7 +51,7 @@ export default function BusinessDashboard() {
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { if (loaded) load() }, [loaded, showMarket]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const todo = [
     !verified && { to: '/business-verification', label: 'Verify your business to start selling', tone: 'warning' },
@@ -64,10 +68,10 @@ export default function BusinessDashboard() {
         </div>
 
         <div className="po-big-actions">
-          <Link to="/marketplace/create-listing" className="po-big-action">
+          {showMarket && <Link to="/marketplace/create-listing" className="po-big-action">
             <span className="po-big-icon is-green"><Store size={26} aria-hidden="true" /></span>
             <strong>List an item</strong><span>Sell on the marketplace</span>
-          </Link>
+          </Link>}
           <Link to="/bulk-register" className="po-big-action">
             <span className="po-big-icon is-blue"><Upload size={26} aria-hidden="true" /></span>
             <strong>Register stock</strong><span>Many items at once</span>
@@ -136,8 +140,8 @@ export default function BusinessDashboard() {
         <section className="po-section">
           <h2 className="po-section-title">Manage</h2>
           <div className="po-shortcuts">
-            <Link to="/business/my-listings" className="po-shortcut"><Store size={22} aria-hidden="true" /><span>My listings</span></Link>
-            <Link to="/seller/orders" className="po-shortcut"><Receipt size={22} aria-hidden="true" /><span>Orders</span></Link>
+            {showMarket && <Link to="/business/my-listings" className="po-shortcut"><Store size={22} aria-hidden="true" /><span>My listings</span></Link>}
+            {showMarket && <Link to="/seller/orders" className="po-shortcut"><Receipt size={22} aria-hidden="true" /><span>Orders</span></Link>}
             <Link to="/business/payouts" className="po-shortcut"><Wallet size={22} aria-hidden="true" /><span>Payouts</span></Link>
             <Link to="/business/onboard" className="po-shortcut"><Users size={22} aria-hidden="true" /><span>Onboard a customer</span></Link>
             <Link to="/my-devices" className="po-shortcut"><Package size={22} aria-hidden="true" /><span>Registered items</span></Link>
