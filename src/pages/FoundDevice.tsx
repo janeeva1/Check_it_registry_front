@@ -25,7 +25,7 @@ export default function FoundDevice() {
       const params = new URLSearchParams()
       if (imei) params.append('imei', imei)
       if (serial) params.append('serial', serial)
-      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/found-device/check?${params.toString()}`)
+      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/found-device/check?${params.toString()}`, { headers: { Authorization: `Bearer ${localStorage.getItem('auth_token') || ''}` } })
       const json = await res.json()
       if (!json.found_eligible) {
         showError(json.message || json.reason || 'Device cannot be reported as found')
@@ -58,7 +58,7 @@ export default function FoundDevice() {
       }
       const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/found-device/report`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('auth_token') || ''}` },
         body: JSON.stringify(payload),
       })
       const json = await res.json().catch(() => ({}))
