@@ -1,4 +1,5 @@
 // API Client for MySQL Backend
+import { deviceHeaders } from '../utils/deviceId';
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 function buildQuery(params: Record<string, any>): string {
@@ -57,7 +58,7 @@ class ApiClient {
 
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
-
+      ...deviceHeaders(),
     };
 
     // Add existing headers

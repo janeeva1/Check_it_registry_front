@@ -6,6 +6,8 @@ interface OTPVerificationProps {
   isOpen: boolean;
   onClose: () => void;
   onVerify: (otp: string, rememberDevice: boolean) => Promise<void>;
+  // Ticked already when the person chose "Remember me" on the sign-in form
+  defaultRemember?: boolean;
   onResendOTP: () => Promise<void>;
   userEmail?: string;
   deviceInfo?: {
@@ -25,10 +27,12 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
   userEmail,
   deviceInfo,
   loading = false,
-  error
+  error,
+  defaultRemember = false
 }) => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
-  const [rememberDevice, setRememberDevice] = useState(false);
+  const [rememberDevice, setRememberDevice] = useState(defaultRemember);
+  useEffect(() => { if (isOpen) setRememberDevice(defaultRemember) }, [isOpen, defaultRemember]);
   const [resendLoading, setResendLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -239,7 +243,7 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
               onChange={e => setRememberDevice(e.target.checked)}
             />
             <label className="form-check-label" htmlFor="rememberDevice" style={{ color: 'var(--text-secondary)' }}>
-              Remember this device for 30 days
+              Remember this device (no code next time)
             </label>
           </div>
         </div>
